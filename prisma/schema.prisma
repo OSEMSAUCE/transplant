@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Repository {
+  id          Int      @id @default(autoincrement())
+  name        String
+  link        String
+  type        String
+  size        Int?
+  blurb       String
+  tagIds      String   // Store as comma-separated string
+  tags        Tag[]    @relation("RepositoryToTag")
+}
+
+model Tag {
+  id           Int          @id @default(autoincrement())
+  name         String
+  repositories Repository[] @relation("RepositoryToTag")
+}
