@@ -95,6 +95,16 @@
   }
 
   function handleColumnMap(csvColumn: string, value: string) {
+    // Clear any existing mappings to this destination
+    if (value) {
+      Object.entries(mappings).forEach(([col, mapping]) => {
+        if (mapping === value && col !== csvColumn) {
+          mappings[col] = '';
+        }
+      });
+    }
+
+    // Set the new mapping
     mappings[csvColumn] = value;
 
     // Update preview tables when mapping changes
@@ -167,7 +177,7 @@
                     on:change={(e) => handleColumnMap(csvColumn, e.target.value)}
                     value={mappings[csvColumn] || ''}
                   >
-                    <option value="">Map to field...</option>
+                    <option value=""></option>
                     <optgroup label="Land">
                       {#each databaseFields.Land as field}
                         <option value={`Land.${field}`}>{field}</option>
