@@ -15,7 +15,7 @@ export const land = pgTable('land', {
   created_at: timestamp('created_at').defaultNow(),
   last_edited_at: timestamp('last_edited_at'),
   edited_by: text('edited_by'),
-  deleted: boolean('deleted')
+  deleted: boolean('deleted'),
 });
 
 // Order matches Supabase UI: crop_id, crop_name, species_id, organization_id, project_id, seedlot, ...
@@ -31,7 +31,7 @@ export const crop = pgTable('crop', {
   created_at: timestamp('created_at').defaultNow(),
   last_edited_at: timestamp('last_edited_at'),
   edited_by: text('edited_by'),
-  deleted: boolean('deleted')
+  deleted: boolean('deleted'),
 });
 
 // Types for TypeScript

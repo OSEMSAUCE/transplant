@@ -1,21 +1,50 @@
 <script lang="ts">
+  /// <reference types="svelte" />
   // @ts-expect-error - PapaParse lacks TypeScript definitions
   import Papa from 'papaparse';
   import { onMount } from 'svelte';
-  import { supabase } from '$lib/supabase';
+
+  type CsvRow = Record<string, string>;
 
   let tableHeaders: Record<string, string[]> = {};
   let errorMessage = '';
 
-  let csvData: any = null;
+  let csvData: CsvRow[] | null = null;
   let mappings: Record<string, string> = {};
-  let fileInput: HTMLInputElement;
+  let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
 
   // Database fields from both tables
   let databaseFields = {
     Land: Object.keys(tableHeaders.Land || []),
     Crop: Object.keys(tableHeaders.Crop || []),
+  };
+
+  // Add this mock data for development
+  const MOCK_CSV_DATA = [
+    {
+      species_id: '550e8400-e29b-41d4-a716-446655440000',
+      common_name: 'acerola; Barbados cherry',
+      scientific_name: 'Malpighia glabra',
+      type: 'Hardwood',
+      family: 'Malpighiaceae',
+      reference: 'https://en.wikipedia.org/wiki/Malpighia_glabra',
+    },
+    {
+      species_id: '550e8400-e29b-41d4-a716-446655440001',
+      common_name: 'Afghan pear',
+      scientific_name: 'Pyrus pashia',
+      type: 'Hardwood',
+      family: 'Rosaceae',
+      reference: 'https://en.wikipedia.org/wiki/Pyrus_pashia',
+    },
+    // Add a few more mock entries if desired
+  ];
+
+  // Add this to track preview data
+  let previewData = {
+    Land: Array(2).fill({}),
+    Crop: Array(2).fill({}),
   };
 
   async function fetchTableHeaders() {
@@ -31,16 +60,20 @@
         Land: tableHeaders.Land,
         Crop: tableHeaders.Crop,
       };
-
-      console.log('Headers loaded:', tableHeaders);
     } catch (error) {
       errorMessage = 'Error fetching table headers';
-      console.error('Error:', error);
     }
   }
 
   onMount(() => {
     fetchTableHeaders();
+
+    // Auto-load mock data in development
+    if (import.meta.env.DEV) {
+      csvData = MOCK_CSV_DATA;
+      csvColumns = Object.keys(MOCK_CSV_DATA[0] || {});
+      errorMessage = '';
+    }
   });
 
   function handleFileSelect(event: Event) {
@@ -53,7 +86,6 @@
           csvData = results.data;
           csvColumns = Object.keys(results.data[0] || {});
           errorMessage = '';
-          console.log('CSV Columns:', csvColumns);
         },
         error: (error) => {
           errorMessage = `Error parsing CSV file: ${error.message}`;
@@ -64,10 +96,23 @@
 
   function handleColumnMap(csvColumn: string, value: string) {
     mappings[csvColumn] = value;
+
+    // Update preview tables when mapping changes
+    if (value && csvData) {
+      const [table, field] = value.split('.');
+
+      // Get first two rows of CSV data
+      const previewRows = csvData.slice(0, 2);
+
+      // Update the preview data for the selected table
+      previewData[table] = previewRows.map((row) => ({
+        ...previewData[table],
+        [field]: row[csvColumn],
+      }));
+    }
   }
 
   export let data;
-  let message = 'TransPlant CSV Mapper';
 </script>
 
 <div class="csv-mapper">
@@ -89,7 +134,7 @@
       </div>
     {:else}
       <div class="table-container">
-        <h3>Imported Data</h3>
+        <h2 class="text-2xl font-bold mb-4">Imported Data</h2>
         <table>
           <thead>
             <tr class="mapping-row">
@@ -135,7 +180,7 @@
       <div class="database-tables">
         {#each ['Land', 'Crop'] as tableName}
           <div class="table-info">
-            <h3>{tableName}</h3>
+            <h2 class="text-2xl font-bold mb-4">{tableName} Table</h2>
             <div class="table-preview">
               <table>
                 <thead>
@@ -146,17 +191,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- Add two empty rows -->
-                  <tr>
-                    {#each tableHeaders[tableName] || [] as _}
-                      <td></td>
-                    {/each}
-                  </tr>
-                  <tr>
-                    {#each tableHeaders[tableName] || [] as _}
-                      <td></td>
-                    {/each}
-                  </tr>
+                  {#each previewData[tableName] as row}
+                    <tr>
+                      {#each tableHeaders[tableName] || [] as header}
+                        <td>{row[header] || ''}</td>
+                      {/each}
+                    </tr>
+                  {/each}
                 </tbody>
               </table>
             </div>
@@ -175,9 +216,9 @@
   {:else}
     <!-- Land Section -->
     <section class="mb-8">
-      <h2 class="text-2xl font-bold mb-4">Lands</h2>
+      <h2 class="text-2xl font-bold mb-4">Land Table</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {#each data.lands as land}
+        {#each data.lands || [] as land}
           {@debug land}
           <div class="bg-white p-4 rounded shadow">
             <h3 class="font-bold text-lg">{land.name}</h3>
@@ -192,9 +233,9 @@
 
     <!-- Crop Section -->
     <section>
-      <h2 class="text-2xl font-bold mb-4">Crops</h2>
+      <h2 class="text-2xl font-bold mb-4">Crop Table</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {#each data.crops as crop}
+        {#each data.crops || [] as crop}
           <div class="bg-white p-4 rounded shadow">
             <h3 class="font-bold text-lg">{crop.name}</h3>
             <p>Seedlot: {crop.seedlot || 'N/A'}</p>
@@ -261,7 +302,6 @@
   }
 
   th {
-    background: #f5f5f5;
     font-size: 0.875rem;
   }
 
@@ -312,7 +352,7 @@
   }
 
   .table-preview th {
-    background: #f5f5f5;
+    /* background: #f5f5f5; */
     font-size: 0.875rem;
   }
 </style>

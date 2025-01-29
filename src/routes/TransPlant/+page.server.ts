@@ -15,10 +15,7 @@ export const load: PageServerLoad = async () => {
         notes: land.notes,
       })
       .from(land)
-      .where(land.deleted.equals(false));
-
-    console.log('Full land schema:', land);
-    console.log('Lands data:', lands);
+      .where(land.deleted.eq(false));
 
     // Get crops
     const crops = await db
@@ -27,13 +24,9 @@ export const load: PageServerLoad = async () => {
         species_id: crop.species_id,
         seedlot: crop.seedlot,
         stock: crop.crop_stock,
-        text: crop.text
       })
       .from(crop)
-      .where(crop.deleted.equals(false));
-
-    console.log('Full crop schema:', crop);
-    console.log('Crops data:', crops);
+      .where(crop.deleted.eq(false));
 
     return { lands, crops };
   } catch (error) {
