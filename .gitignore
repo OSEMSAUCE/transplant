@@ -1,23 +1,26 @@
-node_modules
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Other common ignores
+node_modules/
+.DS_Store
+/build
+/.svelte-kit
+/package
 
 # Output
 .output
 .vercel
-/.svelte-kit
-/build
 
 # OS
-.DS_Store
 Thumbs.db
 
 # Env
-.env
 *.db
-.env.*
-!.env.example
 !.env.test
 
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-.env
