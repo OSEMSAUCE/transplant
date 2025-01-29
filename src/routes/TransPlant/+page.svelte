@@ -112,6 +112,29 @@
     }
   }
 
+  // Add these functions for drag and drop
+  function handleDragStart(event: DragEvent, csvColumn: string) {
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', csvColumn);
+      event.dataTransfer.effectAllowed = 'link';
+    }
+  }
+
+  function handleDragOver(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'link';
+    }
+  }
+
+  function handleDrop(event: DragEvent, table: string, field: string) {
+    event.preventDefault();
+    const csvColumn = event.dataTransfer?.getData('text/plain');
+    if (csvColumn) {
+      handleColumnMap(csvColumn, `${table}.${field}`);
+    }
+  }
+
   export let data;
 </script>
 
@@ -161,7 +184,13 @@
             </tr>
             <tr>
               {#each csvColumns as column}
-                <th>{column}</th>
+                <th
+                  draggable="true"
+                  on:dragstart={(e) => handleDragStart(e, column)}
+                  class="cursor-move hover:bg-gray-100"
+                >
+                  {column}
+                </th>
               {/each}
             </tr>
           </thead>
@@ -169,7 +198,13 @@
             {#each csvData.slice(0, 5) as row}
               <tr>
                 {#each csvColumns as column}
-                  <td>{row[column] || ''}</td>
+                  <td
+                    draggable="true"
+                    on:dragstart={(e) => handleDragStart(e, column)}
+                    class="cursor-move hover:bg-gray-100"
+                  >
+                    {row[column] || ''}
+                  </td>
                 {/each}
               </tr>
             {/each}
@@ -186,7 +221,13 @@
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
-                      <th>{header}</th>
+                      <th
+                        on:dragover={handleDragOver}
+                        on:drop={(e) => handleDrop(e, tableName, header)}
+                        class="droppable-column hover:bg-blue-50"
+                      >
+                        {header}
+                      </th>
                     {/each}
                   </tr>
                 </thead>
@@ -194,7 +235,13 @@
                   {#each previewData[tableName] as row}
                     <tr>
                       {#each tableHeaders[tableName] || [] as header}
-                        <td>{row[header] || ''}</td>
+                        <td
+                          on:dragover={handleDragOver}
+                          on:drop={(e) => handleDrop(e, tableName, header)}
+                          class="droppable-column hover:bg-blue-50"
+                        >
+                          {row[header] || ''}
+                        </td>
                       {/each}
                     </tr>
                   {/each}
@@ -354,5 +401,29 @@
   .table-preview th {
     /* background: #f5f5f5; */
     font-size: 0.875rem;
+  }
+
+  .cursor-move {
+    cursor: move;
+  }
+
+  .droppable-column {
+    position: relative;
+  }
+
+  .droppable-column::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    transition: all 0.2s;
+  }
+
+  .droppable-column:hover::after {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #3b82f6;
   }
 </style>
