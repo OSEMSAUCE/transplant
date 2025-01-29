@@ -6,6 +6,8 @@
     "build": "vite build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:push": "drizzle-kit push:pg",
     "dev": "vite dev",
     "eslint": "eslint . --ext .js,.ts,.svelte",
     "eslint:fix": "eslint . --ext .js,.ts,.svelte --fix",
@@ -52,8 +54,12 @@
     "@supabase/supabase-js": "^2.48.1",
     "@sveltejs/adapter-node": "^5.2.5",
     "@tanstack/match-sorter-utils": "^8.19.4",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.3",
+    "drizzle-orm": "^0.39.0",
     "express": "^4.21.0",
-    "papaparse": "^5.5.1"
+    "papaparse": "^5.5.1",
+    "postgres": "^3.4.5"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -71,6 +71,9 @@
   function handleColumnMap(csvColumn: string, value: string) {
     mappings[csvColumn] = value;
   }
+
+  export let data;
+  let message = 'TransPlant CSV Mapper';
 </script>
 
 <div class="csv-mapper">
@@ -168,6 +171,44 @@
       </div>
     {/if}
   </main>
+</div>
+
+<div class="container mx-auto p-4">
+  {#if data.error}
+    <div class="bg-red-100 p-4 rounded mb-4">
+      <p class="text-red-700">{data.error}</p>
+    </div>
+  {:else}
+    <!-- Land Section -->
+    <section class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Lands</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {#each data.lands as land}
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-bold text-lg">{land.name}</h3>
+            <p>Hectares: {land.hectares || 'N/A'}</p>
+            {#if land.notes}
+              <p class="text-gray-600 mt-2">{land.notes}</p>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </section>
+
+    <!-- Crop Section -->
+    <section>
+      <h2 class="text-2xl font-bold mb-4">Crops</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {#each data.crops as crop}
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-bold text-lg">{crop.name}</h3>
+            <p>Seedlot: {crop.seedlot || 'N/A'}</p>
+            <p>Stock: {crop.stock || 0}</p>
+          </div>
+        {/each}
+      </div>
+    </section>
+  {/if}
 </div>
 
 <style>
