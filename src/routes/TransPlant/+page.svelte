@@ -333,6 +333,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    background-color: var(--background-color, #1e1e1e); /* Dark mode background */
+    color: var(--text-color, #ffffff); /* Dark mode text */
   }
 
   .mapping-row th {
@@ -345,7 +347,8 @@
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: white;
+    background-color: var(--background-color, #1e1e1e);
+    color: var(--text-color, #ffffff);
   }
 
   th {
@@ -425,5 +428,15 @@
   .droppable-column:hover::after {
     background-color: rgba(59, 130, 246, 0.1);
     border: 2px dashed #3b82f6;
+  }
+
+  /* Update hover states to be visible in dark mode */
+  .cursor-move.hover\:bg-gray-100:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .droppable-column.hover\:bg-blue-50:hover::after {
+    background-color: rgba(59, 130, 246, 0.2); /* More visible in dark mode */
+    border: 2px dashed #60a5fa; /* Brighter blue for dark mode */
   }
 </style>
