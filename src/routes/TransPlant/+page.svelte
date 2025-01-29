@@ -20,20 +20,10 @@
 
   async function fetchTableHeaders() {
     try {
-      // Define only the fields we want to show
+      // Define only the fields we want to show, matching the schema names exactly
       tableHeaders = {
-        Land: [
-          'land_name',
-          'hectares',
-          'notes',
-          // Add any other land fields you want here
-        ],
-        Crop: [
-          'crop_name',
-          'seedlot',
-          'crop_stock',
-          // Add any other crop fields you want here
-        ],
+        Land: ['land_name', 'hectares', 'preparation_id', 'gps_lat', 'gps_lon', 'notes'],
+        Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
       };
 
       // Update database fields

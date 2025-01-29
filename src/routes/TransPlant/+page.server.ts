@@ -7,27 +7,32 @@ export const load: PageServerLoad = async () => {
     // Get lands
     const lands = await db
       .select({
-        id: land.land_id,
         name: land.land_name,
         hectares: land.hectares,
+        preparation_id: land.preparation_id,
+        gps_lat: land.gps_lat,
+        gps_lon: land.gps_lon,
         notes: land.notes,
       })
       .from(land)
       .where(land.deleted.equals(false));
 
+    console.log('Full land schema:', land);
     console.log('Lands data:', lands);
 
     // Get crops
     const crops = await db
       .select({
-        id: crop.crop_id,
         name: crop.crop_name,
+        species_id: crop.species_id,
         seedlot: crop.seedlot,
         stock: crop.crop_stock,
+        text: crop.text
       })
       .from(crop)
       .where(crop.deleted.equals(false));
 
+    console.log('Full crop schema:', crop);
     console.log('Crops data:', crops);
 
     return { lands, crops };
