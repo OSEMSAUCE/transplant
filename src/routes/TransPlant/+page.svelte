@@ -20,22 +20,26 @@
 
   async function fetchTableHeaders() {
     try {
-      const { data: cropData, error: cropError } = await supabase.from('Crop').select().limit(1);
-
-      const { data: landData, error: landError } = await supabase.from('Land').select().limit(1);
-
-      if (cropError) throw cropError;
-      if (landError) throw landError;
-
+      // Define only the fields we want to show
       tableHeaders = {
-        Land: landData?.[0] ? Object.keys(landData[0]) : [],
-        Crop: cropData?.[0] ? Object.keys(cropData[0]) : [],
+        Land: [
+          'land_name',
+          'hectares',
+          'notes',
+          // Add any other land fields you want here
+        ],
+        Crop: [
+          'crop_name',
+          'seedlot',
+          'crop_stock',
+          // Add any other crop fields you want here
+        ],
       };
 
-      // Update database fields after headers are loaded
+      // Update database fields
       databaseFields = {
-        Land: Object.keys(tableHeaders.Land || []),
-        Crop: Object.keys(tableHeaders.Crop || []),
+        Land: tableHeaders.Land,
+        Crop: tableHeaders.Crop,
       };
 
       console.log('Headers loaded:', tableHeaders);
@@ -184,6 +188,7 @@
       <h2 class="text-2xl font-bold mb-4">Lands</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {#each data.lands as land}
+          {@debug land}
           <div class="bg-white p-4 rounded shadow">
             <h3 class="font-bold text-lg">{land.name}</h3>
             <p>Hectares: {land.hectares || 'N/A'}</p>
