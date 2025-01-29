@@ -23,22 +23,53 @@
   // Add this mock data for development
   const MOCK_CSV_DATA = [
     {
-      species_id: '550e8400-e29b-41d4-a716-446655440000',
-      common_name: 'acerola; Barbados cherry',
-      scientific_name: 'Malpighia glabra',
-      type: 'Hardwood',
-      family: 'Malpighiaceae',
-      reference: 'https://en.wikipedia.org/wiki/Malpighia_glabra',
+      parcelID: '3BEE6680',
+      pledgeID: '3BEE66',
+      organisationType: 'Private company or corporation',
+      organisationWebsite: 'https://www.3bee.com/',
+      Species: 'ES',
+      countryName: 'Germany',
+      lat: '52.223473',
+      lon: '13.3522415',
+      areaHa: '0.2',
+      numberTrees: '180',
+      plantingYear: '2023',
+      'trees/ha': '1,111',
+      parcelOwnership: 'Private',
+      CRS: '4326'
     },
     {
-      species_id: '550e8400-e29b-41d4-a716-446655440001',
-      common_name: 'Afghan pear',
-      scientific_name: 'Pyrus pashia',
-      type: 'Hardwood',
-      family: 'Rosaceae',
-      reference: 'https://en.wikipedia.org/wiki/Pyrus_pashia',
+      parcelID: '3BEE3747',
+      pledgeID: '3BEE37',
+      organisationType: 'Private company or corporation',
+      organisationWebsite: 'https://www.3bee.com/',
+      Species: 'ES',
+      countryName: 'Spain',
+      lat: '41.070263',
+      lon: '-0.1900329',
+      areaHa: '0.3',
+      numberTrees: '364',
+      plantingYear: '2023',
+      'trees/ha': '1,111',
+      parcelOwnership: 'Private',
+      CRS: '4326'
     },
-    // Add a few more mock entries if desired
+    {
+      parcelID: '3BEE3747',
+      pledgeID: '3BEE14',
+      organisationType: 'Private company or corporation',
+      organisationWebsite: 'https://www.3bee.com/',
+      Species: 'FR',
+      countryName: 'France',
+      lat: '47.870235',
+      lon: '6.4099884',
+      areaHa: '0.2',
+      numberTrees: '204',
+      plantingYear: '2023',
+      'trees/ha': '1,111',
+      parcelOwnership: 'Private',
+      CRS: '4326'
+    }
   ];
 
   // Add this to track preview data
