@@ -36,7 +36,7 @@
       plantingYear: '2023',
       'trees/ha': '1,111',
       parcelOwnership: 'Private',
-      CRS: '4326'
+      CRS: '4326',
     },
     {
       parcelID: '3BEE3747',
@@ -52,7 +52,7 @@
       plantingYear: '2023',
       'trees/ha': '1,111',
       parcelOwnership: 'Private',
-      CRS: '4326'
+      CRS: '4326',
     },
     {
       parcelID: '3BEE3747',
@@ -68,8 +68,8 @@
       plantingYear: '2023',
       'trees/ha': '1,111',
       parcelOwnership: 'Private',
-      CRS: '4326'
-    }
+      CRS: '4326',
+    },
   ];
 
   // Add this to track preview data
@@ -356,26 +356,28 @@
   .table-container {
     overflow-x: auto;
     margin-top: 2rem;
+    width: 100%;
   }
 
   table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
   }
 
   th,
   td {
-    min-width: 10rem;
-    max-width: 10rem;
+    min-width: 2rem;
+    /* width: 20rem; */
     padding: 0.5rem;
     text-align: left;
     border: 1px solid #ddd;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    background-color: var(--background-color, #1e1e1e); /* Dark mode background */
-    color: var(--text-color, #ffffff); /* Dark mode text */
+    background-color: var(--background-color, #1e1e1e);
+    color: var(--text-color, #ffffff);
   }
 
   .mapping-row th {
