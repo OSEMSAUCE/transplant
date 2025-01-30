@@ -336,6 +336,10 @@
 </div>
 
 <style>
+  :root {
+    --column-width: 6rem;
+  }
+
   .csv-mapper {
     padding: 2rem;
   }
@@ -360,16 +364,15 @@
   }
 
   table {
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
   }
 
   th,
   td {
-    min-width: 2rem;
-    /* width: 20rem; */
+    /* width: var(--column-width); */
+    min-width: var(--column-width);
     padding: 0.5rem;
     text-align: left;
     border: 1px solid #ddd;
@@ -383,10 +386,13 @@
   .mapping-row th {
     padding: 0.25rem;
     border: none;
+    width: var(--column-width);
+    min-width: var(--column-width);
   }
 
   select {
-    width: 100%;
+    width: var(--column-width);
+    min-width: var(--column-width);
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -434,8 +440,8 @@
 
   .table-preview th,
   .table-preview td {
-    min-width: 10rem;
-    max-width: 10rem;
+    /* width: var(--column-width);
+    min-width: var(--column-width); */
     padding: 0.5rem;
     text-align: left;
     border: 1px solid #ddd;
