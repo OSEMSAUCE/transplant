@@ -20,6 +20,67 @@
     Crop: Object.keys(tableHeaders.Crop || []),
   };
 
+  // Add these type definitions at the top of the script
+  type FieldType = 'number' | 'string' | 'latitude' | 'longitude';
+
+  interface FieldDefinition {
+    name: string;
+    type: FieldType;
+    required?: boolean;
+  }
+
+  // Define the expected types for each field
+  const tableFieldTypes = {
+    Land: {
+      land_name: { type: 'string', required: true },
+      hectares: { type: 'number', required: true },
+      preparation_id: { type: 'string', required: false },
+      gps_lat: { type: 'latitude', required: true },
+      gps_lon: { type: 'longitude', required: true },
+      notes: { type: 'string', required: false },
+    },
+    Crop: {
+      crop_name: { type: 'string', required: true },
+      species_id: { type: 'string', required: true },
+      seedlot: { type: 'string', required: false },
+      seedzone: { type: 'string', required: false },
+      crop_stock: { type: 'number', required: true },
+    },
+  } as const;
+
+  // Add validation functions
+  function validateField(value: string, type: FieldType): { valid: boolean; value: any } {
+    if (value === '' || value == null) {
+      return { valid: true, value: null };
+    }
+
+    switch (type) {
+      case 'number':
+        const num = Number(value.replace(',', ''));
+        return { valid: !isNaN(num), value: num };
+
+      case 'latitude':
+        const lat = Number(value);
+        return {
+          valid: !isNaN(lat) && lat >= -90 && lat <= 90,
+          value: lat,
+        };
+
+      case 'longitude':
+        const lon = Number(value);
+        return {
+          valid: !isNaN(lon) && lon >= -180 && lon <= 180,
+          value: lon,
+        };
+
+      case 'string':
+        return { valid: true, value: value.trim() };
+
+      default:
+        return { valid: false, value: null };
+    }
+  }
+
   // Add this mock data for development
   const MOCK_CSV_DATA = [
     {
@@ -141,15 +202,27 @@
     // Update preview tables when mapping changes
     if (value && csvData) {
       const [table, field] = value.split('.');
+      const fieldType = tableFieldTypes[table]?.[field]?.type;
+
+      if (!fieldType) {
+        console.warn(`No type definition found for ${table}.${field}`);
+        return;
+      }
 
       // Get first two rows of CSV data
       const previewRows = csvData.slice(0, 2);
 
-      // Update the preview data for the selected table
-      previewData[table] = previewRows.map((row) => ({
-        ...previewData[table],
-        [field]: row[csvColumn],
-      }));
+      // Update the preview data with validation
+      previewData[table] = previewRows.map((row) => {
+        const rawValue = row[csvColumn];
+        const { valid, value } = validateField(rawValue, fieldType);
+
+        return {
+          ...previewData[table],
+          [field]: valid ? value : `Invalid ${fieldType}: ${rawValue}`,
+          [`${field}_valid`]: valid,
+        };
+      });
     }
   }
 
@@ -290,6 +363,7 @@
                           on:dragover={handleDragOver}
                           on:drop={(e) => handleDrop(e, tableName, header)}
                           class="droppable-column hover:bg-blue-50"
+                          class:invalid={row[`${header}_valid`] === false}
                         >
                           {row[header] || ''}
                         </td>
@@ -492,5 +566,9 @@
   .droppable-column.hover\:bg-blue-50:hover::after {
     background-color: rgba(59, 130, 246, 0.2); /* More visible in dark mode */
     border: 2px dashed #60a5fa; /* Brighter blue for dark mode */
+  }
+
+  .invalid {
+    background-color: rgba(239, 68, 68, 0.2);
   }
 </style>
