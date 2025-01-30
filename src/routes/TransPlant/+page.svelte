@@ -176,6 +176,32 @@
     }
   }
 
+  function handleMappingDragStart(event: DragEvent, table: string, field: string) {
+    const fullField = `${table}.${field}`;
+    // Find if this field is mapped to
+    const mappedColumn = Object.entries(mappings).find(([_, value]) => value === fullField)?.[0];
+    if (mappedColumn) {
+      event.dataTransfer?.setData('text/plain', mappedColumn);
+    } else {
+      // If not mapped to, prevent drag
+      event.preventDefault();
+    }
+  }
+
+  function handleMappingDragEnd(event: DragEvent, table: string, field: string) {
+    const fullField = `${table}.${field}`;
+    const mappedColumn = Object.entries(mappings).find(([_, value]) => value === fullField)?.[0];
+    if (mappedColumn) {
+      // Clear the mapping
+      mappings[mappedColumn] = '';
+      // Clear preview data
+      previewData[table] = previewData[table].map((row) => ({
+        ...row,
+        [field]: '',
+      }));
+    }
+  }
+
   export let data;
 </script>
 
@@ -203,34 +229,12 @@
           <thead>
             <tr class="mapping-row">
               {#each csvColumns as csvColumn}
-                <th>
-                  <select
-                    on:change={(e) => handleColumnMap(csvColumn, e.target.value)}
-                    value={mappings[csvColumn] || ''}
-                  >
-                    <option value=""></option>
-                    <optgroup label="Land">
-                      {#each databaseFields.Land as field}
-                        <option value={`Land.${field}`}>{field}</option>
-                      {/each}
-                    </optgroup>
-                    <optgroup label="Crop">
-                      {#each databaseFields.Crop as field}
-                        <option value={`Crop.${field}`}>{field}</option>
-                      {/each}
-                    </optgroup>
-                  </select>
-                </th>
-              {/each}
-            </tr>
-            <tr>
-              {#each csvColumns as column}
                 <th
                   draggable="true"
-                  on:dragstart={(e) => handleDragStart(e, column)}
+                  on:dragstart={(e) => handleDragStart(e, csvColumn)}
                   class="cursor-move hover:bg-gray-100"
                 >
-                  {column}
+                  {csvColumn}
                 </th>
               {/each}
             </tr>
@@ -263,6 +267,9 @@
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
                       <th
+                        draggable="true"
+                        on:dragstart={(e) => handleMappingDragStart(e, tableName, header)}
+                        on:dragend={(e) => handleMappingDragEnd(e, tableName, header)}
                         on:dragover={handleDragOver}
                         on:drop={(e) => handleDrop(e, tableName, header)}
                         class="droppable-column hover:bg-blue-50"
@@ -277,6 +284,9 @@
                     <tr>
                       {#each tableHeaders[tableName] || [] as header}
                         <td
+                          draggable="true"
+                          on:dragstart={(e) => handleMappingDragStart(e, tableName, header)}
+                          on:dragend={(e) => handleMappingDragEnd(e, tableName, header)}
                           on:dragover={handleDragOver}
                           on:drop={(e) => handleDrop(e, tableName, header)}
                           class="droppable-column hover:bg-blue-50"
@@ -335,6 +345,7 @@
   {/if}
 </div>
 
+<!-- CSS variable, control all widths! -->
 <style>
   :root {
     --column-width: 6rem;
@@ -460,23 +471,17 @@
   }
 
   .droppable-column {
+    cursor: pointer; /* Changed to pointer to indicate interactivity */
     position: relative;
   }
 
-  .droppable-column::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    transition: all 0.2s;
+  /* When mapped, show grab cursor */
+  .droppable-column[draggable='true'] {
+    cursor: grab;
   }
 
-  .droppable-column:hover::after {
-    background-color: rgba(59, 130, 246, 0.1);
-    border: 2px dashed #3b82f6;
+  .droppable-column[draggable='true']:active {
+    cursor: grabbing;
   }
 
   /* Update hover states to be visible in dark mode */
