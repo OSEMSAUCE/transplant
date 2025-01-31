@@ -17,7 +17,7 @@ export const land = pgTable('land', {
   edited_by: text('edited_by'),
   deleted: boolean('deleted'),
 });
-
+// test 5
 // Order matches Supabase UI: crop_id, crop_name, species_id, organization_id, project_id, seedlot, ...
 export const crop = pgTable('crop', {
   crop_id: serial('crop_id').primaryKey(),
