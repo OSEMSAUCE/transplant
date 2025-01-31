@@ -278,6 +278,7 @@
   export let data;
 </script>
 
+// TEST GITHUB CONNECTION - DELETE THIS LINE
 <div class="csv-mapper">
   <header>
     <h1>CSV Mapper</h1>
