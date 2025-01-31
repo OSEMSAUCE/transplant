@@ -297,7 +297,7 @@
       </div>
     {:else}
       <div class="table-container">
-        <h2 class="text-2xl font-bold mb-4">Imported Data</h2>
+        <h2 class="text-2xl font-bold mb-4">Imported Data TEST</h2>
         <table>
           <thead>
             <tr class="mapping-row">
