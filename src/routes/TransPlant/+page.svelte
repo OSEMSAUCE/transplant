@@ -250,6 +250,8 @@ onMount(() => {
     // Set the new mapping
     mappings[csvColumn] = value;
 
+    // test
+
     // Update preview data for both tables
     if (csvData) {
       ['Land', 'Crop'].forEach((table) => {
@@ -263,6 +265,7 @@ onMount(() => {
             }
           }
         });
+// test2
 
         // Create preview rows with mapped and validated data
         previewData[table] = csvData.slice(0, 5).map((row) => {
