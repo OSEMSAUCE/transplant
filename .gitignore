@@ -1,0 +1,26 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Other common ignores
+node_modules/
+.DS_Store
+/build
+/.svelte-kit
+/package
+
+# Output
+.output
+.vercel
+
+# OS
+Thumbs.db
+
+# Env
+*.db
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

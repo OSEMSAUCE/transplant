@@ -1,0 +1,157 @@
+npm run dev
+9:45:19 a.m. [vite] hmr update /src/routes/+page.svelte (x26)
+9:45:19 a.m. [vite-plugin-svelte] /Users/chrisharris/Library/CloudStorage/Dropbox/2024_PROJECTS/forestInfo/src/routes/+page.svelte:54:4 A11y: '#' is not a valid href attribute
+9:45:23 a.m. [vite] hmr update /src/routes/+page.svelte (x27)
+9:45:23 a.m. [vite-plugin-svelte] /Users/chrisharris/Library/CloudStorage/Dropbox/2024_PROJECTS/forestInfo/src/routes/+page.svelte:54:4 A11y: '#' is not a valid href attribute
+9:59:16 a.m. [vite] page reload src/lib/styles/custom-pico.scss
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+39  │       #{$css-var-prefix}border-radius: 0.25rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 39:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+40  │       #{$css-var-prefix}border-width: 0.0625rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 40:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+41  │       #{$css-var-prefix}outline-width: 0.125rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 41:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+44  │       #{$css-var-prefix}transition: 0.2s ease-in-out;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 44:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+47  │       #{$css-var-prefix}spacing: 1rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 47:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Warning: 118 repetitive deprecation warnings omitted.
+
+9:59:17 a.m. [vite-plugin-svelte] /Users/chrisharris/Library/CloudStorage/Dropbox/2024_PROJECTS/forestInfo/src/routes/+page.svelte:54:4 A11y: '#' is not a valid href attribute
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+39  │       #{$css-var-prefix}border-radius: 0.25rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵
+    node_modules/@picocss/pico/scss/themes/default/_styles.scss 39:5  @use
+    node_modules/@picocss/pico/scss/themes/_default.scss 2:1          @use
+    node_modules/@picocss/pico/scss/_index.scss 7:1                   @use
+    node_modules/@picocss/pico/scss/pico.scss 2:1                     @use
+    src/lib/styles/custom-pico.scss 4:1                               root stylesheet
+
+Deprecation Warning: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+    ╷
+31  │ ┌           @media (min-width: map.get($values, "breakpoint")) {
+32  │ │             #{$css-var-prefix}font-size: map.get($values, "root-font-size");
+33  │ │           }
+    │ └─── nested rule
+... │
+40  │       #{$css-var-prefix}border-width: 0.0625rem;
+    │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+    ╵

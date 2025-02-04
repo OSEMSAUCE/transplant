@@ -1,0 +1,351 @@
+@use '@picocss/pico/scss/pico' with (
+  $theme-color: 'violet'
+);
+
+:root {
+  --pico-font-family: Poppins;
+  --color-purple: #5f10b3;
+  --color-grey: #e3dfdf;
+  --color-white: #e0e0e0 --input-max-width: 28rem;
+  --button-max-width: 28rem;
+  --input-max-width: 28rem;
+
+  --bright-border: 1px solid #ffffff;
+}
+
+/* Default to left align */
+th,
+td {
+  position: relative;
+
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+  text-align: left; /* Left-align all text by default */
+}
+
+td {
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    z-index: 1;
+  }
+}
+@keyframes flash {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash {
+  animation: flash 0.5s;
+}
+
+/* Specific alignment for numeric content */
+td.numeric,
+th.numeric {
+  text-align: right; /* Right-align only numeric cells */
+}
+
+/* Table Styles */
+table {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  // Remove the max-height property
+  // max-height: 90vh;
+  border-top: 1px solid #ffffff;
+  border-bottom: 1px solid #ffffff;
+}
+
+/* Table Head Styles */
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--background-color, #13171f);
+}
+
+/* Sticky First Column */
+th:first-child,
+td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--pico-background-color);
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(
+    [type='color']
+  ):not([type='submit']):not([type='reset']),
+select,
+textarea {
+  max-width: var(--input-max-width);
+  width: 100%;
+}
+
+button,
+[type='button'],
+[type='submit'],
+[type='reset'] {
+  max-width: var(--button-max-width);
+  width: auto;
+}
+
+button.sort-button {
+  --pico-padding: 0;
+  --pico-background-color: transparent;
+  --pico-color: inherit;
+  --pico-border-width: 0;
+  --pico-font-size: 0.875rem;
+  min-width: auto;
+  height: auto;
+  padding: 0.25rem;
+  margin: 0;
+  box-shadow: none;
+  border: none;
+
+  &:hover,
+  &:active,
+  &:focus {
+    --pico-background-color: transparent;
+    --pico-color: inherit;
+  }
+
+  span {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+    text-align: center;
+    font-size: 1.2em;
+  }
+
+  .text-purple {
+    color: var(--color-purple);
+    text-shadow:
+      -1px -1px 0 var(--color-purple),
+      1px -1px 0 var(--color-purple),
+      -1px 1px 0 var(--color-purple),
+      1px 1px 0 var(--color-purple);
+  }
+
+  .text-grey {
+    color: var(--color-grey);
+  }
+}
+
+/* Responsive Adjustment */
+@media (max-width: 768px) {
+  th,
+  td {
+    width: 9rem;
+    max-width: 9rem;
+  }
+}
+
+table,
+input,
+select,
+textarea,
+button,
+[type='button'],
+[type='submit'],
+[type='reset'],
+[type='checkbox'],
+[type='radio'] {
+  border: var(--bright-border);
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // margin-top: 1rem;
+}
+
+.back-button,
+.next-button {
+  margin: 0 0.5rem;
+}
+
+thead tr {
+  border-bottom:  1px; // Remove the default bottom border
+}
+
+thead th {
+  border-bottom: var(--bright-border); // Add the border to individual header cells
+  position: relative; // Ensure the border is on top
+  z-index: 3; // Higher z-index to place it above other elements
+}
+
+/* Add these styles to the existing file */
+
+.table-container {
+  overflow: auto;
+  max-height: 80vh; // Adjust this value as needed
+  position: relative;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--pico-background-color);
+}
+
+td:first-child,
+th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--pico-background-color);
+}
+
+thead th:first-child {
+  z-index: 3;
+}
+
+z
+/* Ensure borders are visible */
+th, td {
+  border: 1px solid var(--pico-border-color);
+}
+
+.table-wrapper {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fixed-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: var(--pico-background-color);
+}
+
+.search-container {
+  padding: 10px;
+  border-bottom: var(--bright-border);
+}
+
+.table-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead {
+  background-color: var(--pico-background-color);
+}
+
+thead tr:first-child th {
+  border-top: var(--bright-border);
+}
+
+th,
+td {
+  padding: 8px;
+  border: 1px solid var(--pico-border-color);
+}
+
+th:first-child,
+td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--pico-background-color);
+}
+
+thead th:first-child {
+  z-index: 3;
+}
+
+.custom-table {
+  --table-border-color: var(--pico-border-color, #ccc);
+
+  .header-container,
+  .table-body-container {
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+  }
+
+  .header-container {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background-color: var(--pico-background-color);
+  }
+
+  .header-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .header-container thead {
+    border-bottom: 2px solid var(--table-border-color);
+  }
+
+  th, td {
+    padding: 8px;
+    border: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Force thead to match tbody layout
+  .header-container th {
+    font-weight: bold;
+    text-align: left; // Adjust if you want different alignment
+    width: auto; // Let the width be determined by tbody
+  }
+
+  .table-body-container td {
+    width: auto; // This allows the content to determine the width
+  }
+
+  // Ensure the first row of tbody aligns with thead
+  .table-body-container table {
+    margin-top: -2px; // Compensate for thead border
+  }
+
+  // ... rest of your existing styles ...
+}
