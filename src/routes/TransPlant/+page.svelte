@@ -14,12 +14,34 @@
   let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
 
+  /**
+   * CRITICAL RELATIONSHIP: Land-Crop-Planted Tables
+   * 
+   * The Planted table represents actual planting events from the imported data.
+   * Each row in the Planted table must correspond to a real planting event where:
+   * 1. land_name exists in the Land table
+   * 2. crop_name exists in the Crop table
+   * 3. The combination of land_name and crop_name must come from the imported data
+   * 
+   * Multiple plantings of the same land-crop combination are possible (e.g., different dates)
+   * The 'planted' column (number of trees) is the minimum required data to confirm a planting occurred
+   * 
+   * DO NOT modify this relationship without understanding these dependencies:
+   * - Planted table rows are derived from actual import data, not all possible combinations
+   * - Each land_name must validate against Land table
+   * - Each crop_name must validate against Crop table
+   * - The number of trees planted is required to confirm planting event
+   */
+
   // Initialize preview data with empty rows
   let previewData = {
     Land: [] as Record<string, string>[],
     Crop: [] as Record<string, string>[],
     Planted: [] as Record<string, string>[],
   };
+
+  // Track actual land-crop combinations from import data
+  let importedPlantings: Array<{land_name: string, crop_name: string}> = [];
 
   // Database fields from both tables
   let databaseFields = {
@@ -249,8 +271,12 @@
 
     // test
 
-    // Update preview data for both tables
+    // Update preview data for all tables
     if (csvData) {
+      // Reset imported plantings
+      importedPlantings = [];
+
+      // First update Land and Crop tables
       ['Land', 'Crop'].forEach((table) => {
         // Get all mappings for this table
         const tableMappings = new Map();
@@ -296,7 +322,36 @@
 
           return previewRow;
         });
+
+        // Track valid land-crop combinations from import data
+        if (table === 'Land' || table === 'Crop') {
+          const landNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Land.land_name')?.[0];
+          const cropNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Crop.crop_name')?.[0];
+          
+          if (landNameMapping && cropNameMapping) {
+            // Get all valid land-crop combinations from import data
+            importedPlantings = csvData
+              .map(row => ({
+                land_name: row[landNameMapping],
+                crop_name: row[cropNameMapping]
+              }))
+              .filter(planting => 
+                // Ensure both land_name and crop_name exist and are valid
+                planting.land_name && 
+                planting.crop_name && 
+                previewData.Land.some(land => land.land_name === planting.land_name) &&
+                previewData.Crop.some(crop => crop.crop_name === planting.crop_name)
+              );
+          }
+        }
       });
+
+      // Update Planted table preview with actual planting combinations
+      previewData.Planted = importedPlantings.map(planting => ({
+        ...planting,
+        planted: '',
+        planting_date: ''
+      }));
 
       // Force reactivity
       previewData = { ...previewData };
@@ -571,6 +626,21 @@
     --column-width: 6rem;
   }
 
+  select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
   .dragging {
     opacity: 0.5;
     cursor: move;
@@ -590,7 +660,9 @@
   }
 
   /* Override any default margins */
-  h2, h3, h4 {
+  h2,
+  h3,
+  h4 {
     margin: 0 !important;
     padding: 0 !important;
     line-height: 1.2 !important;
