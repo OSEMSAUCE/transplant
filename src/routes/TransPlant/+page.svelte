@@ -16,16 +16,16 @@
 
   /**
    * CRITICAL RELATIONSHIP: Land-Crop-Planted Tables
-   * 
+   *
    * The Planted table represents actual planting events from the imported data.
    * Each row in the Planted table must correspond to a real planting event where:
    * 1. land_name exists in the Land table
    * 2. crop_name exists in the Crop table
    * 3. The combination of land_name and crop_name must come from the imported data
-   * 
+   *
    * Multiple plantings of the same land-crop combination are possible (e.g., different dates)
    * The 'planted' column (number of trees) is the minimum required data to confirm a planting occurred
-   * 
+   *
    * DO NOT modify this relationship without understanding these dependencies:
    * - Planted table rows are derived from actual import data, not all possible combinations
    * - Each land_name must validate against Land table
@@ -41,7 +41,7 @@
   };
 
   // Track actual land-crop combinations from import data
-  let importedPlantings: Array<{land_name: string, crop_name: string}> = [];
+  let importedPlantings: Array<{ land_name: string; crop_name: string }> = [];
 
   // Database fields from both tables
   let databaseFields = {
@@ -325,31 +325,36 @@
 
         // Track valid land-crop combinations and their planting data from import data
         if (table === 'Land' || table === 'Crop') {
-          const landNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Land.land_name')?.[0];
-          const cropNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Crop.crop_name')?.[0];
-          
+          const landNameMapping = Object.entries(mappings).find(
+            ([_, val]) => val === 'Land.land_name'
+          )?.[0];
+          const cropNameMapping = Object.entries(mappings).find(
+            ([_, val]) => val === 'Crop.crop_name'
+          )?.[0];
+
           if (landNameMapping && cropNameMapping) {
             // Get all valid land-crop combinations from import data
             importedPlantings = csvData
-              .map(row => ({
+              .map((row) => ({
                 land_name: row[landNameMapping],
-                crop_name: row[cropNameMapping]
+                crop_name: row[cropNameMapping],
               }))
-              .filter(planting => 
-                // Ensure both land_name and crop_name exist and are valid
-                planting.land_name && 
-                planting.crop_name && 
-                previewData.Land.some(land => land.land_name === planting.land_name) &&
-                previewData.Crop.some(crop => crop.crop_name === planting.crop_name)
+              .filter(
+                (planting) =>
+                  // Ensure both land_name and crop_name exist and are valid
+                  planting.land_name &&
+                  planting.crop_name &&
+                  previewData.Land.some((land) => land.land_name === planting.land_name) &&
+                  previewData.Crop.some((crop) => crop.crop_name === planting.crop_name)
               );
 
             // Update Planted table preview with actual planting combinations
-            previewData.Planted = importedPlantings.map(planting => ({
+            previewData.Planted = importedPlantings.map((planting) => ({
               land_name: planting.land_name,
               crop_name: planting.crop_name,
               planted: '',
               planted_valid: true,
-              planting_date: ''
+              planting_date: '',
             }));
           }
         }
@@ -396,16 +401,21 @@
         // For the planted field, we want to map the number values from the import table
         if (csvData) {
           // Get the land_name and crop_name mappings
-          const landNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Land.land_name')?.[0];
-          const cropNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Crop.crop_name')?.[0];
+          const landNameMapping = Object.entries(mappings).find(
+            ([_, val]) => val === 'Land.land_name'
+          )?.[0];
+          const cropNameMapping = Object.entries(mappings).find(
+            ([_, val]) => val === 'Crop.crop_name'
+          )?.[0];
 
           if (landNameMapping && cropNameMapping) {
             // Map the planted values to the corresponding land-crop combinations
-            previewData.Planted = previewData.Planted.map(plantedRow => {
+            previewData.Planted = previewData.Planted.map((plantedRow) => {
               // Find the matching row in csvData for this land-crop combination
-              const matchingRow = csvData.find(row => 
-                row[landNameMapping] === plantedRow.land_name && 
-                row[cropNameMapping] === plantedRow.crop_name
+              const matchingRow = csvData.find(
+                (row) =>
+                  row[landNameMapping] === plantedRow.land_name &&
+                  row[cropNameMapping] === plantedRow.crop_name
               );
 
               if (matchingRow) {
@@ -414,7 +424,7 @@
                 return {
                   ...plantedRow,
                   planted: valid && value > 0 ? value : rawValue,
-                  planted_valid: valid && value > 0
+                  planted_valid: valid && value > 0,
                 };
               }
               return plantedRow;
@@ -422,7 +432,7 @@
 
             // Store the mapping for the planted field
             mappings[csvColumn] = `${table}.${field}`;
-            
+
             // Force reactivity
             previewData = { ...previewData };
           }
@@ -460,35 +470,9 @@
   }
 
   export let data;
-
-  // Add state variables for dropdown
-  let showDropdown = false;
-  let autoMapFields = true;
-  let strictValidation = false;
 </script>
 
 <div class="csv-mapper">
-  <header class="land-import-header">
-    <h2>Land Parcel Import</h2>
-    <div class="header-controls">
-      <div class="dropdown">
-        <button class="dropdown-toggle" on:click={() => (showDropdown = !showDropdown)}>
-          Mapping Options ▾
-        </button>
-        {#if showDropdown}
-          <div class="dropdown-menu">
-            <label
-              ><input type="checkbox" bind:checked={autoMapFields} /> Auto-map matching fields</label
-            >
-            <label
-              ><input type="checkbox" bind:checked={strictValidation} /> Enable strict validation</label
-            >
-          </div>
-        {/if}
-      </div>
-    </div>
-  </header>
-
   <main class="container">
     {#if errorMessage}
       <div class="error-message">
@@ -504,7 +488,6 @@
     {:else}
       <div class="table-container">
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
-
         <div class="overflow-x-auto" style="min-width: min-content;">
           <!-- Mapping Dropdowns Row -->
           <div
@@ -512,7 +495,7 @@
             style="grid-template-columns: repeat({csvColumns.length}, minmax(200px, 1fr)); gap: 0; margin-bottom: 4px;"
           >
             {#each csvColumns as csvColumn}
-              <div class="p-2 bg-gray-800 text-white">
+              <div class="p-2 bg-gray-800 text-white" style="width: var(--column-width);">
                 <select
                   bind:value={mappings[csvColumn]}
                   class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
@@ -574,7 +557,7 @@
       </div>
 
       <div class="database-tables">
-        {#each ['Land', 'Crop', 'Planted'] as tableName}
+        {#each ['Planted', 'Land', 'Crop'] as tableName}
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
@@ -666,11 +649,11 @@
 <!-- CSS variable, control all widths! -->
 <style>
   :root {
-    --column-width: 6rem;
+    --column-width: 200px;
   }
 
   select {
-    width: 100%;
+    width: var(--column-width);
     padding: 4px 8px;
     border: 1px solid #e5e7eb;
     border-radius: 4px;
@@ -698,19 +681,6 @@
     transition: all 0.2s ease;
   }
 
-  .csv-mapper {
-    padding: 0.25rem;
-  }
-
-  /* Override any default margins */
-  h2,
-  h3,
-  h4 {
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.2 !important;
-  }
-
   .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -732,7 +702,7 @@
   }
 
   table {
-    width: 100%;
+    width: auto;
     border-collapse: collapse;
     table-layout: fixed;
   }
@@ -804,15 +774,16 @@
   }
 
   .table-preview table {
-    width: 100%;
+    width: auto;
     border-collapse: collapse;
     table-layout: fixed;
   }
 
   .table-preview th,
   .table-preview td {
-    /* width: var(--column-width);
-    min-width: var(--column-width); */
+    width: var(--column-width);
+    min-width: var(--column-width);
+    max-width: var(--column-width);
     padding: 0.5rem;
     text-align: left;
     border: 1px solid #ddd;
