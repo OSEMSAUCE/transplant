@@ -596,7 +596,7 @@
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
-              <table>
+              <table style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important; color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;" on:dragover|preventDefault={tableName !== 'Planted' ? null : handleDragOver} on:drop|preventDefault={tableName !== 'Planted' ? null : handleDrop}>
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
