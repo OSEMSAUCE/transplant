@@ -399,6 +399,7 @@
   // Add these functions for drag and drop
   function handleDragStart(event: DragEvent, csvColumn: string) {
     if (event.dataTransfer) {
+      console.log(`Starting drag for column: ${csvColumn}`);
       event.dataTransfer.setData('text/plain', csvColumn);
       event.dataTransfer.effectAllowed = 'move';
       const target = /** @type {HTMLElement} */ (event.target);
@@ -408,7 +409,9 @@
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
-    event.dataTransfer!.dropEffect = 'move';
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
     const target = /** @type {HTMLElement} */ (event.target);
     target.classList.add('drag-over');
   }
@@ -420,50 +423,70 @@
 
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
+    // Immediately return if not Planted table
+    if (table !== 'Planted') {
+      console.log('Dropping only allowed on Planted table');
+      return;
+    }
+    
     const target = /** @type {HTMLElement} */ (event.target);
     target.classList.remove('drag-over');
 
     const csvColumn = event.dataTransfer?.getData('text/plain');
-    if (csvColumn) {
-      if (table === 'Planted' && field === 'planted') {
-        // For the planted field, we want to map the number values from the import table
-        if (csvData) {
-          // Get the land_name and crop_name mappings
-          const landNameMapping = Object.entries(mappings).find(
-            ([_, val]) => val === 'Land.land_name'
-          )?.[0];
-          const cropNameMapping = Object.entries(mappings).find(
-            ([_, val]) => val === 'Crop.crop_name'
-          )?.[0];
+    console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
+    
+    if (csvColumn && csvData) {
+      console.log('Updating mappings and preview data');
+      mappings[csvColumn] = `${table}.${field}`;
+      console.log('Updated mappings:', mappings);
 
-          if (landNameMapping && cropNameMapping) {
-            // Map the planted values to the corresponding land-crop combinations
-            previewData.Planted = previewData.Planted.map((plantedRow) => {
-              // Find the matching row in csvData for this land-crop combination
-              const matchingRow = csvData.find(
-                (row) =>
-                  row[landNameMapping] === plantedRow.land_name &&
-                  row[cropNameMapping] === plantedRow.crop_name
-              );
+      if (table === 'Planted') {
+        // Update preview data based on the new mapping
+        previewData.Planted = csvData.slice(0, 5).map(row => {
+          const previewRow = { ...previewData.Planted[0] || {} };
+          previewRow[field] = row[csvColumn];
+          return previewRow;
+        });
+        
+        // Force reactivity
+        previewData = { ...previewData };
+        console.log('Updated preview data:', previewData);
 
-              if (matchingRow) {
-                const rawValue = matchingRow[csvColumn];
-                const { valid, value } = validateField(rawValue, 'number');
-                return {
-                  ...plantedRow,
-                  planted: valid && value > 0 ? value : rawValue,
-                  planted_valid: valid && value > 0,
-                };
-              }
-              return plantedRow;
-            });
+        // Get the land_name and crop_name mappings
+        const landNameMapping = Object.entries(mappings).find(
+          ([_, val]) => val === 'Land.land_name'
+        )?.[0];
+        const cropNameMapping = Object.entries(mappings).find(
+          ([_, val]) => val === 'Crop.crop_name'
+        )?.[0];
 
-            // Store the mapping for the planted field
-            mappings[csvColumn] = `${table}.${field}`;
+        if (landNameMapping && cropNameMapping) {
+          // Map the planted values to the corresponding land-crop combinations
+          previewData.Planted = previewData.Planted.map((plantedRow) => {
+            // Find the matching row in csvData for this land-crop combination
+            const matchingRow = csvData.find(
+              (row) =>
+                row[landNameMapping] === plantedRow.land_name &&
+                row[cropNameMapping] === plantedRow.crop_name
+            );
 
-            // Force reactivity
-            previewData = { ...previewData };
-          }
+            if (matchingRow) {
+              const rawValue = matchingRow[csvColumn];
+              const { valid, value } = validateField(rawValue, 'number');
+              return {
+                ...plantedRow,
+                planted: valid && value > 0 ? value : rawValue,
+                planted_valid: valid && value > 0,
+              };
+            }
+            return plantedRow;
+          });
+
+          // Store the mapping for the planted field
+          mappings[csvColumn] = `${table}.${field}`;
+
+          // Force reactivity
+          previewData = { ...previewData };
         }
       } else {
         handleColumnMap(csvColumn, `${table}.${field}`);
@@ -596,17 +619,19 @@
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
-              <table style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important; color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;" on:dragover|preventDefault={tableName !== 'Planted' ? null : handleDragOver} on:drop|preventDefault={tableName !== 'Planted' ? null : handleDrop}>
+              <table style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important; color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;">
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
                       <th
-                        draggable="true"
-                        on:dragstart={(e) => handleMappingDragStart(e, tableName, header)}
-                        on:dragend={(e) => handleMappingDragEnd(e, tableName, header)}
-                        on:dragover={handleDragOver}
-                        on:drop={(e) => handleDrop(e, tableName, header)}
-                        class="droppable-column hover:bg-blue-50"
+                        style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;
+                               color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
+                        draggable={tableName === 'Planted'}
+                        on:dragstart={tableName === 'Planted' ? (e) => handleMappingDragStart(e, tableName, header) : null}
+                        on:dragend={tableName === 'Planted' ? (e) => handleMappingDragEnd(e, tableName, header) : null}
+                        on:dragover={tableName === 'Planted' ? handleDragOver : null}
+                        on:drop={tableName === 'Planted' ? (e) => handleDrop(e, tableName, header) : (e) => e.preventDefault()}
+                        class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
                       >
                         {header}
                       </th>
@@ -615,15 +640,17 @@
                 </thead>
                 <tbody>
                   {#each previewData[tableName] as row, rowIndex}
-                    <tr>
+                    <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;">
                       {#each tableHeaders[tableName] || [] as header}
                         <td
-                          draggable="true"
-                          on:dragstart={(e) => handleMappingDragStart(e, tableName, header)}
-                          on:dragend={(e) => handleMappingDragEnd(e, tableName, header)}
-                          on:dragover={handleDragOver}
-                          on:drop={(e) => handleDrop(e, tableName, header)}
-                          class="droppable-column hover:bg-blue-50"
+                          style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;
+                                 color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
+                          draggable={tableName === 'Planted'}
+                          on:dragstart={tableName === 'Planted' ? (e) => handleMappingDragStart(e, tableName, header) : null}
+                          on:dragend={tableName === 'Planted' ? (e) => handleMappingDragEnd(e, tableName, header) : null}
+                          on:dragover={tableName === 'Planted' ? handleDragOver : null}
+                          on:drop={tableName === 'Planted' ? (e) => handleDrop(e, tableName, header) : (e) => e.preventDefault()}
+                          class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
                           class:invalid={row[`${header}_valid`] === false}
                           data-row-index={rowIndex}
                         >
