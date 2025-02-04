@@ -43,11 +43,11 @@
   // Track actual land-crop combinations from import data
   let importedPlantings: Array<{ land_name: string; crop_name: string }> = [];
 
-  // Database fields from both tables
+  // Database fields for all tables
   let databaseFields = {
-    Land: [],
-    Crop: [],
-    Planted: [],
+    Land: ['land_name', 'hectares', 'preparation_id', 'gis_area'],
+    Crop: ['crop_name', 'species_id', 'seedlot', 'source'],
+    Planted: ['land_name', 'crop_name', 'planted', 'planting_date'],
   };
 
   // Add these type definitions at the top of the script
@@ -266,19 +266,48 @@
       });
     }
 
-    // Set the new mapping
-    mappings[csvColumn] = value;
-
-    // test
+    // Handle special cases for land_name and crop_name
+    const [targetTable, field] = value.split('.');
+    if (
+      (targetTable === 'Land' && field === 'land_name') ||
+      (targetTable === 'Crop' && field === 'crop_name')
+    ) {
+      // Map to both the original table and Planted table
+      const baseCol = csvColumn.replace('_planted', '');
+      mappings[`${baseCol}_planted`] = `Planted.${field}`;
+      mappings[baseCol] = value; // Keep the original table mapping
+    } else {
+      // Set the new mapping for other fields
+      mappings[csvColumn] = value;
+    }
 
     // Update preview data for all tables
     if (csvData) {
       // Reset imported plantings
       importedPlantings = [];
 
-      // First update Land and Crop tables
+      // Update Planted table first
+      const plantedMappings = new Map();
+      Object.entries(mappings).forEach(([col, mapping]) => {
+        if (mapping) {
+          const [mapTable, field] = mapping.split('.');
+          if (mapTable === 'Planted') {
+            plantedMappings.set(field, col);
+          }
+        }
+      });
+
+      // Create preview rows for Planted table
+      previewData.Planted = csvData.slice(0, 5).map((row) => {
+        const previewRow = {};
+        plantedMappings.forEach((csvCol, field) => {
+          previewRow[field] = row[csvCol] || '';
+        });
+        return previewRow;
+      });
+
+      // Then update Land and Crop tables
       ['Land', 'Crop'].forEach((table) => {
-        // Get all mappings for this table
         const tableMappings = new Map();
         Object.entries(mappings).forEach(([col, mapping]) => {
           if (mapping) {
@@ -288,7 +317,6 @@
             }
           }
         });
-        // test2
 
         // Create preview rows with mapped and validated data
         previewData[table] = csvData.slice(0, 5).map((row) => {
@@ -492,19 +520,26 @@
           <!-- Mapping Dropdowns Row -->
           <div
             class="grid"
-            style="grid-template-columns: repeat({csvColumns.length}, minmax(200px, 1fr)); gap: 0; margin-bottom: 4px;"
+            style="grid-template-columns: repeat({csvColumns.length}, minmax(12.5rem, 1fr)); gap: 0; margin-bottom: 0.25rem;"
           >
             {#each csvColumns as csvColumn}
               <div class="p-2 bg-gray-800 text-white" style="width: var(--column-width);">
                 <select
                   bind:value={mappings[csvColumn]}
                   class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
-                  style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 8px center; background-size: 16px; padding-right: 24px;"
+                  style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 1.5rem;"
                 >
                   <option value="">Select target field</option>
-                  <optgroup label="Land Data">
+                  <optgroup label="Planting Data (Main Interface)">
+                    {#each databaseFields.Planted as field}
+                      <option value={`Planted.${field}`}>{field}</option>
+                    {/each}
+                  </optgroup>
+                  <optgroup label="Additional Fields">
                     {#each databaseFields.Land as field}
-                      <option value={`Land.${field}`}>{field}</option>
+                      {#if field !== 'land_name'}
+                        <option value={`Land.${field}`}>{field}</option>
+                      {/if}
                     {/each}
                   </optgroup>
                   <optgroup label="Crop Data">
@@ -557,7 +592,7 @@
       </div>
 
       <div class="database-tables">
-        {#each ['Planted', 'Land', 'Crop'] as tableName}
+        {#each ['Planted', 'Crop', 'Land'] as tableName}
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
@@ -649,16 +684,16 @@
 <!-- CSS variable, control all widths! -->
 <style>
   :root {
-    --column-width: 200px;
+    --column-width: 12.5rem; /* 200px equivalent */
   }
 
   select {
     width: var(--column-width);
-    padding: 4px 8px;
+    padding: 0.25rem 0.5rem;
     border: 1px solid #e5e7eb;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     background-color: white;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   select:focus {
@@ -688,7 +723,7 @@
 
   .file-upload {
     border: 2px dashed #ccc;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     padding: 0.5rem;
     text-align: center;
     margin: 0.5rem 0;
@@ -733,7 +768,7 @@
     min-width: var(--column-width);
     padding: 0.5rem;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     background-color: var(--background-color, #1e1e1e);
     color: var(--text-color, #ffffff);
   }
@@ -747,7 +782,7 @@
     color: #d32f2f;
     padding: 1rem;
     margin: 1rem 0;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     border: 1px solid #ffcdd2;
   }
 
@@ -847,7 +882,7 @@
     padding: 0.5rem 1rem;
     background: var(--color-button-bg);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     cursor: pointer;
   }
 
@@ -878,7 +913,7 @@
     padding: 0.25rem;
     font-size: 0.8em;
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     background: var(--color-surface-2);
   }
 
