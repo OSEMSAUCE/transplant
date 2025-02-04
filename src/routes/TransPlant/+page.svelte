@@ -323,7 +323,7 @@
           return previewRow;
         });
 
-        // Track valid land-crop combinations from import data
+        // Track valid land-crop combinations and their planting data from import data
         if (table === 'Land' || table === 'Crop') {
           const landNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Land.land_name')?.[0];
           const cropNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Crop.crop_name')?.[0];
@@ -342,16 +342,21 @@
                 previewData.Land.some(land => land.land_name === planting.land_name) &&
                 previewData.Crop.some(crop => crop.crop_name === planting.crop_name)
               );
+
+            // Update Planted table preview with actual planting combinations
+            previewData.Planted = importedPlantings.map(planting => ({
+              land_name: planting.land_name,
+              crop_name: planting.crop_name,
+              planted: '',
+              planted_valid: true,
+              planting_date: ''
+            }));
           }
         }
       });
 
-      // Update Planted table preview with actual planting combinations
-      previewData.Planted = importedPlantings.map(planting => ({
-        ...planting,
-        planted: '',
-        planting_date: ''
-      }));
+      // Force reactivity for preview data
+      previewData = { ...previewData };
 
       // Force reactivity
       previewData = { ...previewData };
@@ -387,7 +392,44 @@
 
     const csvColumn = event.dataTransfer?.getData('text/plain');
     if (csvColumn) {
-      handleColumnMap(csvColumn, `${table}.${field}`);
+      if (table === 'Planted' && field === 'planted') {
+        // For the planted field, we want to map the number values from the import table
+        if (csvData) {
+          // Get the land_name and crop_name mappings
+          const landNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Land.land_name')?.[0];
+          const cropNameMapping = Object.entries(mappings).find(([_, val]) => val === 'Crop.crop_name')?.[0];
+
+          if (landNameMapping && cropNameMapping) {
+            // Map the planted values to the corresponding land-crop combinations
+            previewData.Planted = previewData.Planted.map(plantedRow => {
+              // Find the matching row in csvData for this land-crop combination
+              const matchingRow = csvData.find(row => 
+                row[landNameMapping] === plantedRow.land_name && 
+                row[cropNameMapping] === plantedRow.crop_name
+              );
+
+              if (matchingRow) {
+                const rawValue = matchingRow[csvColumn];
+                const { valid, value } = validateField(rawValue, 'number');
+                return {
+                  ...plantedRow,
+                  planted: valid && value > 0 ? value : rawValue,
+                  planted_valid: valid && value > 0
+                };
+              }
+              return plantedRow;
+            });
+
+            // Store the mapping for the planted field
+            mappings[csvColumn] = `${table}.${field}`;
+            
+            // Force reactivity
+            previewData = { ...previewData };
+          }
+        }
+      } else {
+        handleColumnMap(csvColumn, `${table}.${field}`);
+      }
     }
   }
 
@@ -554,7 +596,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {#each previewData[tableName] as row}
+                  {#each previewData[tableName] as row, rowIndex}
                     <tr>
                       {#each tableHeaders[tableName] || [] as header}
                         <td
@@ -565,6 +607,7 @@
                           on:drop={(e) => handleDrop(e, tableName, header)}
                           class="droppable-column hover:bg-blue-50"
                           class:invalid={row[`${header}_valid`] === false}
+                          data-row-index={rowIndex}
                         >
                           {row[header] || ''}
                         </td>
