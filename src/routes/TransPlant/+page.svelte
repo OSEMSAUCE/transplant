@@ -89,7 +89,7 @@
 
       case 'string':
         return { valid: true, value: value.trim() };
-        
+
       case 'date':
         const date = new Date(value);
         return { valid: !isNaN(date.getTime()), value: date.toISOString().split('T')[0] };
@@ -164,7 +164,6 @@
         Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
         Planted: ['land_name', 'crop_name', 'planted', 'planting_date'],
       };
-/
 
       // Update database fields
       databaseFields = {
@@ -189,13 +188,12 @@
       errorMessage = 'Error fetching table headers';
     }
   }
-// test
-// test
-// test
-// test
+  // test
+  // test
+  // test
+  // test
 
-
-onMount(() => {
+  onMount(() => {
     fetchTableHeaders();
 
     // Auto-load mock data in development
@@ -236,7 +234,6 @@ onMount(() => {
   }
   // test
 
-
   function handleColumnMap(csvColumn: string, value: string) {
     // Clear any existing mappings to this destination
     if (value) {
@@ -265,7 +262,7 @@ onMount(() => {
             }
           }
         });
-// test2
+        // test2
 
         // Create preview rows with mapped and validated data
         previewData[table] = csvData.slice(0, 5).map((row) => {
@@ -409,7 +406,7 @@ onMount(() => {
       </div>
     {:else}
       <div class="table-container">
-        <h2 class="text-2xl font-bold mb-4">Import Table</h2>
+        <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
 
         <div class="overflow-x-auto" style="min-width: min-content;">
           <!-- Mapping Dropdowns Row -->
@@ -482,7 +479,7 @@ onMount(() => {
       <div class="database-tables">
         {#each ['Land', 'Crop', 'Planted'] as tableName}
           <div class="table-info">
-            <h2 class="text-2xl font-bold mb-4">{tableName} Table</h2>
+            <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
               <table>
                 <thead>
@@ -589,7 +586,14 @@ onMount(() => {
   }
 
   .csv-mapper {
-    padding: 2rem;
+    padding: 0.25rem;
+  }
+
+  /* Override any default margins */
+  h2, h3, h4 {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
   }
 
   .container {
@@ -600,14 +604,15 @@ onMount(() => {
   .file-upload {
     border: 2px dashed #ccc;
     border-radius: 4px;
-    padding: 2rem;
+    padding: 0.5rem;
     text-align: center;
-    margin: 2rem 0;
+    margin: 0.5rem 0;
   }
 
   .table-container {
     overflow-x: auto;
-    margin-top: 2rem;
+    margin: 0 !important;
+    padding: 0 !important;
     width: 100%;
   }
 
@@ -621,7 +626,7 @@ onMount(() => {
   td {
     /* width: var(--column-width); */
     min-width: var(--column-width);
-    padding: 0.5rem;
+    padding: 0.25rem;
     text-align: left;
     border: 1px solid #ddd;
     overflow: hidden;
@@ -662,11 +667,13 @@ onMount(() => {
   }
 
   .database-tables {
-    margin-top: 3rem;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .table-info {
-    margin-top: 2rem;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .table-info h3 {
@@ -677,7 +684,8 @@ onMount(() => {
 
   .table-preview {
     overflow-x: auto;
-    margin-top: 1rem;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .table-preview table {
@@ -739,7 +747,7 @@ onMount(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 0.5rem;
     background: var(--color-surface-1);
     border-bottom: 1px solid var(--color-border);
   }
