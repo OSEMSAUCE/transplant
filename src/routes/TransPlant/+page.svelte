@@ -859,12 +859,13 @@
                   bind:value={mappings[csvColumn]}
                   class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
                   style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 1.5rem;"
+                  data-mapped={mappings[csvColumn]}
                   on:change={() => {
                     console.log(`Dropdown changed for ${csvColumn}`);
                     reorderColumns();
                   }}
                 >
-                  <option value="">Select target field</option>
+                  <option value="">--</option>
                   <optgroup label="Planting Data (Main Interface)">
                     {#each databaseFields.Planted as field}
                       <option value={`Planted.${field}`}>{field}</option>
@@ -889,6 +890,7 @@
                     style="width: var(--column-width); flex: 0 0 var(--column-width);"
                     draggable="true"
                     on:dragstart={(e) => handleDragStart(e, csvColumn)}
+                    data-mapped={mappings[csvColumn]}
                   >
                     {csvColumn}
                   </th>
@@ -904,6 +906,7 @@
                       on:dragstart={(e) => handleDragStart(e, column)}
                       class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
                       style="width: var(--column-width);"
+                      data-mapped={mappings[column]}
                     >
                       {row[column] || ''}
                     </td>
@@ -947,6 +950,9 @@
                           ? (e) => handleDrop(e, tableName, header)
                           : (e) => e.preventDefault()}
                         class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
+                        data-table={tableName}
+                        data-required={['land_name', 'crop_name', 'planted', 'gps_lat', 'gps_lon'].includes(header)}
+                        data-mapped={Object.entries(mappings).some(([col, mapping]) => mapping === `${tableName}.${header}`)}
                       >
                         {header}
                       </th>
@@ -1041,6 +1047,8 @@
     --column-width: 12.5rem; /* 200px equivalent */
     --row-height: 1.5rem; /* Even more compact row height */
     --cell-padding: 0.25rem;
+    --required-border: #ff6b6b;
+    --mapped-border: #00ff00;
   }
 
   /* Table layout */
@@ -1150,6 +1158,32 @@
     background-color: var(--background-color, #1e1e1e);
     color: var(--text-color, #ffffff);
     vertical-align: middle;
+    box-sizing: border-box;
+  }
+
+  /* Required fields - only in Planted table */
+  .table-preview:has(th[data-table="Planted"]) th[data-required="true"] {
+    border: 2px solid var(--required-border) !important;
+  }
+
+  /* Mapped fields - only in Import and Planted tables */
+  .table-container th[data-mapped="true"],
+  .table-container td[data-mapped="true"],
+  .table-preview:has(th[data-table="Planted"]) th[data-mapped="true"] {
+    border: 2px solid var(--mapped-border) !important;
+  }
+
+  /* Dropdown base style */
+  select {
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    margin: -1px;
+    padding: 0 1.5rem 0 0.25rem;
+  }
+
+  /* Mapped dropdowns */
+  select[data-mapped]:not([data-mapped=""]) {
+    border: 2px solid var(--mapped-border) !important;
   }
 
   .mapping-row th {
