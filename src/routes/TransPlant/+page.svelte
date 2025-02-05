@@ -502,6 +502,45 @@
       mappings[csvColumn] = `${table}.${field}`;
       console.log('Updated mappings:', mappings);
 
+      // Get unique land names and their GPS coordinates
+      const uniqueLands = new Map();
+      const landNameCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.land_name')?.[0];
+      const gpsLatCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.gps_lat')?.[0];
+      const gpsLonCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.gps_lon')?.[0];
+
+      // Get unique crop names
+      const uniqueCrops = new Map();
+      const cropNameCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.crop_name')?.[0];
+
+      if (landNameCol) {
+        csvData.forEach(row => {
+          const landName = row[landNameCol];
+          if (!uniqueLands.has(landName)) {
+            const landEntry = { land_name: landName };
+            if (gpsLatCol) {
+              landEntry.gps_lat = row[gpsLatCol];
+            }
+            if (gpsLonCol) {
+              landEntry.gps_lon = row[gpsLonCol];
+            }
+            uniqueLands.set(landName, landEntry);
+          }
+        });
+        // Update Land table with unique lands and their GPS coordinates
+        previewData.Land = Array.from(uniqueLands.values());
+      }
+
+      if (cropNameCol) {
+        csvData.forEach(row => {
+          const cropName = row[cropNameCol];
+          if (!uniqueCrops.has(cropName)) {
+            uniqueCrops.set(cropName, { crop_name: cropName });
+          }
+        });
+        // Update Crop table with unique crops
+        previewData.Crop = Array.from(uniqueCrops.values());
+      }
+
       // Update all tables based on current mappings
       ['Planted', 'Land', 'Crop'].forEach(tableName => {
         // Get mappings for this table
@@ -516,7 +555,7 @@
         });
 
         // Create preview rows using the current mappings
-        if (tableMappings.size > 0) {
+        if (tableMappings.size > 0 && tableName !== 'Land') { // Skip Land table as we handle it separately
           previewData[tableName] = csvData.slice(0, 5).map((row, index) => {
             const previewRow = {};
             tableMappings.forEach((csvCol, field) => {
