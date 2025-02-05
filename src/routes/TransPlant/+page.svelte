@@ -110,6 +110,7 @@
   let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
   let orderedCsvColumns: string[] = [];
+  let excludedColumns: Set<string> = new Set();
 
   // Initialize preview data with empty rows and all fields
   let previewData = {
@@ -395,6 +396,7 @@
 
     // Create arrays to hold columns in their new order
     const newOrder = [];
+    const excludedOrder = [];
     const processedColumns = new Set();
 
     // Create a map of target positions based on Planted table order
@@ -403,30 +405,41 @@
       fieldPositions[field] = index;
     });
 
-    // Map columns to their target positions
+    // Map non-excluded columns to their target positions
     const columnPositions = new Map();
     csvColumns.forEach((column) => {
-      const mapping = mappings[column];
-      if (mapping?.startsWith('Planted.')) {
-        const field = mapping.split('.')[1];
-        columnPositions.set(column, fieldPositions[field]);
+      if (!excludedColumns.has(column)) {
+        const mapping = mappings[column];
+        if (mapping?.startsWith('Planted.')) {
+          const field = mapping.split('.')[1];
+          columnPositions.set(column, fieldPositions[field]);
+        }
       }
     });
 
-    // Sort mapped columns by their target position in Planted table
+    // Sort non-excluded mapped columns by their target position in Planted table
     const mappedColumns = [...columnPositions.entries()]
       .sort(([, posA], [, posB]) => posA - posB)
       .map(([column]) => column);
 
-    // Get unmapped columns (keeping their original order)
-    const unmappedColumns = csvColumns.filter((column) => !mappings[column]);
+    // Get non-excluded unmapped columns (keeping their original order)
+    const unmappedColumns = csvColumns.filter(
+      (column) => !mappings[column] && !excludedColumns.has(column)
+    );
 
-    // Build final order
+    // Get excluded columns (keeping their original order)
+    const excludedCols = csvColumns.filter(
+      (column) => excludedColumns.has(column)
+    );
+
+    // Build final order: mapped -> unmapped -> excluded
     newOrder.push(...mappedColumns);
     newOrder.push(...unmappedColumns);
+    newOrder.push(...excludedCols);
 
-    console.log('Mapped columns in order:', [...newOrder]);
+    console.log('Mapped columns in order:', [...mappedColumns]);
     console.log('Unmapped columns:', unmappedColumns);
+    console.log('Excluded columns:', excludedCols);
 
     console.log('Proposed new order:', newOrder);
 
@@ -942,29 +955,49 @@
             style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
           >
             {#each orderedCsvColumns as csvColumn, i}
-              <div class="p-2 bg-gray-800 text-white" style="width: 100%;">
-                <select
-                  bind:value={mappings[csvColumn]}
-                  class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
-                  style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 1.5rem;"
-                  data-mapped={mappings[csvColumn]}
-                  on:change={() => {
-                    console.log(`Dropdown changed for ${csvColumn}`);
-                    reorderColumns();
-                  }}
-                >
-                  <option value="">--</option>
-                  <optgroup label="Planting Data (Main Interface)">
-                    {#each databaseFields.Planted as field}
-                      <option value={`Planted.${field}`}>{field}</option>
-                    {/each}
-                  </optgroup>
-                  <optgroup label="Crop Data">
-                    {#each databaseFields.Crop as field}
-                      <option value={`Crop.${field}`}>{field}</option>
-                    {/each}
-                  </optgroup>
-                </select>
+              <div class="p-2 bg-gray-800 text-white" style="width: 100%;" class:excluded={excludedColumns.has(csvColumn)}>
+                <div class="column-controls">
+                  <div class="toggle-row">
+                    <label class="exclude-toggle">
+                      <input
+                        type="checkbox"
+                        checked={excludedColumns.has(csvColumn)}
+                        on:change={(e) => {
+                          if (e.target.checked) {
+                            excludedColumns.add(csvColumn);
+                          } else {
+                            excludedColumns.delete(csvColumn);
+                          }
+                          excludedColumns = excludedColumns; // Trigger reactivity
+                          reorderColumns();
+                        }}
+                      />
+                      <span class="toggle-label">X</span>
+                    </label>
+                  </div>
+                  <select
+                    bind:value={mappings[csvColumn]}
+                    class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
+                    style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 1.5rem;"
+                    data-mapped={mappings[csvColumn]}
+                    on:change={() => {
+                      console.log(`Dropdown changed for ${csvColumn}`);
+                      reorderColumns();
+                    }}
+                  >
+                    <option value="">--</option>
+                    <optgroup label="Planting Data (Main Interface)">
+                      {#each databaseFields.Planted as field}
+                        <option value={`Planted.${field}`}>{field}</option>
+                      {/each}
+                    </optgroup>
+                    <optgroup label="Crop Data">
+                      {#each databaseFields.Crop as field}
+                        <option value={`Crop.${field}`}>{field}</option>
+                      {/each}
+                    </optgroup>
+                  </select>
+                </div>
               </div>
             {/each}
           </div>
@@ -1151,6 +1184,7 @@
     --cell-padding: 0.25rem;
     --required-border: #ff6b6b;
     --mapped-border: #4fff4f;
+    --excluded-bg: #4a4a4a;
   }
 
   /* Table layout */
@@ -1196,6 +1230,41 @@
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  .column-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .toggle-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .exclude-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .toggle-label {
+    margin-left: 0.25rem;
+    font-size: 0.75rem;
+    color: #ccc;
+  }
+
+  .excluded {
+    background-color: var(--excluded-bg) !important;
+    opacity: 0.8;
+  }
+
+  input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
   }
 
   .dragging {
