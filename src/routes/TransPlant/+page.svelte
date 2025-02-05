@@ -45,7 +45,7 @@
       isInteractive: true,
       fields: [
         { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
-        { name: 'crop_name', type: 'string', required: true, propagatesTo: 'Crop' },
+        { name: 'crop_name', type: 'string', required: false, propagatesTo: 'Crop' },
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
@@ -73,7 +73,7 @@
     {
       name: 'Crop',
       fields: [
-        { name: 'crop_name', type: 'string', required: true },
+        { name: 'crop_name', type: 'string', required: false },
         { name: 'species_id', type: 'string', required: true },
         { name: 'seedlot', type: 'string', required: false },
         { name: 'source', type: 'string', required: false },
@@ -205,7 +205,7 @@
       notes: { type: 'string', required: false },
     },
     Crop: {
-      crop_name: { type: 'string', required: true },
+      crop_name: { type: 'string', required: false },
       species_id: { type: 'string', required: true },
       seedlot: { type: 'string', required: false },
       seedzone: { type: 'string', required: false },
@@ -213,7 +213,7 @@
     },
     Planted: {
       land_name: { type: 'string', required: true },
-      crop_name: { type: 'string', required: true },
+      crop_name: { type: 'string', required: false },
       planted: { type: 'number', required: true },
       planting_date: { type: 'date', required: true },
       gps_lat: { type: 'latitude', required: false },
@@ -1078,7 +1078,6 @@
                         data-table={tableName}
                         data-required={[
                           'land_name',
-                          'crop_name',
                           'planted',
                           'gps_lat',
                           'gps_lon',
@@ -1292,7 +1291,7 @@
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border) !important;
+    border: 2px solid var(--required-border) ;
   }
 
   /* Mapped fields - only in Import and Planted tables */
