@@ -10,11 +10,14 @@
   type CsvRow = Record<string, string>;
   type ValidationResult = { isValid: boolean; value: number | null };
 
-  function validateNumber(value: any): ValidationResult {
+  function validateNumber(value: any, decimals: number = 0): ValidationResult {
     if (typeof value === 'number') return { isValid: true, value };
     if (typeof value === 'string') {
       const num = Number(value.trim());
-      if (!isNaN(num) && num > 0) return { isValid: true, value: num };
+      if (!isNaN(num) && num > 0) {
+        const rounded = Number(num.toFixed(decimals));
+        return { isValid: true, value: rounded };
+      }
     }
     return { isValid: false, value: null };
   }
@@ -687,16 +690,20 @@
       const fieldType = tableFieldTypes[table]?.[field]?.type;
       if (fieldType === 'number') {
         // Check if column contains non-numeric values
+        const decimals = field === 'hectares' ? 1 : 0;
         const hasNonNumeric = csvData.some(row => {
           const val = row[csvColumn];
-          return val && isNaN(Number(val.replace(',', '')));
+          return val && !validateNumber(val, decimals).isValid;
         });
         
         if (hasNonNumeric) {
-          // Set the mapping to trigger validation display
-          mappings[csvColumn] = `${table}.${field}`;
-          // Force reactivity on preview data
-          previewData = { ...previewData };
+          // Update preview data to show validation errors without setting mapping
+          previewData[table] = previewData[table].map(row => ({
+            ...row,
+            [field]: row[csvColumn] || '',
+            [`${field}_valid`]: validateNumber(row[csvColumn], decimals).isValid
+          }));
+          
           return;
         }
       }
@@ -1018,7 +1025,9 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={header === 'planted' && !validateNumber(row[header]).isValid}
+                          class:invalid={tableName === 'Planted' && 
+                            row[`${header}_valid`] === false
+                          }
                           data-row-index={rowIndex}
                         >
                           {row[header] || ''}
