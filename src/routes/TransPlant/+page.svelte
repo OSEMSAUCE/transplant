@@ -16,49 +16,83 @@
     return { isValid: false, value: null };
   }
 
-  let tableHeaders: Record<string, string[]> = {};
-  let errorMessage = '';
+  // Define field types and validation rules
+  type FieldType = 'string' | 'number' | 'date' | 'gps';
 
+  interface FieldDefinition {
+    name: string;
+    type: FieldType;
+    required?: boolean;
+    propagatesTo?: string; // Which table this field should propagate to
+    validation?: (value: any) => boolean;
+  }
+
+  interface TableSchema {
+    name: string;
+    fields: FieldDefinition[];
+    isInteractive?: boolean; // Can users drag-drop to this table?
+  }
+
+  // Define the database schema
+  const schema: TableSchema[] = [
+    {
+      name: 'Planted',
+      isInteractive: true,
+      fields: [
+        { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
+        { name: 'crop_name', type: 'string', required: true, propagatesTo: 'Crop' },
+        { name: 'planted', type: 'number', required: true },
+        { name: 'planting_date', type: 'date', required: true },
+        { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
+        { name: 'gps_lon', type: 'gps', required: false, propagatesTo: 'Land' }
+      ]
+    },
+    {
+      name: 'Land',
+      fields: [
+        { name: 'land_name', type: 'string', required: true },
+        { name: 'hectares', type: 'number', required: true },
+        { name: 'preparation_id', type: 'string', required: false },
+        { name: 'gis_area', type: 'number', required: false },
+        { name: 'gps_lat', type: 'gps', required: false },
+        { name: 'gps_lon', type: 'gps', required: false }
+      ]
+    },
+    {
+      name: 'Crop',
+      fields: [
+        { name: 'crop_name', type: 'string', required: true },
+        { name: 'species_id', type: 'string', required: true },
+        { name: 'seedlot', type: 'string', required: false },
+        { name: 'source', type: 'string', required: false }
+      ]
+    }
+  ];
+
+  // Generate table headers and database fields from schema
+  // Ensure GPS fields are included in table headers
+  let tableHeaders = {
+    Land: ['land_name', 'hectares', 'preparation_id', 'gis_area', 'gps_lat', 'gps_lon'],
+    Crop: ['crop_name', 'species_id', 'seedlot', 'source'],
+    Planted: ['land_name', 'crop_name', 'planted', 'planting_date', 'gps_lat', 'gps_lon']
+  };
+  let databaseFields = tableHeaders;
+
+  let errorMessage = '';
   let csvData: CsvRow[] | null = null;
   let mappings: Record<string, string> = {};
   let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
 
-  /**
-   * CRITICAL RELATIONSHIP: Land-Crop-Planted Tables
-   *
-   * The Planted table represents actual planting events from the imported data.
-   * Each row in the Planted table must correspond to a real planting event where:
-   * 1. land_name exists in the Land table
-   * 2. crop_name exists in the Crop table
-   * 3. The combination of land_name and crop_name must come from the imported data
-   *
-   * Multiple plantings of the same land-crop combination are possible (e.g., different dates)
-   * The 'planted' column (number of trees) is the minimum required data to confirm a planting occurred
-   *
-   * DO NOT modify this relationship without understanding these dependencies:
-   * - Planted table rows are derived from actual import data, not all possible combinations
-   * - Each land_name must validate against Land table
-   * - Each crop_name must validate against Crop table
-   * - The number of trees planted is required to confirm planting event
-   */
-
-  // Initialize preview data with empty rows
+  // Initialize preview data with empty rows and ensure GPS fields are included
   let previewData = {
-    Land: [] as Record<string, string>[],
-    Crop: [] as Record<string, string>[],
-    Planted: [] as Record<string, string>[],
+    Land: [] as Array<Record<string, string>>,
+    Crop: [] as Array<Record<string, string>>,
+    Planted: [] as Array<Record<string, string & { gps_lat?: string; gps_lon?: string }>>
   };
 
   // Track actual land-crop combinations from import data
   let importedPlantings: Array<{ land_name: string; crop_name: string }> = [];
-
-  // Database fields for all tables
-  let databaseFields = {
-    Land: ['land_name', 'hectares', 'preparation_id', 'gis_area'],
-    Crop: ['crop_name', 'species_id', 'seedlot', 'source'],
-    Planted: ['land_name', 'crop_name', 'planted', 'planting_date'],
-  };
 
   // Add these type definitions at the top of the script
   type FieldType = 'number' | 'string' | 'latitude' | 'longitude' | 'date';
@@ -194,7 +228,7 @@
       tableHeaders = {
         Land: ['land_name', 'hectares', 'preparation_id', 'gps_lat', 'gps_lon', 'notes'],
         Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
-        Planted: ['land_name', 'crop_name', 'planted', 'planting_date'],
+        Planted: ['land_name', 'crop_name', 'planted', 'planting_date', 'gps_lat', 'gps_lon'],
       };
 
       // Update database fields
@@ -431,29 +465,6 @@
     target.classList.remove('drag-over');
   }
 
-  function clearExistingMappings(csvColumn: string, table: string, field: string) {
-    // Clear any column that was previously mapped to this target
-    Object.entries(mappings).forEach(([col, target]) => {
-      if (target === `${table}.${field}`) {
-        console.log(`Clearing previous mapping: ${col} -> ${target}`);
-        mappings[col] = '';
-      }
-    });
-
-    // Clear any previous mapping of this source column
-    if (mappings[csvColumn]) {
-      console.log(`Clearing source column mapping: ${csvColumn} -> ${mappings[csvColumn]}`);
-      mappings[csvColumn] = '';
-    }
-
-    // Force update preview data to clear old mappings
-    previewData = {
-      Land: [],
-      Crop: [],
-      Planted: []
-    };
-  }
-
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
     // Immediately return if not Planted table
@@ -469,11 +480,15 @@
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
-      // Aggressively clear all related mappings first
-      clearExistingMappings(csvColumn, table, field);
+      // Clear any existing mappings to this target field
+      Object.entries(mappings).forEach(([col, mapping]) => {
+        if (mapping === `${table}.${field}`) {
+          mappings[col] = '';
+        }
+      });
 
       // Validate if dropping onto 'planted' field
-      if (table === 'Planted' && field === 'planted') {
+      if (field === 'planted') {
         // Check if the column contains valid numbers
         const hasInvalidNumbers = csvData.some((row) => !validateNumber(row[csvColumn]).isValid);
         if (hasInvalidNumbers) {
@@ -483,80 +498,46 @@
         }
       }
 
-      console.log('Updating mappings and preview data');
+      // Set the new mapping
       mappings[csvColumn] = `${table}.${field}`;
       console.log('Updated mappings:', mappings);
 
-      if (table === 'Planted') {
-        // Update preview data based on the new mapping
-        previewData.Planted = csvData.slice(0, 5).map((row) => {
-          const previewRow = { ...(previewData.Planted[0] || {}) };
-
-          if (field === 'planted') {
-            const validation = validateNumber(row[csvColumn]);
-            previewRow[field] = validation.value;
-            previewRow[`${field}_valid`] = validation.isValid;
-          } else {
-            previewRow[field] = row[csvColumn];
+      // Update all tables based on current mappings
+      ['Planted', 'Land', 'Crop'].forEach(tableName => {
+        // Get mappings for this table
+        const tableMappings = new Map();
+        Object.entries(mappings).forEach(([col, mapping]) => {
+          if (mapping) {
+            const [mapTable, mapField] = mapping.split('.');
+            if (mapTable === tableName) {
+              tableMappings.set(mapField, col);
+            }
           }
-
-          return previewRow;
         });
 
-        // If mapping land_name or crop_name, update the corresponding tables
-        if (field === 'land_name') {
-          // Get unique land_names from the mapped column
-          const uniqueLandNames = [...new Set(csvData.map(row => row[csvColumn]))];
-          previewData.Land = uniqueLandNames.map(name => ({ land_name: name }));
-        } else if (field === 'crop_name') {
-          // Get unique crop_names from the mapped column
-          const uniqueCropNames = [...new Set(csvData.map(row => row[csvColumn]))];
-          previewData.Crop = uniqueCropNames.map(name => ({ crop_name: name }));
-        }
-
-        // Force reactivity
-        previewData = { ...previewData };
-        console.log('Updated preview data:', previewData);
-
-        // Get the land_name and crop_name mappings
-        const landNameMapping = Object.entries(mappings).find(
-          ([_, val]) => val === 'Land.land_name'
-        )?.[0];
-        const cropNameMapping = Object.entries(mappings).find(
-          ([_, val]) => val === 'Crop.crop_name'
-        )?.[0];
-
-        if (landNameMapping && cropNameMapping) {
-          // Map the planted values to the corresponding land-crop combinations
-          previewData.Planted = previewData.Planted.map((plantedRow) => {
-            // Find the matching row in csvData for this land-crop combination
-            const matchingRow = csvData.find(
-              (row) =>
-                row[landNameMapping] === plantedRow.land_name &&
-                row[cropNameMapping] === plantedRow.crop_name
-            );
-
-            if (matchingRow) {
-              const rawValue = matchingRow[csvColumn];
-              const { valid, value } = validateField(rawValue, 'number');
-              return {
-                ...plantedRow,
-                planted: valid && value > 0 ? value : rawValue,
-                planted_valid: valid && value > 0,
-              };
-            }
-            return plantedRow;
+        // Create preview rows using the current mappings
+        if (tableMappings.size > 0) {
+          previewData[tableName] = csvData.slice(0, 5).map((row, index) => {
+            const previewRow = {};
+            tableMappings.forEach((csvCol, field) => {
+              if (field === 'planted') {
+                const validation = validateNumber(row[csvCol]);
+                previewRow[field] = validation.value;
+                previewRow[`${field}_valid`] = validation.isValid;
+              } else {
+                previewRow[field] = row[csvCol] || '';
+              }
+            });
+            return previewRow;
           });
-
-          // Store the mapping for the planted field
-          mappings[csvColumn] = `${table}.${field}`;
-
-          // Force reactivity
-          previewData = { ...previewData };
         }
-      } else {
-        handleColumnMap(csvColumn, `${table}.${field}`);
-      }
+      });
+
+      // Force reactivity
+      previewData = { ...previewData };
+
+      // Clear any error message
+      errorMessage = '';
     }
   }
 
@@ -622,13 +603,6 @@
                   <optgroup label="Planting Data (Main Interface)">
                     {#each databaseFields.Planted as field}
                       <option value={`Planted.${field}`}>{field}</option>
-                    {/each}
-                  </optgroup>
-                  <optgroup label="Additional Fields">
-                    {#each databaseFields.Land as field}
-                      {#if field !== 'land_name'}
-                        <option value={`Land.${field}`}>{field}</option>
-                      {/if}
                     {/each}
                   </optgroup>
                   <optgroup label="Crop Data">
