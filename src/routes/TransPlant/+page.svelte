@@ -5,6 +5,16 @@
   import { onMount } from 'svelte';
 
   type CsvRow = Record<string, string>;
+  type ValidationResult = { isValid: boolean; value: number | null };
+
+  function validateNumber(value: any): ValidationResult {
+    if (typeof value === 'number') return { isValid: true, value };
+    if (typeof value === 'string') {
+      const num = Number(value.trim());
+      if (!isNaN(num) && num > 0) return { isValid: true, value: num };
+    }
+    return { isValid: false, value: null };
+  }
 
   let tableHeaders: Record<string, string[]> = {};
   let errorMessage = '';
@@ -436,6 +446,11 @@
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
     
     if (csvColumn && csvData) {
+      // Always allow the drop, we'll show validation errors inline
+      if (table === 'Planted' && field === 'planted') {
+        console.log('Validating number values for planted field');
+      }
+
       console.log('Updating mappings and preview data');
       mappings[csvColumn] = `${table}.${field}`;
       console.log('Updated mappings:', mappings);
@@ -444,9 +459,33 @@
         // Update preview data based on the new mapping
         previewData.Planted = csvData.slice(0, 5).map(row => {
           const previewRow = { ...previewData.Planted[0] || {} };
-          previewRow[field] = row[csvColumn];
+          
+          if (field === 'planted') {
+            const validation = validateNumber(row[csvColumn]);
+            if (validation.isValid) {
+              previewRow[field] = validation.value;
+              previewRow[`${field}_error`] = null;
+            } else {
+              previewRow[field] = row[csvColumn];
+              previewRow[`${field}_error`] = 'number values only';
+            }
+          } else {
+            previewRow[field] = row[csvColumn];
+          }
+          
           return previewRow;
         });
+
+        // If mapping land_name or crop_name, update the corresponding tables
+        if (field === 'land_name') {
+          // Get unique land_names from the mapped column
+          const uniqueLandNames = [...new Set(csvData.map(row => row[csvColumn]))];
+          previewData.Land = uniqueLandNames.map(name => ({ land_name: name }));
+        } else if (field === 'crop_name') {
+          // Get unique crop_names from the mapped column
+          const uniqueCropNames = [...new Set(csvData.map(row => row[csvColumn]))];
+          previewData.Crop = uniqueCropNames.map(name => ({ crop_name: name }));
+        }
         
         // Force reactivity
         previewData = { ...previewData };
@@ -643,18 +682,21 @@
                     <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;">
                       {#each tableHeaders[tableName] || [] as header}
                         <td
-                          style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;
-                                 color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
+                          style="background: {tableName !== 'Planted' ? '#333333' : row[`${header}_error`] ? '#8B0000' : 'inherit'} !important;
+                                 color: {tableName !== 'Planted' ? 'white' : row[`${header}_error`] ? 'white' : 'inherit'} !important;"
                           draggable={tableName === 'Planted'}
                           on:dragstart={tableName === 'Planted' ? (e) => handleMappingDragStart(e, tableName, header) : null}
                           on:dragend={tableName === 'Planted' ? (e) => handleMappingDragEnd(e, tableName, header) : null}
                           on:dragover={tableName === 'Planted' ? handleDragOver : null}
                           on:drop={tableName === 'Planted' ? (e) => handleDrop(e, tableName, header) : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={row[`${header}_valid`] === false}
                           data-row-index={rowIndex}
                         >
-                          {row[header] || ''}
+                          {#if row[`${header}_error`]}
+                            {row[`${header}_error`]}
+                          {:else}
+                            {row[header] || ''}
+                          {/if}
                         </td>
                       {/each}
                     </tr>
