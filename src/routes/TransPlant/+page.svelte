@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
 
   // Core columns that must stay at the start of Planted table
-  const CORE_PLANTED_COLUMNS = ['land_name', 'species_id', 'planted'];
+  const CORE_PLANTED_COLUMNS = ['land_name', 'crop_name', 'planted'];
 
   type CsvRow = Record<string, string>;
   type ValidationResult = { isValid: boolean; value: number | null };
@@ -45,7 +45,7 @@
       isInteractive: true,
       fields: [
         { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
-        { name: 'species_id', type: 'string', required: true, propagatesTo: 'Crop' },
+        { name: 'crop_name', type: 'string', required: true, propagatesTo: 'Crop' },
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
@@ -73,7 +73,7 @@
     {
       name: 'Crop',
       fields: [
-        { name: 'crop_name', type: 'string', required: false },
+        { name: 'crop_name', type: 'string', required: true },
         { name: 'species_id', type: 'string', required: true },
         { name: 'seedlot', type: 'string', required: false },
         { name: 'source', type: 'string', required: false },
@@ -88,7 +88,7 @@
     Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
     Planted: [
       'land_name',
-      'species_id',
+      'crop_name',
       'planted',
       'planting_date',
       'gps_lat',
@@ -128,7 +128,7 @@
         const fieldType = tableFieldTypes[table]?.[field]?.type;
 
         if (fieldType === 'number') {
-          const hasInvalidNumbers = csvData.some((row) => {
+          const hasInvalidNumbers = csvData.some(row => {
             const val = row[column];
             return !val || isNaN(Number(val.replace(',', '')));
           });
@@ -141,7 +141,7 @@
               previewValidation[table] = {};
             }
             previewValidation[table][field] = false;
-
+            
             // Remove invalid mapping
             delete mappings[column];
           }
@@ -153,7 +153,7 @@
       mappings = mappings; // Trigger reactivity
     }
   }
-  let fileInput: HTMLInputElement;
+  let fileInput: any; // TODO: Add proper typing later
   import ColumnHeader from '$lib/components/ColumnHeader.svelte';
 
   let csvColumns: string[] = [];
@@ -205,7 +205,7 @@
       notes: { type: 'string', required: false },
     },
     Crop: {
-      crop_name: { type: 'string', required: false },
+      crop_name: { type: 'string', required: true },
       species_id: { type: 'string', required: true },
       seedlot: { type: 'string', required: false },
       seedzone: { type: 'string', required: false },
@@ -213,7 +213,7 @@
     },
     Planted: {
       land_name: { type: 'string', required: true },
-      crop_name: { type: 'string', required: false },
+      crop_name: { type: 'string', required: true },
       planted: { type: 'number', required: true },
       planting_date: { type: 'date', required: true },
       gps_lat: { type: 'latitude', required: false },
@@ -505,7 +505,7 @@
     } else {
       delete mappings[csvColumn];
     }
-
+    
     // Trigger validation
     mappings = mappings;
 
@@ -654,29 +654,27 @@
 
   // Add these functions for drag and drop
   function handleDragStart(event: DragEvent, csvColumn: string) {
-    const dt = event.dataTransfer;
-    if (!dt) return;
-
-    console.log(`Starting drag for column: ${csvColumn}`);
-    dt.setData('text/plain', csvColumn);
-    dt.effectAllowed = 'move';
-
-    const target = event.target as HTMLElement;
-    if (target) target.classList.add('dragging');
+    if (event.dataTransfer) {
+      console.log(`Starting drag for column: ${csvColumn}`);
+      event.dataTransfer.setData('text/plain', csvColumn);
+      event.dataTransfer.effectAllowed = 'move';
+      const target = /** @type {HTMLElement} */ (event.target);
+      target.classList.add('dragging');
+    }
   }
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
-    const dt = event.dataTransfer;
-    if (dt) dt.dropEffect = 'move';
-
-    const target = event.target as HTMLElement;
-    if (target) target.classList.add('drag-over');
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    const target = /** @type {HTMLElement} */ (event.target);
+    target.classList.add('drag-over');
   }
 
   function handleDragLeave(event: DragEvent) {
-    const target = event.target as HTMLElement;
-    if (target) target.classList.remove('drag-over');
+    const target = /** @type {HTMLElement} */ (event.target);
+    target.classList.remove('drag-over');
   }
 
   function handleDrop(event: DragEvent, table: string, field: string) {
@@ -689,12 +687,10 @@
       return;
     }
 
-    const target = event.target as HTMLElement;
-    if (target) target.classList.remove('drag-over');
+    const target = /** @type {HTMLElement} */ (event.target);
+    target.classList.remove('drag-over');
 
-    const dt = event.dataTransfer;
-    if (!dt) return;
-    const csvColumn = dt.getData('text/plain');
+    const csvColumn = event.dataTransfer?.getData('text/plain');
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
@@ -726,11 +722,11 @@
           }
           previewValidation[table][field] = false;
           console.log('Updated previewValidation:', previewValidation);
-
+          
           // Update preview data to show error state
-          previewData[table] = previewData[table].map((row) => ({
+          previewData[table] = previewData[table].map(row => ({
             ...row,
-            [field]: 'Number required',
+            [field]: 'Number required'
           }));
           previewData = { ...previewData }; // Force reactivity
           previewValidation = { ...previewValidation }; // Force reactivity
@@ -975,7 +971,7 @@
           <!-- Mapping Dropdowns Row -->
           <div
             class="grid"
-            style="grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
+            style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
           >
             {#each orderedCsvColumns as csvColumn, i (csvColumn)}
               <ColumnHeader
@@ -1026,7 +1022,7 @@
                       class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
                       style="width: var(--column-width); {row[`${column}_valid`] === false
                         ? 'background-color: #4a1414;'
-                        : ''} {excludedColumns.has(column) ? 'background-color: #4a4a4a;' : ''}"
+                        : ''}"
                       data-mapped={mappings[column]}
                       title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >
@@ -1078,6 +1074,7 @@
                         data-table={tableName}
                         data-required={[
                           'land_name',
+                          'crop_name',
                           'planted',
                           'gps_lat',
                           'gps_lon',
@@ -1116,25 +1113,14 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={tableName === 'Planted' &&
-                            previewValidation?.[tableName]?.[header] === false}
-                          data-mapped={Object.entries(mappings).find(
-                            ([_, mapping]) => mapping === `${tableName}.${header}`
-                          )?.[0] || ''}
+                          class:invalid={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false}
                           data-row-index={rowIndex}
-                          title={tableName === 'Planted' &&
-                          previewValidation?.[tableName]?.[header] === false
-                            ? tableFieldTypes[tableName]?.[header]?.type === 'number'
-                              ? 'Number required'
-                              : 'Invalid value'
+                          title={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false ? 
+                            tableFieldTypes[tableName]?.[header]?.type === 'number' ? 'Number required' : 'Invalid value'
                             : ''}
                         >
                           <div class="flex items-center justify-between w-full">
-                            <span
-                              style="color: {row[header] === 'Number required'
-                                ? '#ef4444'
-                                : 'inherit'}"
-                            >
+                            <span style="color: {row[header] === 'Number required' ? '#ef4444' : 'inherit'}">
                               {row[header] || ''}
                             </span>
                           </div>
@@ -1207,8 +1193,6 @@
     overflow-x: auto;
     width: fit-content;
   }
-
-
 
   /* Grid layout for dropdowns */
   .grid {
@@ -1290,12 +1274,14 @@
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid #ff4f4f !important;
+    border: 2px solid var(--required-border) !important;
   }
 
-  /* Mapped fields - only in Planted table */
+  /* Mapped fields - only in Import and Planted tables */
+  .table-container th[data-mapped='true'],
+  .table-container td[data-mapped='true'],
   .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid #4fff4f !important;
+    border: 2px solid var(--mapped-border) !important;
   }
 
   th {
