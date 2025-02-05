@@ -54,7 +54,7 @@
         { name: 'crop_stock', type: 'string', required: false, propagatesTo: 'Crop' },
         { name: 'hectares', type: 'number', required: false, propagatesTo: 'Land' },
         { name: 'preparation_id', type: 'string', required: false, propagatesTo: 'Land' },
-        { name: 'notes', type: 'string', required: false }
+        { name: 'notes', type: 'string', required: false },
       ],
     },
     {
@@ -86,18 +86,18 @@
     Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
     Planted: [
       'land_name',
-      'crop_name', 
+      'crop_name',
       'planted',
       'planting_date',
       'gps_lat',
       'gps_lon',
       'species_id',
-      'seedlot', 
+      'seedlot',
       'seedzone',
       'crop_stock',
       'hectares',
       'preparation_id',
-      'notes'
+      'notes',
     ],
   };
   let databaseFields = tableHeaders;
@@ -113,17 +113,22 @@
   let previewData = {
     Land: [] as Array<Record<string, string>>,
     Crop: [] as Array<Record<string, string>>,
-    Planted: [] as Array<Record<string, string & {
-      gps_lat?: string;
-      gps_lon?: string;
-      species_id?: string;
-      seedlot?: string;
-      seedzone?: string;
-      crop_stock?: string;
-      hectares?: string;
-      preparation_id?: string;
-      notes?: string;
-    }>>,
+    Planted: [] as Array<
+      Record<
+        string,
+        string & {
+          gps_lat?: string;
+          gps_lon?: string;
+          species_id?: string;
+          seedlot?: string;
+          seedzone?: string;
+          crop_stock?: string;
+          hectares?: string;
+          preparation_id?: string;
+          notes?: string;
+        }
+      >
+    >,
   };
 
   // Track actual land-crop combinations from import data
@@ -168,7 +173,7 @@
       crop_stock: { type: 'string', required: false },
       hectares: { type: 'number', required: false },
       preparation_id: { type: 'string', required: false },
-      notes: { type: 'string', required: false }
+      notes: { type: 'string', required: false },
     },
   } as const;
 
@@ -259,6 +264,22 @@
       parcelOwnership: 'Private',
       CRS: '4326',
     },
+    {
+      parcelID: '3BEE3888',
+      pledgeID: '3BEE22',
+      organisationType: 'Something else',
+      organisationWebsite: 'https://groundtruth.app/',
+      Species: 'GT',
+      countryName: 'Canada',
+      lat: '47.870255',
+      lon: '6.4099855',
+      areaHa: '12.2',
+      numberTrees: '2200',
+      plantingYear: '2024',
+      'trees/ha': '1,500',
+      parcelOwnership: 'Public',
+      CRS: '4323',
+    },
   ];
 
   async function fetchTableHeaders() {
@@ -282,13 +303,13 @@
         'seedlot',
         'seedzone',
         'crop_stock',
-        'notes'
+        'notes',
       ];
 
       tableHeaders = {
         Land: ['land_name', 'hectares', 'preparation_id', 'gps_lat', 'gps_lon', 'notes'],
         Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
-        Planted: plantedFields
+        Planted: plantedFields,
       };
 
       // Update database fields
@@ -368,7 +389,7 @@
   function reorderColumns() {
     console.log('=== Starting column reorder ===');
     console.log('Current columns:', [...orderedCsvColumns]);
-    console.log('Current mappings:', {...mappings});
+    console.log('Current mappings:', { ...mappings });
 
     // Create arrays to hold columns in their new order
     const newOrder = [];
@@ -382,7 +403,7 @@
 
     // Map columns to their target positions
     const columnPositions = new Map();
-    csvColumns.forEach(column => {
+    csvColumns.forEach((column) => {
       const mapping = mappings[column];
       if (mapping?.startsWith('Planted.')) {
         const field = mapping.split('.')[1];
@@ -396,7 +417,7 @@
       .map(([column]) => column);
 
     // Get unmapped columns (keeping their original order)
-    const unmappedColumns = csvColumns.filter(column => !mappings[column]);
+    const unmappedColumns = csvColumns.filter((column) => !mappings[column]);
 
     // Build final order
     newOrder.push(...mappedColumns);
@@ -406,11 +427,11 @@
     console.log('Unmapped columns:', unmappedColumns);
 
     console.log('Proposed new order:', newOrder);
-    
+
     // Check if order actually changed
     const orderChanged = newOrder.some((col, i) => col !== orderedCsvColumns[i]);
     console.log('Order changed:', orderChanged);
-    
+
     if (orderChanged) {
       console.log('Applying new column order');
       orderedCsvColumns = [...newOrder];
@@ -419,14 +440,14 @@
     } else {
       console.log('No change needed in column order');
     }
-    
+
     console.log('Final column order:', [...orderedCsvColumns]);
     console.log('=== Finished column reorder ===');
   }
 
   function handleColumnMap(csvColumn: string, value: string) {
     console.log(`Mapping column ${csvColumn} to ${value}`);
-    
+
     // Clear any existing mappings to this destination
     if (value) {
       Object.entries(mappings).forEach(([col, mapping]) => {
@@ -439,7 +460,7 @@
 
     // Set the new mapping first
     mappings[csvColumn] = value;
-    
+
     // Set the mapping and reorder
     const [targetTable, field] = value.split('.');
     if (targetTable === 'Planted') {
@@ -572,7 +593,7 @@
               crop_stock: '',
               hectares: '',
               preparation_id: '',
-              notes: ''
+              notes: '',
             }));
           }
         }
@@ -614,7 +635,7 @@
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
     console.log('=== Handle Drop Start ===');
-    
+
     // Immediately return if not Planted table
     if (table !== 'Planted') {
       console.log('Dropping only allowed on Planted table');
@@ -628,9 +649,9 @@
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
-      console.log('Before mappings:', {...mappings});
+      console.log('Before mappings:', { ...mappings });
       console.log('Before columns:', [...orderedCsvColumns]);
-      
+
       // Clear any existing mappings to this target field
       Object.entries(mappings).forEach(([col, mapping]) => {
         if (mapping === `${table}.${field}`) {
@@ -652,11 +673,11 @@
 
       // Set the new mapping
       mappings[csvColumn] = `${table}.${field}`;
-      console.log('After setting mapping:', {...mappings});
-      
+      console.log('After setting mapping:', { ...mappings });
+
       // Force reorder
       reorderColumns();
-      
+
       // Force reactivity
       orderedCsvColumns = [...orderedCsvColumns];
       console.log('Final columns:', [...orderedCsvColumns]);
@@ -753,8 +774,14 @@
                 const validation = validateNumber(row[csvCol]);
                 previewRow[field] = validation.value;
                 previewRow[`${field}_valid`] = validation.isValid;
-              } else if (field === 'species_id' || field === 'seedlot' || field === 'seedzone' || 
-                         field === 'crop_stock' || field === 'preparation_id' || field === 'notes') {
+              } else if (
+                field === 'species_id' ||
+                field === 'seedlot' ||
+                field === 'seedzone' ||
+                field === 'crop_stock' ||
+                field === 'preparation_id' ||
+                field === 'notes'
+              ) {
                 previewRow[field] = row[csvCol] || '';
               } else if (field === 'gps_lat' || field === 'gps_lon') {
                 previewRow[field] = row[csvCol] || '';
@@ -822,12 +849,12 @@
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
         <div class="overflow-x-auto">
           <!-- Mapping Dropdowns Row -->
-          <div class="grid" style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));">
+          <div
+            class="grid"
+            style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
+          >
             {#each orderedCsvColumns as csvColumn, i}
-              <div 
-                class="p-2 bg-gray-800 text-white" 
-                style="width: 100%;"
-              >
+              <div class="p-2 bg-gray-800 text-white" style="width: 100%;">
                 <select
                   bind:value={mappings[csvColumn]}
                   class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
@@ -1012,6 +1039,8 @@
 <style>
   :root {
     --column-width: 12.5rem; /* 200px equivalent */
+    --row-height: 1.5rem; /* Even more compact row height */
+    --cell-padding: 0.25rem;
   }
 
   /* Table layout */
@@ -1099,11 +1128,20 @@
     table-layout: fixed;
   }
 
+  /* Consistent row heights for all tables */
+  tr {
+    height: var(--row-height);
+    line-height: var(--row-height);
+  }
+
   th,
   td {
-    /* width: var(--column-width); */
     min-width: var(--column-width);
-    padding: 0.25rem;
+    max-width: var(--column-width);
+    width: var(--column-width);
+    height: var(--row-height);
+    line-height: var(--row-height);
+    padding: 0 var(--cell-padding);
     text-align: left;
     border: 1px solid #ddd;
     overflow: hidden;
@@ -1111,6 +1149,7 @@
     white-space: nowrap;
     background-color: var(--background-color, #1e1e1e);
     color: var(--text-color, #ffffff);
+    vertical-align: middle;
   }
 
   .mapping-row th {
@@ -1176,10 +1215,17 @@
     width: var(--column-width);
     min-width: var(--column-width);
     max-width: var(--column-width);
-    padding: 0.5rem;
+    height: var(--row-height);
+    line-height: var(--row-height);
+    padding: 0 var(--cell-padding);
     text-align: left;
     border: 1px solid #ddd;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-color: var(--background-color, #1e1e1e);
+    color: var(--text-color, #ffffff);
+    vertical-align: middle;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -1230,54 +1276,5 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .dropdown {
-    position: relative;
-    margin-left: 1rem;
-  }
 
-  .dropdown-toggle {
-    padding: 0.5rem 1rem;
-    background: var(--color-button-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 0.25rem;
-    cursor: pointer;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: 100%;
-    background: var(--color-surface-2);
-    border: 1px solid var(--color-border);
-    padding: 0.5rem;
-    min-width: 200px;
-    z-index: 100;
-  }
-
-  .column-headers {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
-  }
-
-  .column-header {
-    position: relative;
-    min-width: var(--column-width);
-  }
-
-  .column-mapping select {
-    width: 100%;
-    padding: 0.25rem;
-    font-size: 0.8em;
-    border: 1px solid var(--color-border);
-    border-radius: 0.25rem;
-    background: var(--color-surface-2);
-  }
-
-  .column-name {
-    margin-top: 0.5rem;
-    font-size: 0.9em;
-    text-align: center;
-    color: var(--color-text-secondary);
-  }
 </style>
