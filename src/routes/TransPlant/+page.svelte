@@ -431,6 +431,29 @@
     target.classList.remove('drag-over');
   }
 
+  function clearExistingMappings(csvColumn: string, table: string, field: string) {
+    // Clear any column that was previously mapped to this target
+    Object.entries(mappings).forEach(([col, target]) => {
+      if (target === `${table}.${field}`) {
+        console.log(`Clearing previous mapping: ${col} -> ${target}`);
+        mappings[col] = '';
+      }
+    });
+
+    // Clear any previous mapping of this source column
+    if (mappings[csvColumn]) {
+      console.log(`Clearing source column mapping: ${csvColumn} -> ${mappings[csvColumn]}`);
+      mappings[csvColumn] = '';
+    }
+
+    // Force update preview data to clear old mappings
+    previewData = {
+      Land: [],
+      Crop: [],
+      Planted: []
+    };
+  }
+
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
     // Immediately return if not Planted table
@@ -438,17 +461,26 @@
       console.log('Dropping only allowed on Planted table');
       return;
     }
-    
+
     const target = /** @type {HTMLElement} */ (event.target);
     target.classList.remove('drag-over');
 
     const csvColumn = event.dataTransfer?.getData('text/plain');
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
-    
+
     if (csvColumn && csvData) {
-      // Always allow the drop, we'll show validation errors inline
+      // Aggressively clear all related mappings first
+      clearExistingMappings(csvColumn, table, field);
+
+      // Validate if dropping onto 'planted' field
       if (table === 'Planted' && field === 'planted') {
-        console.log('Validating number values for planted field');
+        // Check if the column contains valid numbers
+        const hasInvalidNumbers = csvData.some((row) => !validateNumber(row[csvColumn]).isValid);
+        if (hasInvalidNumbers) {
+          errorMessage = 'Cannot map this column to planted - contains non-numeric values';
+          console.error(errorMessage);
+          return;
+        }
       }
 
       console.log('Updating mappings and preview data');
@@ -457,22 +489,17 @@
 
       if (table === 'Planted') {
         // Update preview data based on the new mapping
-        previewData.Planted = csvData.slice(0, 5).map(row => {
-          const previewRow = { ...previewData.Planted[0] || {} };
-          
+        previewData.Planted = csvData.slice(0, 5).map((row) => {
+          const previewRow = { ...(previewData.Planted[0] || {}) };
+
           if (field === 'planted') {
             const validation = validateNumber(row[csvColumn]);
-            if (validation.isValid) {
-              previewRow[field] = validation.value;
-              previewRow[`${field}_error`] = null;
-            } else {
-              previewRow[field] = row[csvColumn];
-              previewRow[`${field}_error`] = 'number values only';
-            }
+            previewRow[field] = validation.value;
+            previewRow[`${field}_valid`] = validation.isValid;
           } else {
             previewRow[field] = row[csvColumn];
           }
-          
+
           return previewRow;
         });
 
@@ -486,7 +513,7 @@
           const uniqueCropNames = [...new Set(csvData.map(row => row[csvColumn]))];
           previewData.Crop = uniqueCropNames.map(name => ({ crop_name: name }));
         }
-        
+
         // Force reactivity
         previewData = { ...previewData };
         console.log('Updated preview data:', previewData);
@@ -658,18 +685,32 @@
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
-              <table style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important; color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;">
+              <table
+                style="background: {tableName !== 'Planted'
+                  ? '#333333'
+                  : 'inherit'} !important; color: {tableName !== 'Planted'
+                  ? 'white'
+                  : 'inherit'} !important;"
+              >
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
                       <th
-                        style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;
+                        style="background: {tableName !== 'Planted'
+                          ? '#333333'
+                          : 'inherit'} !important;
                                color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
                         draggable={tableName === 'Planted'}
-                        on:dragstart={tableName === 'Planted' ? (e) => handleMappingDragStart(e, tableName, header) : null}
-                        on:dragend={tableName === 'Planted' ? (e) => handleMappingDragEnd(e, tableName, header) : null}
+                        on:dragstart={tableName === 'Planted'
+                          ? (e) => handleMappingDragStart(e, tableName, header)
+                          : null}
+                        on:dragend={tableName === 'Planted'
+                          ? (e) => handleMappingDragEnd(e, tableName, header)
+                          : null}
                         on:dragover={tableName === 'Planted' ? handleDragOver : null}
-                        on:drop={tableName === 'Planted' ? (e) => handleDrop(e, tableName, header) : (e) => e.preventDefault()}
+                        on:drop={tableName === 'Planted'
+                          ? (e) => handleDrop(e, tableName, header)
+                          : (e) => e.preventDefault()}
                         class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
                       >
                         {header}
@@ -679,24 +720,33 @@
                 </thead>
                 <tbody>
                   {#each previewData[tableName] as row, rowIndex}
-                    <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} !important;">
+                    <tr
+                      style="background: {tableName !== 'Planted'
+                        ? '#333333'
+                        : 'inherit'} !important;"
+                    >
                       {#each tableHeaders[tableName] || [] as header}
                         <td
-                          style="background: {tableName !== 'Planted' ? '#333333' : row[`${header}_error`] ? '#8B0000' : 'inherit'} !important;
-                                 color: {tableName !== 'Planted' ? 'white' : row[`${header}_error`] ? 'white' : 'inherit'} !important;"
+                          style="background: {tableName !== 'Planted'
+                            ? '#333333'
+                            : 'inherit'} !important;
+                                 color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
                           draggable={tableName === 'Planted'}
-                          on:dragstart={tableName === 'Planted' ? (e) => handleMappingDragStart(e, tableName, header) : null}
-                          on:dragend={tableName === 'Planted' ? (e) => handleMappingDragEnd(e, tableName, header) : null}
+                          on:dragstart={tableName === 'Planted'
+                            ? (e) => handleMappingDragStart(e, tableName, header)
+                            : null}
+                          on:dragend={tableName === 'Planted'
+                            ? (e) => handleMappingDragEnd(e, tableName, header)
+                            : null}
                           on:dragover={tableName === 'Planted' ? handleDragOver : null}
-                          on:drop={tableName === 'Planted' ? (e) => handleDrop(e, tableName, header) : (e) => e.preventDefault()}
+                          on:drop={tableName === 'Planted'
+                            ? (e) => handleDrop(e, tableName, header)
+                            : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
+                          class:invalid={row[`${header}_valid`] === false}
                           data-row-index={rowIndex}
                         >
-                          {#if row[`${header}_error`]}
-                            {row[`${header}_error`]}
-                          {:else}
-                            {row[header] || ''}
-                          {/if}
+                          {row[header] || ''}
                         </td>
                       {/each}
                     </tr>
