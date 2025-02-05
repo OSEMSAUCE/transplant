@@ -44,8 +44,15 @@
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
-        { name: 'gps_lon', type: 'gps', required: false, propagatesTo: 'Land' }
-      ]
+        { name: 'gps_lon', type: 'gps', required: false, propagatesTo: 'Land' },
+        { name: 'species_id', type: 'string', required: false, propagatesTo: 'Crop' },
+        { name: 'seedlot', type: 'string', required: false, propagatesTo: 'Crop' },
+        { name: 'seedzone', type: 'string', required: false, propagatesTo: 'Crop' },
+        { name: 'crop_stock', type: 'string', required: false, propagatesTo: 'Crop' },
+        { name: 'hectares', type: 'number', required: false, propagatesTo: 'Land' },
+        { name: 'preparation_id', type: 'string', required: false, propagatesTo: 'Land' },
+        { name: 'notes', type: 'string', required: false }
+      ],
     },
     {
       name: 'Land',
@@ -55,8 +62,8 @@
         { name: 'preparation_id', type: 'string', required: false },
         { name: 'gis_area', type: 'number', required: false },
         { name: 'gps_lat', type: 'gps', required: false },
-        { name: 'gps_lon', type: 'gps', required: false }
-      ]
+        { name: 'gps_lon', type: 'gps', required: false },
+      ],
     },
     {
       name: 'Crop',
@@ -64,17 +71,31 @@
         { name: 'crop_name', type: 'string', required: true },
         { name: 'species_id', type: 'string', required: true },
         { name: 'seedlot', type: 'string', required: false },
-        { name: 'source', type: 'string', required: false }
-      ]
-    }
+        { name: 'source', type: 'string', required: false },
+      ],
+    },
   ];
 
   // Generate table headers and database fields from schema
   // Ensure GPS fields are included in table headers
   let tableHeaders = {
     Land: ['land_name', 'hectares', 'preparation_id', 'gis_area', 'gps_lat', 'gps_lon'],
-    Crop: ['crop_name', 'species_id', 'seedlot', 'source'],
-    Planted: ['land_name', 'crop_name', 'planted', 'planting_date', 'gps_lat', 'gps_lon']
+    Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
+    Planted: [
+      'land_name',
+      'crop_name', 
+      'planted',
+      'planting_date',
+      'gps_lat',
+      'gps_lon',
+      'species_id',
+      'seedlot', 
+      'seedzone',
+      'crop_stock',
+      'hectares',
+      'preparation_id',
+      'notes'
+    ],
   };
   let databaseFields = tableHeaders;
 
@@ -84,11 +105,21 @@
   let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
 
-  // Initialize preview data with empty rows and ensure GPS fields are included
+  // Initialize preview data with empty rows and all fields
   let previewData = {
     Land: [] as Array<Record<string, string>>,
     Crop: [] as Array<Record<string, string>>,
-    Planted: [] as Array<Record<string, string & { gps_lat?: string; gps_lon?: string }>>
+    Planted: [] as Array<Record<string, string & {
+      gps_lat?: string;
+      gps_lon?: string;
+      species_id?: string;
+      seedlot?: string;
+      seedzone?: string;
+      crop_stock?: string;
+      hectares?: string;
+      preparation_id?: string;
+      notes?: string;
+    }>>,
   };
 
   // Track actual land-crop combinations from import data
@@ -125,6 +156,15 @@
       crop_name: { type: 'string', required: true },
       planted: { type: 'number', required: true },
       planting_date: { type: 'date', required: true },
+      gps_lat: { type: 'latitude', required: false },
+      gps_lon: { type: 'longitude', required: false },
+      species_id: { type: 'string', required: false },
+      seedlot: { type: 'string', required: false },
+      seedzone: { type: 'string', required: false },
+      crop_stock: { type: 'string', required: false },
+      hectares: { type: 'number', required: false },
+      preparation_id: { type: 'string', required: false },
+      notes: { type: 'string', required: false }
     },
   } as const;
 
@@ -228,7 +268,21 @@
       tableHeaders = {
         Land: ['land_name', 'hectares', 'preparation_id', 'gps_lat', 'gps_lon', 'notes'],
         Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
-        Planted: ['land_name', 'crop_name', 'planted', 'planting_date', 'gps_lat', 'gps_lon'],
+        Planted: [
+          'land_name',
+          'crop_name', 
+          'planted',
+          'planting_date',
+          'gps_lat',
+          'gps_lon',
+          'species_id',
+          'seedlot', 
+          'seedzone',
+          'crop_stock',
+          'hectares',
+          'preparation_id',
+          'notes'
+        ],
       };
 
       // Update database fields
@@ -290,6 +344,9 @@
             Crop: Array(5)
               .fill({})
               .map(() => Object.fromEntries(tableHeaders.Crop.map((header) => [header, '']))),
+            Planted: Array(5)
+              .fill({})
+              .map(() => Object.fromEntries(tableHeaders.Planted.map((header) => [header, '']))),
           };
         },
         error: (error) => {
@@ -427,6 +484,15 @@
               planted: '',
               planted_valid: true,
               planting_date: '',
+              gps_lat: '',
+              gps_lon: '',
+              species_id: '',
+              seedlot: '',
+              seedzone: '',
+              crop_stock: '',
+              hectares: '',
+              preparation_id: '',
+              notes: ''
             }));
           }
         }
@@ -502,47 +568,76 @@
       mappings[csvColumn] = `${table}.${field}`;
       console.log('Updated mappings:', mappings);
 
-      // Get unique land names and their GPS coordinates
+      // Get unique land names and their fields
       const uniqueLands = new Map();
-      const landNameCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.land_name')?.[0];
-      const gpsLatCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.gps_lat')?.[0];
-      const gpsLonCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.gps_lon')?.[0];
+      const landNameCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.land_name'
+      )?.[0];
+      const gpsLatCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.gps_lat'
+      )?.[0];
+      const gpsLonCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.gps_lon'
+      )?.[0];
+      const hectaresCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.hectares'
+      )?.[0];
+      const prepIdCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.preparation_id'
+      )?.[0];
 
-      // Get unique crop names
+      // Get unique crop names and their fields
       const uniqueCrops = new Map();
-      const cropNameCol = Object.entries(mappings).find(([_, mapping]) => mapping === 'Planted.crop_name')?.[0];
+      const cropNameCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.crop_name'
+      )?.[0];
+      const speciesIdCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.species_id'
+      )?.[0];
+      const seedlotCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.seedlot'
+      )?.[0];
+      const seedzoneCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.seedzone'
+      )?.[0];
+      const cropStockCol = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === 'Planted.crop_stock'
+      )?.[0];
 
       if (landNameCol) {
-        csvData.forEach(row => {
+        csvData.forEach((row) => {
           const landName = row[landNameCol];
           if (!uniqueLands.has(landName)) {
             const landEntry = { land_name: landName };
-            if (gpsLatCol) {
-              landEntry.gps_lat = row[gpsLatCol];
-            }
-            if (gpsLonCol) {
-              landEntry.gps_lon = row[gpsLonCol];
-            }
+            if (gpsLatCol) landEntry.gps_lat = row[gpsLatCol];
+            if (gpsLonCol) landEntry.gps_lon = row[gpsLonCol];
+            if (hectaresCol) landEntry.hectares = row[hectaresCol];
+            if (prepIdCol) landEntry.preparation_id = row[prepIdCol];
             uniqueLands.set(landName, landEntry);
           }
         });
-        // Update Land table with unique lands and their GPS coordinates
+        // Update Land table with unique lands and their fields
         previewData.Land = Array.from(uniqueLands.values());
       }
 
       if (cropNameCol) {
-        csvData.forEach(row => {
+        csvData.forEach((row) => {
           const cropName = row[cropNameCol];
           if (!uniqueCrops.has(cropName)) {
-            uniqueCrops.set(cropName, { crop_name: cropName });
+            const cropEntry = { crop_name: cropName };
+            if (speciesIdCol) cropEntry.species_id = row[speciesIdCol];
+            if (seedlotCol) cropEntry.seedlot = row[seedlotCol];
+            if (seedzoneCol) cropEntry.seedzone = row[seedzoneCol];
+            if (cropStockCol) cropEntry.crop_stock = row[cropStockCol];
+            uniqueCrops.set(cropName, cropEntry);
           }
         });
-        // Update Crop table with unique crops
+        // Update Crop table with unique crops and their fields
         previewData.Crop = Array.from(uniqueCrops.values());
       }
 
       // Update all tables based on current mappings
-      ['Planted', 'Land', 'Crop'].forEach(tableName => {
+      ['Planted', 'Land', 'Crop'].forEach((tableName) => {
         // Get mappings for this table
         const tableMappings = new Map();
         Object.entries(mappings).forEach(([col, mapping]) => {
@@ -555,14 +650,24 @@
         });
 
         // Create preview rows using the current mappings
-        if (tableMappings.size > 0 && tableName !== 'Land') { // Skip Land table as we handle it separately
+        if (tableMappings.size > 0 && tableName !== 'Land') {
+          console.log(`Creating preview for ${tableName}`);
+          console.log('Current mappings:', tableMappings);
+          // Skip Land table as we handle it separately
           previewData[tableName] = csvData.slice(0, 5).map((row, index) => {
             const previewRow = {};
+            console.log('Processing row:', row);
             tableMappings.forEach((csvCol, field) => {
-              if (field === 'planted') {
+              console.log(`Mapping field ${field} from CSV column ${csvCol}`);
+              if (field === 'planted' || field === 'hectares') {
                 const validation = validateNumber(row[csvCol]);
                 previewRow[field] = validation.value;
                 previewRow[`${field}_valid`] = validation.isValid;
+              } else if (field === 'species_id' || field === 'seedlot' || field === 'seedzone' || 
+                         field === 'crop_stock' || field === 'preparation_id' || field === 'notes') {
+                previewRow[field] = row[csvCol] || '';
+              } else if (field === 'gps_lat' || field === 'gps_lon') {
+                previewRow[field] = row[csvCol] || '';
               } else {
                 previewRow[field] = row[csvCol] || '';
               }
@@ -695,6 +800,12 @@
 
       <div class="database-tables">
         {#each ['Planted', 'Crop', 'Land'] as tableName}
+          {() => {
+            console.log(`Rendering ${tableName} table`);
+            console.log('Headers:', tableHeaders[tableName]);
+            console.log('Preview data:', previewData[tableName]);
+            return '';
+          }}()
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
