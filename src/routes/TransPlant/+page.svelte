@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
 
   // Core columns that must stay at the start of Planted table
-  const CORE_PLANTED_COLUMNS = ['land_name', 'crop_name', 'planted'];
+  const CORE_PLANTED_COLUMNS = ['land_name', 'species_id', 'planted'];
 
   type CsvRow = Record<string, string>;
   type ValidationResult = { isValid: boolean; value: number | null };
@@ -45,7 +45,7 @@
       isInteractive: true,
       fields: [
         { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
-        { name: 'crop_name', type: 'string', required: true, propagatesTo: 'Crop' },
+        { name: 'species_id', type: 'string', required: true, propagatesTo: 'Crop' },
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
@@ -88,7 +88,7 @@
     Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
     Planted: [
       'land_name',
-      'crop_name',
+      'species_id',
       'planted',
       'planting_date',
       'gps_lat',
@@ -1119,7 +1119,9 @@
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
                           class:invalid={tableName === 'Planted' &&
                             previewValidation?.[tableName]?.[header] === false}
-                          data-mapped={Object.entries(mappings).find(([_, mapping]) => mapping === `${tableName}.${header}`)?.[0] || ''}
+                          data-mapped={Object.entries(mappings).find(
+                            ([_, mapping]) => mapping === `${tableName}.${header}`
+                          )?.[0] || ''}
                           data-row-index={rowIndex}
                           title={tableName === 'Planted' &&
                           previewValidation?.[tableName]?.[header] === false
@@ -1207,10 +1209,7 @@
     width: fit-content;
   }
 
-  /* Mapped header styling */
-  th[data-mapped]:not([data-mapped=""]) {
-    border: 2px solid var(--mapped-border) !important;
-  }
+
 
   /* Grid layout for dropdowns */
   .grid {
@@ -1293,13 +1292,6 @@
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
     border: 2px solid var(--required-border) !important;
-  }
-
-  /* Mapped fields - only in Import and Planted tables */
-  .table-container th[data-mapped='true'],
-  .table-container td[data-mapped='true'],
-  .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid var(--mapped-border) !important;
   }
 
   th {
