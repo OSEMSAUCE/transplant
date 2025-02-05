@@ -12,13 +12,7 @@
   $: {
     const mapping = mappings[name];
     isMapped = !!mapping;
-    if (!mapping) {
-      isValidMapping = false;
-    } else {
-      const [table, field] = mapping.split('.');
-      // Only show green border for mapped columns in Import table
-      isValidMapping = table !== 'Planted' && field !== 'planted';
-    }
+    isValidMapping = isMapped;
   }
 
   // Reset exclusion when column is mapped
@@ -32,9 +26,8 @@
   style="
     width: var(--column-width); 
     background-color: {excluded ? '#4a4a4a' : '#12191F'};
-    border: 2px solid transparent;
-    border-bottom: none;
-    margin-bottom: 0;
+    border: none;
+    margin: 0;
   "
 >
   <div style="display: grid; place-items: center;" class="p-2">
@@ -79,7 +72,7 @@
 <style>
   /* Override any other styles with high specificity */
   select.mapped:not([multiple]):not([size]) {
-    border: 2px solid transparent !important;
+    border: 2px solid #4fff4f !important;
     background-color: var(--background-color);
     color: var(--color);
     /* Reset other potentially conflicting styles */

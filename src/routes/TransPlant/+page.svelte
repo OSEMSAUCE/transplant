@@ -1291,7 +1291,12 @@
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border) !important;
+    border: 2px solid #ff4f4f !important;
+  }
+
+  /* Mapped fields - only in Planted table */
+  .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
+    border: 2px solid #4fff4f !important;
   }
 
   th {
