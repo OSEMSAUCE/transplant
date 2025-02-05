@@ -15,7 +15,9 @@
     if (!mapping) {
       isValidMapping = false;
     } else {
-      const [, field] = mapping.split('.');
+      // If mapped to 'planted', don't show as valid since it requires numbers
+      const [table, field] = mapping.split('.');
+      // Only planted field needs special validation
       isValidMapping = field !== 'planted';
     }
   }
