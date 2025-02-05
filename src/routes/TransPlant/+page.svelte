@@ -450,6 +450,7 @@
 
     // Clear any existing mappings to this destination
     if (value) {
+      // Clear any existing mappings to this destination
       Object.entries(mappings).forEach(([col, mapping]) => {
         if (mapping === value && col !== csvColumn) {
           console.log(`Clearing existing mapping for ${col}`);
@@ -458,11 +459,33 @@
       });
     }
 
-    // Set the new mapping first
+    // Check if mapping to a number field
+    const [targetTable, field] = value.split('.');
+    const fieldType = tableFieldTypes[targetTable]?.[field]?.type;
+    
+    // Validate if mapping to a number field
+    if (fieldType === 'number' && csvData) {
+      // Check if column contains non-numeric values
+      const hasNonNumeric = csvData.some(row => {
+        const val = row[csvColumn];
+        return val && isNaN(Number(val.replace(',', '')));
+      });
+      
+      if (hasNonNumeric) {
+        // Set invalid state on cells
+        csvData.forEach(row => {
+          const val = row[csvColumn];
+          if (val && isNaN(Number(val.replace(',', '')))) {
+            row[`${csvColumn}_valid`] = false;
+          }
+        });
+        return;
+      }
+    }
+
+    // Set the new mapping
     mappings[csvColumn] = value;
 
-    // Set the mapping and reorder
-    const [targetTable, field] = value.split('.');
     if (targetTable === 'Planted') {
       // Set the mapping
       mappings[csvColumn] = value;
@@ -660,13 +683,20 @@
         }
       });
 
-      // Validate if dropping onto 'planted' field
-      if (field === 'planted') {
-        // Check if the column contains valid numbers
-        const hasInvalidNumbers = csvData.some((row) => !validateNumber(row[csvColumn]).isValid);
-        if (hasInvalidNumbers) {
-          errorMessage = 'Cannot map this column to planted - contains non-numeric values';
-          console.error(errorMessage);
+      // Check if target field is a number field
+      const fieldType = tableFieldTypes[table]?.[field]?.type;
+      if (fieldType === 'number') {
+        // Check if column contains non-numeric values
+        const hasNonNumeric = csvData.some(row => {
+          const val = row[csvColumn];
+          return val && isNaN(Number(val.replace(',', '')));
+        });
+        
+        if (hasNonNumeric) {
+          // Set the mapping to trigger validation display
+          mappings[csvColumn] = `${table}.${field}`;
+          // Force reactivity on preview data
+          previewData = { ...previewData };
           return;
         }
       }
@@ -833,11 +863,7 @@
 
 <div class="csv-mapper">
   <main class="container">
-    {#if errorMessage}
-      <div class="error-message">
-        {errorMessage}
-      </div>
-    {/if}
+
 
     {#if !csvData}
       <div class="file-upload">
@@ -951,8 +977,16 @@
                           : (e) => e.preventDefault()}
                         class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
                         data-table={tableName}
-                        data-required={['land_name', 'crop_name', 'planted', 'gps_lat', 'gps_lon'].includes(header)}
-                        data-mapped={Object.entries(mappings).some(([col, mapping]) => mapping === `${tableName}.${header}`)}
+                        data-required={[
+                          'land_name',
+                          'crop_name',
+                          'planted',
+                          'gps_lat',
+                          'gps_lon',
+                        ].includes(header)}
+                        data-mapped={Object.entries(mappings).some(
+                          ([col, mapping]) => mapping === `${tableName}.${header}`
+                        )}
                       >
                         {header}
                       </th>
@@ -984,7 +1018,7 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={row[`${header}_valid`] === false}
+                          class:invalid={header === 'planted' && !validateNumber(row[header]).isValid}
                           data-row-index={rowIndex}
                         >
                           {row[header] || ''}
@@ -1048,7 +1082,7 @@
     --row-height: 1.5rem; /* Even more compact row height */
     --cell-padding: 0.25rem;
     --required-border: #ff6b6b;
-    --mapped-border: #00ff00;
+    --mapped-border: #4fff4f;
   }
 
   /* Table layout */
@@ -1162,14 +1196,14 @@
   }
 
   /* Required fields - only in Planted table */
-  .table-preview:has(th[data-table="Planted"]) th[data-required="true"] {
+  .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
     border: 2px solid var(--required-border) !important;
   }
 
   /* Mapped fields - only in Import and Planted tables */
-  .table-container th[data-mapped="true"],
-  .table-container td[data-mapped="true"],
-  .table-preview:has(th[data-table="Planted"]) th[data-mapped="true"] {
+  .table-container th[data-mapped='true'],
+  .table-container td[data-mapped='true'],
+  .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
     border: 2px solid var(--mapped-border) !important;
   }
 
@@ -1182,7 +1216,7 @@
   }
 
   /* Mapped dropdowns */
-  select[data-mapped]:not([data-mapped=""]) {
+  select[data-mapped]:not([data-mapped='']) {
     border: 2px solid var(--mapped-border) !important;
   }
 
@@ -1297,8 +1331,20 @@
     border: 2px dashed #60a5fa; /* Brighter blue for dark mode */
   }
 
-  .invalid {
-    background-color: rgba(239, 68, 68, 0.2);
+  /* Invalid number field styling */
+  td.invalid {
+    background-color: #4a1c1c !important;
+    position: relative;
+  }
+  
+  td.invalid::after {
+    content: "number required";
+    color: #ff6b6b;
+    margin-left: 0.5rem;
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .land-import-header {
@@ -1310,5 +1356,18 @@
     border-bottom: 1px solid var(--color-border);
   }
 
+  /* Invalid cell styling */
+  .invalid {
+    background-color: #4a1c1c !important;
+    position: relative;
+  }
 
+  .invalid::after {
+    content: "number required";
+    color: #ff6b6b;
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 </style>
