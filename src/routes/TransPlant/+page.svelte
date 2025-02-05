@@ -651,14 +651,10 @@
 
         // Create preview rows using the current mappings
         if (tableMappings.size > 0 && tableName !== 'Land') {
-          console.log(`Creating preview for ${tableName}`);
-          console.log('Current mappings:', tableMappings);
           // Skip Land table as we handle it separately
           previewData[tableName] = csvData.slice(0, 5).map((row, index) => {
             const previewRow = {};
-            console.log('Processing row:', row);
             tableMappings.forEach((csvCol, field) => {
-              console.log(`Mapping field ${field} from CSV column ${csvCol}`);
               if (field === 'planted' || field === 'hectares') {
                 const validation = validateNumber(row[csvCol]);
                 previewRow[field] = validation.value;
@@ -800,12 +796,6 @@
 
       <div class="database-tables">
         {#each ['Planted', 'Crop', 'Land'] as tableName}
-          {() => {
-            console.log(`Rendering ${tableName} table`);
-            console.log('Headers:', tableHeaders[tableName]);
-            console.log('Preview data:', previewData[tableName]);
-            return '';
-          }}()
           <div class="table-info">
             <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">{tableName} Table</h2>
             <div class="table-preview">
