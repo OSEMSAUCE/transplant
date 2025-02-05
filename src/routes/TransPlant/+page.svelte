@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
 
   // Core columns that must stay at the start of Planted table
-  const CORE_PLANTED_COLUMNS = ['land_name', 'crop_name', 'planted'];
+  const CORE_PLANTED_COLUMNS = ['land_name', 'species_id', 'planted'];
 
   type CsvRow = Record<string, string>;
   type ValidationResult = { isValid: boolean; value: number | null };
@@ -45,7 +45,7 @@
       isInteractive: true,
       fields: [
         { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
-        { name: 'crop_name', type: 'string', required: true, propagatesTo: 'Crop' },
+        { name: 'species_id', type: 'string', required: false, propagatesTo: 'Crop' },
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
@@ -88,7 +88,7 @@
     Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
     Planted: [
       'land_name',
-      'crop_name',
+      'species_id',
       'planted',
       'planting_date',
       'gps_lat',
@@ -213,7 +213,7 @@
     },
     Planted: {
       land_name: { type: 'string', required: true },
-      crop_name: { type: 'string', required: true },
+      species_id: { type: 'string', required: false },
       planted: { type: 'number', required: true },
       planting_date: { type: 'date', required: true },
       gps_lat: { type: 'latitude', required: false },
