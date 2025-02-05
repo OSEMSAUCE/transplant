@@ -107,9 +107,55 @@
   let errorMessage = '';
   let csvData: CsvRow[] | null = null;
   let mappings: Record<string, string> = {};
+  let validMappings: Record<string, boolean> = {};
+
+  // Store validation state for preview table
+  let previewValidation: Record<string, Record<string, boolean>> = {};
+
+  // Validate mappings before any UI updates
+  $: {
+    if (csvData && mappings) {
+      // Reset preview validation
+      previewValidation = {};
+
+      Object.entries(mappings).forEach(([column, mapping]) => {
+        if (!mapping) {
+          validMappings[column] = true;
+          return;
+        }
+
+        const [table, field] = mapping.split('.');
+        const fieldType = tableFieldTypes[table]?.[field]?.type;
+
+        if (fieldType === 'number') {
+          const hasInvalidNumbers = csvData.some(row => {
+            const val = row[column];
+            return !val || isNaN(Number(val.replace(',', '')));
+          });
+
+          validMappings[column] = !hasInvalidNumbers;
+
+          if (hasInvalidNumbers) {
+            // Only store validation state for preview, don't modify source data
+            if (!previewValidation[table]) {
+              previewValidation[table] = {};
+            }
+            previewValidation[table][field] = false;
+            
+            // Remove invalid mapping
+            delete mappings[column];
+          }
+        } else {
+          validMappings[column] = true;
+        }
+      });
+      validMappings = validMappings; // Trigger reactivity
+      mappings = mappings; // Trigger reactivity
+    }
+  }
   let fileInput: any; // TODO: Add proper typing later
   import ColumnHeader from '$lib/components/ColumnHeader.svelte';
-  
+
   let csvColumns: string[] = [];
   let orderedCsvColumns: string[] = [];
   let excludedColumns = new Set<string>();
@@ -453,51 +499,22 @@
   function handleColumnMap(csvColumn: string, value: string) {
     console.log(`Mapping column ${csvColumn} to ${value}`);
 
-    // Clear any existing mappings to this destination
+    // Update mapping - validation will happen in reactive statement
     if (value) {
-      // Clear any existing mappings to this destination
-      Object.entries(mappings).forEach(([col, mapping]) => {
-        if (mapping === value && col !== csvColumn) {
-          console.log(`Clearing existing mapping for ${col}`);
-          mappings[col] = '';
-        }
-      });
-    }
-
-    // Check if mapping to a number field
-    const [targetTable, field] = value.split('.');
-    const fieldType = tableFieldTypes[targetTable]?.[field]?.type;
-    
-    // Validate if mapping to a number field
-    if (fieldType === 'number' && csvData) {
-      // Check if column contains non-numeric values
-      const hasNonNumeric = csvData.some(row => {
-        const val = row[csvColumn];
-        return val && isNaN(Number(val.replace(',', '')));
-      });
-      
-      if (hasNonNumeric) {
-        // Set invalid state on cells
-        csvData.forEach(row => {
-          const val = row[csvColumn];
-          if (val && isNaN(Number(val.replace(',', '')))) {
-            row[`${csvColumn}_valid`] = false;
-          }
-        });
-        return;
-      }
-    }
-
-    // Set the new mapping
-    mappings[csvColumn] = value;
-
-    if (targetTable === 'Planted') {
-      // Set the mapping
       mappings[csvColumn] = value;
-      // Force reorder
-      reorderColumns();
-      // Force reactivity
-      orderedCsvColumns = [...orderedCsvColumns];
+    } else {
+      delete mappings[csvColumn];
+    }
+    
+    // Trigger validation
+    mappings = mappings;
+
+    // Only reorder if the mapping is valid
+    if (validMappings[csvColumn]) {
+      const [targetTable] = value?.split('.') || [];
+      if (targetTable === 'Planted') {
+        reorderColumns();
+      }
     }
 
     // Handle special cases for land_name and crop_name
@@ -693,11 +710,11 @@
       if (fieldType === 'number') {
         // Check if column contains non-numeric values
         const decimals = field === 'hectares' ? 1 : 0;
-        const hasNonNumeric = csvData.some(row => {
+        const hasNonNumeric = csvData.some((row) => {
           const val = row[csvColumn];
           return val && !validateNumber(val, decimals).isValid;
         });
-        
+
         if (hasNonNumeric) {
           console.log('Warning: Some rows contain non-numeric values');
         }
@@ -712,7 +729,7 @@
         mappings: { ...mappings },
         csvData: csvData.slice(0, 2),
         currentValue: csvData[0][csvColumn],
-        allColumnsInData: Object.keys(csvData[0])
+        allColumnsInData: Object.keys(csvData[0]),
       });
 
       // Update preview data for all tables
@@ -733,10 +750,10 @@
             }
           }
         });
-        
+
         // Add the current field being mapped
         plantedMappings.set(field, csvColumn);
-        
+
         // Create preview rows with all mapped fields
         previewData.Planted = csvData.slice(0, 5).map((row: any, index: number) => {
           console.log(`Processing row ${index}:`, row);
@@ -747,9 +764,9 @@
               rawValue,
               type: typeof rawValue,
               row,
-              keys: Object.keys(row)
+              keys: Object.keys(row),
             });
-            
+
             // For number fields, validate and store validation status
             const fieldType = tableFieldTypes[table]?.[mapField]?.type;
             if (fieldType === 'number' && rawValue) {
@@ -765,7 +782,7 @@
         });
 
         console.log('Preview data after update:', previewData.Planted);
-        
+
         // Force reactivity
         previewData = { ...previewData };
       }
@@ -928,8 +945,6 @@
 
 <div class="csv-mapper">
   <main class="container">
-
-
     {#if !csvData}
       <div class="file-upload">
         <input type="file" accept=".csv" on:change={handleFileSelect} bind:this={fileInput} />
@@ -955,10 +970,10 @@
                     excludedColumns.delete(csvColumn);
                   }
                   excludedColumns = excludedColumns;
-                  
+
                   // Reorder columns
-                  const nonExcluded = orderedCsvColumns.filter(col => !excludedColumns.has(col));
-                  const excluded = orderedCsvColumns.filter(col => excludedColumns.has(col));
+                  const nonExcluded = orderedCsvColumns.filter((col) => !excludedColumns.has(col));
+                  const excluded = orderedCsvColumns.filter((col) => excludedColumns.has(col));
                   orderedCsvColumns = [...nonExcluded, ...excluded];
                 }}
                 {mappings}
@@ -991,7 +1006,9 @@
                       draggable="true"
                       on:dragstart={(e) => handleDragStart(e, column)}
                       class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
-                      style="width: var(--column-width); {row[`${column}_valid`] === false ? 'background-color: #4a1414;' : ''}" 
+                      style="width: var(--column-width); {row[`${column}_valid`] === false
+                        ? 'background-color: #4a1414;'
+                        : ''}"
                       data-mapped={mappings[column]}
                       title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >
@@ -1082,9 +1099,7 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={tableName === 'Planted' && 
-                            row[`${header}_valid`] === false
-                          }
+                          class:invalid={tableName === 'Planted' && previewValidation?.Planted?.[header] === false}
                           data-row-index={rowIndex}
                         >
                           {row[header] || ''}
@@ -1181,67 +1196,6 @@
     width: fit-content;
   }
 
-  .exclude-toggle {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.25rem;
-  }
-
-  .exclude-toggle input[type="checkbox"] {
-    width: 1rem;
-    height: 1rem;
-    margin: 0;
-    cursor: pointer;
-    appearance: none;
-    background-color: #1a1a1a;
-    border: 1px solid #666;
-    border-radius: 3px;
-  }
-
-  .exclude-toggle input[type="checkbox"]:checked {
-    background-color: #666;
-    border-color: #888;
-    position: relative;
-  }
-
-  .exclude-toggle input[type="checkbox"]:checked::after {
-    content: 'x';
-    position: absolute;
-    color: #fff;
-    font-size: 0.75rem;
-    top: -1px;
-    left: 2px;
-  }
-
-  .toggle-label {
-    display: none;
-  }
-
-  select {
-    width: var(--column-width);
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.25rem;
-    background-color: white;
-    font-size: 0.875rem;
-  }
-
-  select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  }
-
-  .dragging {
-    opacity: 0.5;
-    cursor: move;
-  }
-
-  .drag-over {
-    background-color: #4a5568 !important;
-    border: 2px dashed #63b3ed !important;
-  }
-
   .droppable-column {
     transition: all 0.2s ease;
   }
@@ -1309,47 +1263,8 @@
     border: 2px solid var(--mapped-border) !important;
   }
 
-  /* Dropdown base style */
-  select {
-    border-radius: 0.25rem;
-    box-sizing: border-box;
-    margin: -1px;
-    padding: 0 1.5rem 0 0.25rem;
-  }
-
-  /* Mapped dropdowns */
-  select[data-mapped]:not([data-mapped='']) {
-    border: 2px solid var(--mapped-border) !important;
-  }
-
-  .mapping-row th {
-    padding: 0.25rem;
-    border: none;
-    width: var(--column-width);
-    min-width: var(--column-width);
-  }
-
-  select {
-    width: var(--column-width);
-    min-width: var(--column-width);
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 0.25rem;
-    background-color: var(--background-color, #1e1e1e);
-    color: var(--text-color, #ffffff);
-  }
-
   th {
     font-size: 0.875rem;
-  }
-
-  .error-message {
-    background-color: #fff3f3;
-    color: #d32f2f;
-    padding: 1rem;
-    margin: 1rem 0;
-    border-radius: 0.25rem;
-    border: 1px solid #ffcdd2;
   }
 
   .database-tables {
@@ -1360,12 +1275,6 @@
   .table-info {
     margin: 0 !important;
     padding: 0 !important;
-  }
-
-  .table-info h3 {
-    color: #333;
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
   }
 
   .table-preview {
@@ -1424,9 +1333,6 @@
   }
 
   /* Update hover states to be visible in dark mode */
-  .cursor-move.hover\:bg-gray-100:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
 
   .droppable-column.hover\:bg-blue-50:hover::after {
     background-color: rgba(59, 130, 246, 0.2); /* More visible in dark mode */
@@ -1438,24 +1344,15 @@
     background-color: #4a1c1c !important;
     position: relative;
   }
-  
+
   td.invalid::after {
-    content: "number required";
+    content: 'number required';
     color: #ff6b6b;
     margin-left: 0.5rem;
     position: absolute;
     right: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
-  }
-
-  .land-import-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-    background: var(--color-surface-1);
-    border-bottom: 1px solid var(--color-border);
   }
 
   /* Invalid cell styling */
@@ -1465,7 +1362,7 @@
   }
 
   .invalid::after {
-    content: "number required";
+    content: 'number required';
     color: #ff6b6b;
     position: absolute;
     right: 0.5rem;
