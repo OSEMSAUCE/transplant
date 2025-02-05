@@ -15,8 +15,7 @@
     if (typeof value === 'string') {
       const num = Number(value.trim());
       if (!isNaN(num) && num > 0) {
-        const rounded = Number(num.toFixed(decimals));
-        return { isValid: true, value: rounded };
+        return { isValid: true, value: num };
       }
     }
     return { isValid: false, value: null };
@@ -697,20 +696,76 @@
         });
         
         if (hasNonNumeric) {
-          // Update preview data to show validation errors without setting mapping
-          previewData[table] = previewData[table].map(row => ({
-            ...row,
-            [field]: row[csvColumn] || '',
-            [`${field}_valid`]: validateNumber(row[csvColumn], decimals).isValid
-          }));
-          
-          return;
+          console.log('Warning: Some rows contain non-numeric values');
         }
       }
 
       // Set the new mapping
       mappings[csvColumn] = `${table}.${field}`;
-      console.log('After setting mapping:', { ...mappings });
+      console.log('MAPPING DEBUG:', {
+        csvColumn,
+        table,
+        field,
+        mappings: { ...mappings },
+        csvData: csvData.slice(0, 2),
+        currentValue: csvData[0][csvColumn],
+        allColumnsInData: Object.keys(csvData[0])
+      });
+
+      // Update preview data for all tables
+      if (csvData) {
+        console.log('CSV Data type:', typeof csvData, Array.isArray(csvData));
+        console.log('First row:', csvData[0]);
+        console.log('csvColumn:', csvColumn);
+        console.log('field:', field);
+        console.log('Raw value:', csvData[0][csvColumn]);
+
+        // Get all current Planted mappings
+        const plantedMappings = new Map();
+        Object.entries(mappings).forEach(([col, mapping]) => {
+          if (mapping) {
+            const [mapTable, mapField] = mapping.split('.');
+            if (mapTable === 'Planted') {
+              plantedMappings.set(mapField, col);
+            }
+          }
+        });
+        
+        // Add the current field being mapped
+        plantedMappings.set(field, csvColumn);
+        
+        // Create preview rows with all mapped fields
+        previewData.Planted = csvData.slice(0, 5).map((row: any, index: number) => {
+          console.log(`Processing row ${index}:`, row);
+          const previewRow = {};
+          plantedMappings.forEach((csvCol, mapField) => {
+            const rawValue = row[csvCol];
+            console.log(`Row ${index} - ${mapField} from ${csvCol}:`, {
+              rawValue,
+              type: typeof rawValue,
+              row,
+              keys: Object.keys(row)
+            });
+            
+            // For number fields, validate and store validation status
+            const fieldType = tableFieldTypes[table]?.[mapField]?.type;
+            if (fieldType === 'number' && rawValue) {
+              const decimals = mapField === 'hectares' ? 1 : 0;
+              const validation = validateNumber(rawValue, decimals);
+              previewRow[mapField] = rawValue;
+              previewRow[`${mapField}_valid`] = validation.isValid;
+            } else {
+              previewRow[mapField] = rawValue || '';
+            }
+          });
+          return previewRow;
+        });
+
+        console.log('Preview data after update:', previewData.Planted);
+        
+        // Force reactivity
+        previewData = { ...previewData };
+      }
 
       // Force reorder
       reorderColumns();
@@ -938,10 +993,14 @@
                       draggable="true"
                       on:dragstart={(e) => handleDragStart(e, column)}
                       class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
-                      style="width: var(--column-width);"
+                      style="width: var(--column-width); {row[`${column}_valid`] === false ? 'background-color: #4a1414;' : ''}" 
                       data-mapped={mappings[column]}
+                      title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >
                       {row[column] || ''}
+                      {#if row[`${column}_valid`] === false}
+                        <span class="text-red-500 text-xs"> (invalid)</span>
+                      {/if}
                     </td>
                   {/each}
                 </tr>
