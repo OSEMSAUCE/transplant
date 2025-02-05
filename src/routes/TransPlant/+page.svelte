@@ -4,6 +4,9 @@
   import Papa from 'papaparse';
   import { onMount } from 'svelte';
 
+  // Core columns that must stay at the start of Planted table
+  const CORE_PLANTED_COLUMNS = ['land_name', 'crop_name', 'planted'];
+
   type CsvRow = Record<string, string>;
   type ValidationResult = { isValid: boolean; value: number | null };
 
@@ -266,24 +269,26 @@
       // const schema = await response.json();
 
       // For now, use hardcoded schema
+      const plantedFields = [
+        // Core fields always come first
+        ...CORE_PLANTED_COLUMNS,
+        // Then other fields
+        'planting_date',
+        'gps_lat',
+        'gps_lon',
+        'hectares',
+        'preparation_id',
+        'species_id',
+        'seedlot',
+        'seedzone',
+        'crop_stock',
+        'notes'
+      ];
+
       tableHeaders = {
         Land: ['land_name', 'hectares', 'preparation_id', 'gps_lat', 'gps_lon', 'notes'],
         Crop: ['crop_name', 'species_id', 'seedlot', 'seedzone', 'crop_stock'],
-        Planted: [
-          'land_name',
-          'crop_name', 
-          'planted',
-          'planting_date',
-          'gps_lat',
-          'gps_lon',
-          'species_id',
-          'seedlot', 
-          'seedzone',
-          'crop_stock',
-          'hectares',
-          'preparation_id',
-          'notes'
-        ],
+        Planted: plantedFields
       };
 
       // Update database fields
@@ -369,38 +374,36 @@
     const newOrder = [];
     const processedColumns = new Set();
 
-    console.log('Planted table fields order:', tableHeaders.Planted);
+    // Create a map of target positions based on Planted table order
+    const fieldPositions = {};
+    tableHeaders.Planted.forEach((field, index) => {
+      fieldPositions[field] = index;
+    });
 
-    // First: Add columns mapped to Planted fields in Planted table order
-    for (const plantedField of tableHeaders.Planted) {
-      const mappedColumn = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === `Planted.${plantedField}`
-      )?.[0];
-
-      if (mappedColumn) {
-        console.log(`Found ${mappedColumn} mapped to Planted.${plantedField}`);
-        newOrder.push(mappedColumn);
-        processedColumns.add(mappedColumn);
+    // Map columns to their target positions
+    const columnPositions = new Map();
+    csvColumns.forEach(column => {
+      const mapping = mappings[column];
+      if (mapping?.startsWith('Planted.')) {
+        const field = mapping.split('.')[1];
+        columnPositions.set(column, fieldPositions[field]);
       }
-    }
+    });
 
-    // Second: Add columns mapped to other tables (Crop, Land)
-    const otherMappedColumns = Object.entries(mappings)
-      .filter(([col, mapping]) => mapping && !mapping.startsWith('Planted.') && !processedColumns.has(col))
-      .map(([col]) => col);
+    // Sort mapped columns by their target position in Planted table
+    const mappedColumns = [...columnPositions.entries()]
+      .sort(([, posA], [, posB]) => posA - posB)
+      .map(([column]) => column);
 
-    if (otherMappedColumns.length > 0) {
-      console.log('Adding other mapped columns:', otherMappedColumns);
-      newOrder.push(...otherMappedColumns);
-      otherMappedColumns.forEach(col => processedColumns.add(col));
-    }
+    // Get unmapped columns (keeping their original order)
+    const unmappedColumns = csvColumns.filter(column => !mappings[column]);
 
-    // Finally: Add remaining unmapped columns in their original order
-    const remainingColumns = csvColumns.filter(col => !processedColumns.has(col));
-    if (remainingColumns.length > 0) {
-      console.log('Adding remaining unmapped columns:', remainingColumns);
-      newOrder.push(...remainingColumns);
-    }
+    // Build final order
+    newOrder.push(...mappedColumns);
+    newOrder.push(...unmappedColumns);
+
+    console.log('Mapped columns in order:', [...newOrder]);
+    console.log('Unmapped columns:', unmappedColumns);
 
     console.log('Proposed new order:', newOrder);
     
@@ -817,13 +820,13 @@
     {:else}
       <div class="table-container">
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
-        <div class="overflow-x-auto" style="min-width: min-content;">
+        <div class="overflow-x-auto">
           <!-- Mapping Dropdowns Row -->
-          <div class="flex flex-nowrap" style="margin-bottom: 0.25rem;">
+          <div class="grid" style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));">
             {#each orderedCsvColumns as csvColumn, i}
               <div 
-                class="p-2 bg-gray-800 text-white flex-shrink-0" 
-                style="width: var(--column-width);"
+                class="p-2 bg-gray-800 text-white" 
+                style="width: 100%;"
               >
                 <select
                   bind:value={mappings[csvColumn]}
@@ -850,14 +853,13 @@
             {/each}
           </div>
 
-          <table class="w-full">
+          <table style="width: fit-content;">
             <thead>
-              <tr class="flex flex-nowrap">
-
+              <tr class="flex flex-row flex-nowrap" style="width: fit-content;">
                 {#each orderedCsvColumns as csvColumn}
                   <th
-                    class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left flex-shrink-0"
-                    style="width: var(--column-width);"
+                    class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left"
+                    style="width: var(--column-width); flex: 0 0 var(--column-width);"
                     draggable="true"
                     on:dragstart={(e) => handleDragStart(e, csvColumn)}
                   >
@@ -868,7 +870,7 @@
             </thead>
             <tbody>
               {#each csvData.slice(0, 5) as row}
-                <tr class="flex flex-nowrap">
+                <tr class="flex flex-row flex-nowrap">
                   {#each orderedCsvColumns as column}
                     <td
                       draggable="true"
@@ -1012,14 +1014,34 @@
     --column-width: 12.5rem; /* 200px equivalent */
   }
 
-  /* Ensure all table cells have consistent width */
+  /* Table layout */
+  .table-container {
+    display: block;
+    overflow-x: auto;
+    width: fit-content;
+  }
+
+  /* Grid layout for dropdowns */
+  .grid {
+    display: grid;
+    gap: 0;
+    width: fit-content;
+  }
+
+  /* Table cells */
   .table-container th,
   .table-container td,
   .table-preview th,
   .table-preview td {
-    width: var(--column-width) !important;
-    min-width: var(--column-width) !important;
-    max-width: var(--column-width) !important;
+    width: var(--column-width);
+    min-width: var(--column-width);
+  }
+
+  /* Table rows */
+  .table-container tr {
+    display: grid;
+    grid-auto-flow: column;
+    width: fit-content;
   }
 
   select {
