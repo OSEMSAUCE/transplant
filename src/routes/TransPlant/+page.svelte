@@ -104,6 +104,7 @@
   let mappings: Record<string, string> = {};
   let fileInput: any; // TODO: Add proper typing later
   let csvColumns: string[] = [];
+  let orderedCsvColumns: string[] = [];
 
   // Initialize preview data with empty rows and all fields
   let previewData = {
@@ -320,6 +321,7 @@
     if (import.meta.env.DEV) {
       csvData = MOCK_CSV_DATA;
       csvColumns = Object.keys(MOCK_CSV_DATA[0] || {});
+      orderedCsvColumns = [...csvColumns];
       errorMessage = '';
     }
   });
@@ -333,6 +335,7 @@
         complete: (results) => {
           csvData = results.data;
           csvColumns = Object.keys(results.data[0] || {});
+          orderedCsvColumns = [...csvColumns];
           errorMessage = '';
 
           // Reset mappings and preview data
@@ -357,18 +360,95 @@
   }
   // test
 
+  function reorderColumns() {
+    console.log('=== Starting column reorder ===');
+    console.log('Current columns:', [...orderedCsvColumns]);
+    console.log('Current mappings:', {...mappings});
+
+    // Create arrays to hold columns in their new order
+    const newOrder = [];
+    const processedColumns = new Set();
+
+    console.log('Planted table fields order:', tableHeaders.Planted);
+
+    // First: Add columns mapped to Planted fields in Planted table order
+    for (const plantedField of tableHeaders.Planted) {
+      const mappedColumn = Object.entries(mappings).find(
+        ([_, mapping]) => mapping === `Planted.${plantedField}`
+      )?.[0];
+
+      if (mappedColumn) {
+        console.log(`Found ${mappedColumn} mapped to Planted.${plantedField}`);
+        newOrder.push(mappedColumn);
+        processedColumns.add(mappedColumn);
+      }
+    }
+
+    // Second: Add columns mapped to other tables (Crop, Land)
+    const otherMappedColumns = Object.entries(mappings)
+      .filter(([col, mapping]) => mapping && !mapping.startsWith('Planted.') && !processedColumns.has(col))
+      .map(([col]) => col);
+
+    if (otherMappedColumns.length > 0) {
+      console.log('Adding other mapped columns:', otherMappedColumns);
+      newOrder.push(...otherMappedColumns);
+      otherMappedColumns.forEach(col => processedColumns.add(col));
+    }
+
+    // Finally: Add remaining unmapped columns in their original order
+    const remainingColumns = csvColumns.filter(col => !processedColumns.has(col));
+    if (remainingColumns.length > 0) {
+      console.log('Adding remaining unmapped columns:', remainingColumns);
+      newOrder.push(...remainingColumns);
+    }
+
+    console.log('Proposed new order:', newOrder);
+    
+    // Check if order actually changed
+    const orderChanged = newOrder.some((col, i) => col !== orderedCsvColumns[i]);
+    console.log('Order changed:', orderChanged);
+    
+    if (orderChanged) {
+      console.log('Applying new column order');
+      orderedCsvColumns = [...newOrder];
+      // Force reactivity
+      orderedCsvColumns = [...orderedCsvColumns];
+    } else {
+      console.log('No change needed in column order');
+    }
+    
+    console.log('Final column order:', [...orderedCsvColumns]);
+    console.log('=== Finished column reorder ===');
+  }
+
   function handleColumnMap(csvColumn: string, value: string) {
+    console.log(`Mapping column ${csvColumn} to ${value}`);
+    
     // Clear any existing mappings to this destination
     if (value) {
       Object.entries(mappings).forEach(([col, mapping]) => {
         if (mapping === value && col !== csvColumn) {
+          console.log(`Clearing existing mapping for ${col}`);
           mappings[col] = '';
         }
       });
     }
 
-    // Handle special cases for land_name and crop_name
+    // Set the new mapping first
+    mappings[csvColumn] = value;
+    
+    // Set the mapping and reorder
     const [targetTable, field] = value.split('.');
+    if (targetTable === 'Planted') {
+      // Set the mapping
+      mappings[csvColumn] = value;
+      // Force reorder
+      reorderColumns();
+      // Force reactivity
+      orderedCsvColumns = [...orderedCsvColumns];
+    }
+
+    // Handle special cases for land_name and crop_name
     if (
       (targetTable === 'Land' && field === 'land_name') ||
       (targetTable === 'Crop' && field === 'crop_name')
@@ -376,10 +456,7 @@
       // Map to both the original table and Planted table
       const baseCol = csvColumn.replace('_planted', '');
       mappings[`${baseCol}_planted`] = `Planted.${field}`;
-      mappings[baseCol] = value; // Keep the original table mapping
-    } else {
-      // Set the new mapping for other fields
-      mappings[csvColumn] = value;
+      mappings[baseCol] = `${targetTable}.${field}`; // Keep the original table mapping
     }
 
     // Update preview data for all tables
@@ -533,6 +610,8 @@
 
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
+    console.log('=== Handle Drop Start ===');
+    
     // Immediately return if not Planted table
     if (table !== 'Planted') {
       console.log('Dropping only allowed on Planted table');
@@ -546,9 +625,13 @@
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
+      console.log('Before mappings:', {...mappings});
+      console.log('Before columns:', [...orderedCsvColumns]);
+      
       // Clear any existing mappings to this target field
       Object.entries(mappings).forEach(([col, mapping]) => {
         if (mapping === `${table}.${field}`) {
+          console.log(`Clearing existing mapping for ${col}`);
           mappings[col] = '';
         }
       });
@@ -566,7 +649,15 @@
 
       // Set the new mapping
       mappings[csvColumn] = `${table}.${field}`;
-      console.log('Updated mappings:', mappings);
+      console.log('After setting mapping:', {...mappings});
+      
+      // Force reorder
+      reorderColumns();
+      
+      // Force reactivity
+      orderedCsvColumns = [...orderedCsvColumns];
+      console.log('Final columns:', [...orderedCsvColumns]);
+      console.log('=== Handle Drop End ===');
 
       // Get unique land names and their fields
       const uniqueLands = new Map();
@@ -728,16 +819,20 @@
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
         <div class="overflow-x-auto" style="min-width: min-content;">
           <!-- Mapping Dropdowns Row -->
-          <div
-            class="grid"
-            style="grid-template-columns: repeat({csvColumns.length}, minmax(12.5rem, 1fr)); gap: 0; margin-bottom: 0.25rem;"
-          >
-            {#each csvColumns as csvColumn}
-              <div class="p-2 bg-gray-800 text-white" style="width: var(--column-width);">
+          <div class="flex flex-nowrap" style="margin-bottom: 0.25rem;">
+            {#each orderedCsvColumns as csvColumn, i}
+              <div 
+                class="p-2 bg-gray-800 text-white flex-shrink-0" 
+                style="width: var(--column-width);"
+              >
                 <select
                   bind:value={mappings[csvColumn]}
                   class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
                   style="background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'><path fill=\'white\' d=\'M7 10l5 5 5-5z\'/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 1.5rem;"
+                  on:change={() => {
+                    console.log(`Dropdown changed for ${csvColumn}`);
+                    reorderColumns();
+                  }}
                 >
                   <option value="">Select target field</option>
                   <optgroup label="Planting Data (Main Interface)">
@@ -757,13 +852,12 @@
 
           <table class="w-full">
             <thead>
-              <tr
-                class="grid"
-                style="grid-template-columns: repeat({csvColumns.length}, minmax(200px, 1fr)); gap: 0;"
-              >
-                {#each csvColumns as csvColumn}
+              <tr class="flex flex-nowrap">
+
+                {#each orderedCsvColumns as csvColumn}
                   <th
-                    class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left"
+                    class="p-2 bg-gray-800 text-white border-b border-gray-700 font-medium text-left flex-shrink-0"
+                    style="width: var(--column-width);"
                     draggable="true"
                     on:dragstart={(e) => handleDragStart(e, csvColumn)}
                   >
@@ -774,15 +868,13 @@
             </thead>
             <tbody>
               {#each csvData.slice(0, 5) as row}
-                <tr
-                  class="grid"
-                  style="grid-template-columns: repeat({csvColumns.length}, minmax(200px, 1fr)); gap: 0;"
-                >
-                  {#each csvColumns as column}
+                <tr class="flex flex-nowrap">
+                  {#each orderedCsvColumns as column}
                     <td
                       draggable="true"
                       on:dragstart={(e) => handleDragStart(e, column)}
-                      class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700"
+                      class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
+                      style="width: var(--column-width);"
                     >
                       {row[column] || ''}
                     </td>
@@ -918,6 +1010,16 @@
 <style>
   :root {
     --column-width: 12.5rem; /* 200px equivalent */
+  }
+
+  /* Ensure all table cells have consistent width */
+  .table-container th,
+  .table-container td,
+  .table-preview th,
+  .table-preview td {
+    width: var(--column-width) !important;
+    min-width: var(--column-width) !important;
+    max-width: var(--column-width) !important;
   }
 
   select {
