@@ -128,7 +128,7 @@
         const fieldType = tableFieldTypes[table]?.[field]?.type;
 
         if (fieldType === 'number') {
-          const hasInvalidNumbers = csvData.some(row => {
+          const hasInvalidNumbers = csvData.some((row) => {
             const val = row[column];
             return !val || isNaN(Number(val.replace(',', '')));
           });
@@ -141,7 +141,7 @@
               previewValidation[table] = {};
             }
             previewValidation[table][field] = false;
-            
+
             // Remove invalid mapping
             delete mappings[column];
           }
@@ -153,7 +153,7 @@
       mappings = mappings; // Trigger reactivity
     }
   }
-  let fileInput: any; // TODO: Add proper typing later
+  let fileInput: HTMLInputElement;
   import ColumnHeader from '$lib/components/ColumnHeader.svelte';
 
   let csvColumns: string[] = [];
@@ -505,7 +505,7 @@
     } else {
       delete mappings[csvColumn];
     }
-    
+
     // Trigger validation
     mappings = mappings;
 
@@ -654,27 +654,29 @@
 
   // Add these functions for drag and drop
   function handleDragStart(event: DragEvent, csvColumn: string) {
-    if (event.dataTransfer) {
-      console.log(`Starting drag for column: ${csvColumn}`);
-      event.dataTransfer.setData('text/plain', csvColumn);
-      event.dataTransfer.effectAllowed = 'move';
-      const target = /** @type {HTMLElement} */ (event.target);
-      target.classList.add('dragging');
-    }
+    const dt = event.dataTransfer;
+    if (!dt) return;
+
+    console.log(`Starting drag for column: ${csvColumn}`);
+    dt.setData('text/plain', csvColumn);
+    dt.effectAllowed = 'move';
+
+    const target = event.target as HTMLElement;
+    if (target) target.classList.add('dragging');
   }
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-    const target = /** @type {HTMLElement} */ (event.target);
-    target.classList.add('drag-over');
+    const dt = event.dataTransfer;
+    if (dt) dt.dropEffect = 'move';
+
+    const target = event.target as HTMLElement;
+    if (target) target.classList.add('drag-over');
   }
 
   function handleDragLeave(event: DragEvent) {
-    const target = /** @type {HTMLElement} */ (event.target);
-    target.classList.remove('drag-over');
+    const target = event.target as HTMLElement;
+    if (target) target.classList.remove('drag-over');
   }
 
   function handleDrop(event: DragEvent, table: string, field: string) {
@@ -687,10 +689,12 @@
       return;
     }
 
-    const target = /** @type {HTMLElement} */ (event.target);
-    target.classList.remove('drag-over');
+    const target = event.target as HTMLElement;
+    if (target) target.classList.remove('drag-over');
 
-    const csvColumn = event.dataTransfer?.getData('text/plain');
+    const dt = event.dataTransfer;
+    if (!dt) return;
+    const csvColumn = dt.getData('text/plain');
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
 
     if (csvColumn && csvData) {
@@ -722,11 +726,11 @@
           }
           previewValidation[table][field] = false;
           console.log('Updated previewValidation:', previewValidation);
-          
+
           // Update preview data to show error state
-          previewData[table] = previewData[table].map(row => ({
+          previewData[table] = previewData[table].map((row) => ({
             ...row,
-            [field]: 'Number required'
+            [field]: 'Number required',
           }));
           previewData = { ...previewData }; // Force reactivity
           previewValidation = { ...previewValidation }; // Force reactivity
@@ -971,7 +975,7 @@
           <!-- Mapping Dropdowns Row -->
           <div
             class="grid"
-            style="margin-bottom: 0.25rem; grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
+            style="grid-template-columns: repeat({orderedCsvColumns.length}, var(--column-width));"
           >
             {#each orderedCsvColumns as csvColumn, i (csvColumn)}
               <ColumnHeader
@@ -1113,14 +1117,23 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false}
+                          class:invalid={tableName === 'Planted' &&
+                            previewValidation?.[tableName]?.[header] === false}
+                          data-mapped={Object.entries(mappings).find(([_, mapping]) => mapping === `${tableName}.${header}`)?.[0] || ''}
                           data-row-index={rowIndex}
-                          title={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false ? 
-                            tableFieldTypes[tableName]?.[header]?.type === 'number' ? 'Number required' : 'Invalid value'
+                          title={tableName === 'Planted' &&
+                          previewValidation?.[tableName]?.[header] === false
+                            ? tableFieldTypes[tableName]?.[header]?.type === 'number'
+                              ? 'Number required'
+                              : 'Invalid value'
                             : ''}
                         >
                           <div class="flex items-center justify-between w-full">
-                            <span style="color: {row[header] === 'Number required' ? '#ef4444' : 'inherit'}">
+                            <span
+                              style="color: {row[header] === 'Number required'
+                                ? '#ef4444'
+                                : 'inherit'}"
+                            >
                               {row[header] || ''}
                             </span>
                           </div>
@@ -1192,6 +1205,11 @@
     display: block;
     overflow-x: auto;
     width: fit-content;
+  }
+
+  /* Mapped header styling */
+  th[data-mapped]:not([data-mapped=""]) {
+    border: 2px solid var(--mapped-border) !important;
   }
 
   /* Grid layout for dropdowns */
