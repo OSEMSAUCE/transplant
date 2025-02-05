@@ -12,7 +12,14 @@
   $: {
     const mapping = mappings[name];
     isMapped = !!mapping;
-    isValidMapping = isMapped;
+    if (!mapping) {
+      isValidMapping = false;
+    } else {
+      // If mapped to 'planted', don't show as valid since it requires numbers
+      const [table, field] = mapping.split('.');
+      // Only planted field needs special validation
+      isValidMapping = field !== 'planted';
+    }
   }
 
   // Reset exclusion when column is mapped
