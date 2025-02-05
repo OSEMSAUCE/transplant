@@ -6,10 +6,12 @@
   export let databaseFields: Record<string, string[]>;
 
   let isValidMapping = false;
+  let isMapped = false;
 
-  // Track if this column is mapped to a numeric field
+  // Track if this column is mapped and check validation
   $: {
     const mapping = mappings[name];
+    isMapped = !!mapping;
     if (!mapping) {
       isValidMapping = false;
     } else {
@@ -18,14 +20,21 @@
       isValidMapping = field !== 'planted';
     }
   }
+
+  // Reset exclusion when column is mapped
+  $: if (isMapped && excluded) {
+    onExclude(false);
+  }
 </script>
 
 <div class="bg-gray-800 text-white" style="width: var(--column-width);">
   <div style="display: grid; place-items: center;" class="p-2">
-    <div class="flex items-center gap-2">
-      <span class="text-white font-bold">X</span>
-      <input type="checkbox" checked={excluded} on:change={(e) => onExclude(e.target.checked)} />
-    </div>
+    {#if !isMapped}
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold">X</span>
+        <input type="checkbox" checked={excluded} on:change={(e) => onExclude(e.target.checked)} />
+      </div>
+    {/if}
   </div>
   <select
     bind:value={mappings[name]}
