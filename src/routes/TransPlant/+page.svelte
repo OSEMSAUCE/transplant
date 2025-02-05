@@ -1022,7 +1022,7 @@
                       class="p-2 bg-gray-800 text-white border-b border-gray-700 cursor-move hover:bg-gray-700 flex-shrink-0"
                       style="width: var(--column-width); {row[`${column}_valid`] === false
                         ? 'background-color: #4a1414;'
-                        : ''}"
+                        : ''} {excludedColumns.has(column) ? 'background-color: #4a4a4a;' : ''}"
                       data-mapped={mappings[column]}
                       title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >

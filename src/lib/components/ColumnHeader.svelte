@@ -20,10 +20,13 @@
   }
 </script>
 
-<div class="p-2 bg-gray-800 text-white" style="width: 100%; opacity: {excluded ? '0.5' : '1'}">
-  <label class="exclude-toggle">
-    <input type="checkbox" checked={excluded} on:change={(e) => onExclude(e.target.checked)} />
-  </label>
+<div class="bg-gray-800 text-white" style="width: var(--column-width);">
+  <div style="display: grid; place-items: center;" class="p-2">
+    <div class="flex items-center gap-2">
+      <span class="text-white font-bold">X</span>
+      <input type="checkbox" checked={excluded} on:change={(e) => onExclude(e.target.checked)} />
+    </div>
+  </div>
   <select
     bind:value={mappings[name]}
     class="w-full bg-gray-800 text-white border border-gray-600 rounded p-1 cursor-pointer appearance-none hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
@@ -52,7 +55,6 @@
   .exclude-toggle {
     display: flex;
     align-items: center;
-    margin-bottom: 0.25rem;
   }
 
   /* Override any other styles with high specificity */
@@ -80,15 +82,5 @@
   .exclude-toggle input[type='checkbox']:checked {
     background-color: #666;
     border-color: #888;
-    position: relative;
-  }
-
-  .exclude-toggle input[type='checkbox']:checked::after {
-    content: 'x';
-    position: absolute;
-    color: #fff;
-    font-size: 0.75rem;
-    top: -1px;
-    left: 2px;
   }
 </style>
