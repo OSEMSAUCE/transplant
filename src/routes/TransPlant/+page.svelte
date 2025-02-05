@@ -709,14 +709,28 @@
       const fieldType = tableFieldTypes[table]?.[field]?.type;
       if (fieldType === 'number') {
         // Check if column contains non-numeric values
-        const decimals = field === 'hectares' ? 1 : 0;
         const hasNonNumeric = csvData.some((row) => {
           const val = row[csvColumn];
-          return val && !validateNumber(val, decimals).isValid;
+          return !val || isNaN(Number(val.replace(',', '')));
         });
 
         if (hasNonNumeric) {
           console.log('Warning: Some rows contain non-numeric values');
+          // Update validation state but don't proceed with mapping
+          if (!previewValidation[table]) {
+            previewValidation[table] = {};
+          }
+          previewValidation[table][field] = false;
+          console.log('Updated previewValidation:', previewValidation);
+          
+          // Update preview data to show error state
+          previewData[table] = previewData[table].map(row => ({
+            ...row,
+            [field]: 'Number required'
+          }));
+          previewData = { ...previewData }; // Force reactivity
+          previewValidation = { ...previewValidation }; // Force reactivity
+          return; // Exit early without reordering
         }
       }
 
@@ -1099,10 +1113,17 @@
                             ? (e) => handleDrop(e, tableName, header)
                             : (e) => e.preventDefault()}
                           class={tableName === 'Planted' ? 'droppable-column hover:bg-blue-50' : ''}
-                          class:invalid={tableName === 'Planted' && previewValidation?.Planted?.[header] === false}
+                          class:invalid={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false}
                           data-row-index={rowIndex}
+                          title={tableName === 'Planted' && previewValidation?.[tableName]?.[header] === false ? 
+                            tableFieldTypes[tableName]?.[header]?.type === 'number' ? 'Number required' : 'Invalid value'
+                            : ''}
                         >
-                          {row[header] || ''}
+                          <div class="flex items-center justify-between w-full">
+                            <span style="color: {row[header] === 'Number required' ? '#ef4444' : 'inherit'}">
+                              {row[header] || ''}
+                            </span>
+                          </div>
                         </td>
                       {/each}
                     </tr>
