@@ -10,11 +10,11 @@
   const CORE_PLANTED_COLUMNS = ['land_name', 'species_id', 'planted'];
 
   // Type definitions
-  type CsvRow = Record<string, string>;
+  type CsvRow = Record<string, string | null>;
   type ValidationResult = { valid: boolean; value: string | number | Date | null };
 
-  interface PreviewRow {
-    [key: string]: string | boolean;
+  interface PreviewRow extends Record<string, string | boolean> {
+    [key: `${string}_valid`]?: boolean;
   }
 
   interface FieldDefinition {
@@ -31,6 +31,11 @@
   }
 
   // Validation functions
+  function getRowValue(row: CsvRow | PreviewRow, column: string): string {
+    const value = row[column];
+    return value === null || value === undefined || typeof value === 'boolean' ? '' : String(value);
+  }
+
   function validateField(value: string, type: FieldType): ValidationResult {
     if (value === '' || value == null) {
       return { valid: true, value: null };
@@ -122,9 +127,33 @@
   let tableHeaders = Object.fromEntries(
     schema.map((table) => [table.name, table.fields.map((field) => field.name)])
   );
+  // previewData is already declared above
 
   let errorMessage = '';
   let csvData: CsvRow[] | null = null;
+  let typedCsvData: PreviewRow[] = [];
+
+  function isValidKey(key: string): key is keyof PreviewRow {
+    const allKeys = [
+      ...tableHeaders.Land,
+      ...tableHeaders.Crop,
+      ...tableHeaders.Planted,
+      ...tableHeaders.Planted.map(k => `${k}_valid`)
+    ];
+    return allKeys.includes(key);
+  }
+
+  $: if (csvData) {
+    typedCsvData = csvData.map((row) => {
+      const typedRow: PreviewRow = {};
+      Object.keys(row).forEach((key) => {
+        if (isValidKey(key)) {
+          typedRow[key] = getRowValue(row, key);
+        }
+      });
+      return typedRow;
+    });
+  }
   let mappings: Record<string, string> = {};
   let validMappings: Record<string, boolean[]> = {};
   let previewValidation: Record<string, Record<string, boolean[]>> = {};
@@ -390,40 +419,19 @@
       errorMessage = '';
     }
   });
-
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
       Papa.parse(file, {
-        header: true,
         complete: (results: Papa.ParseResult<CsvRow>) => {
           csvData = results.data;
-          csvColumns = Object.keys(results.data[0] || {});
-          orderedCsvColumns = [...csvColumns];
-          errorMessage = '';
-
-          // Reset mappings and preview data
-          mappings = {};
-          previewData = {
-            Land: Array(5)
-              .fill({})
-              .map(() => Object.fromEntries(tableHeaders.Land.map((header) => [header, '']))),
-            Crop: Array(5)
-              .fill({})
-              .map(() => Object.fromEntries(tableHeaders.Crop.map((header) => [header, '']))),
-            Planted: Array(5)
-              .fill({})
-              .map(() => Object.fromEntries(tableHeaders.Planted.map((header) => [header, '']))),
-          };
+          console.log('Parsed CSV Data:', csvData);
         },
-        error: (error: Papa.ParseError) => {
-          errorMessage = `Error parsing CSV file: ${error.message}`;
-        },
+        header: true,
       });
     }
   }
-  // test
 
   function reorderColumns() {
     console.log('=== Starting column reorder ===');
@@ -670,37 +678,37 @@
       // Get unique land names and their fields
       const uniqueLands = new Map();
       const landNameCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.land_name'
+        ([, mapping]) => mapping === 'Planted.land_name'
       )?.[0];
       const gpsLatCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.gps_lat'
+        ([, mapping]) => mapping === 'Planted.gps_lat'
       )?.[0];
       const gpsLonCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.gps_lon'
+        ([, mapping]) => mapping === 'Planted.gps_lon'
       )?.[0];
       const hectaresCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.hectares'
+        ([, mapping]) => mapping === 'Planted.hectares'
       )?.[0];
       const prepIdCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.preparation_id'
+        ([, mapping]) => mapping === 'Planted.preparation_id'
       )?.[0];
 
       // Get unique crop names and their fields
       const uniqueCrops = new Map();
       const cropNameCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.crop_name'
+        ([, mapping]) => mapping === 'Planted.crop_name'
       )?.[0];
       const speciesIdCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.species_id'
+        ([, mapping]) => mapping === 'Planted.species_id'
       )?.[0];
       const seedlotCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.seedlot'
+        ([, mapping]) => mapping === 'Planted.seedlot'
       )?.[0];
       const seedzoneCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.seedzone'
+        ([, mapping]) => mapping === 'Planted.seedzone'
       )?.[0];
       const cropStockCol = Object.entries(mappings).find(
-        ([_, mapping]) => mapping === 'Planted.crop_stock'
+        ([, mapping]) => mapping === 'Planted.crop_stock'
       )?.[0];
 
       if (landNameCol) {
@@ -817,7 +825,10 @@
 
 <div class="csv-mapper">
   {#if errorMessage}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+    <div
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+      role="alert"
+    >
       <span class="block sm:inline">{errorMessage}</span>
     </div>
   {/if}
@@ -877,7 +888,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each csvData.slice(0, 5) as row}
+              {#each typedCsvData.slice(0, 5) as row}
                 <tr class="flex flex-row flex-nowrap">
                   {#each orderedCsvColumns as column}
                     <td
@@ -890,7 +901,7 @@
                       data-mapped={mappings[column]}
                       title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >
-                      {row[column] || ''}
+                      {getRowValue(row, column)}
                       {#if row[`${column}_valid`] === false}
                         <span class="text-red-500 text-xs"> (invalid)</span>
                       {/if}
