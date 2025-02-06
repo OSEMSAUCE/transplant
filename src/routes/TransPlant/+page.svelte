@@ -6,8 +6,6 @@
   type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
   import { onMount } from 'svelte';
 
-  // Core columns that must stay at the start of Planted table
-  const CORE_PLANTED_COLUMNS = ['land_name', 'species_id', 'planted'];
 
   // Type definitions
   type CsvRow = Record<string, string | null>;
@@ -63,8 +61,12 @@
           value: !isNaN(coord) ? coord : null,
         };
       case 'date':
-        date = new Date(value);
-
+        // Check if input is just a year (4 digits)
+        if (/^\d{4}$/.test(value.trim())) {
+          date = new Date(value.trim() + '-01-01');
+        } else {
+          date = new Date(value);
+        }
         return { valid: !isNaN(date.getTime()), value: !isNaN(date.getTime()) ? date : null };
       default:
         return { valid: true, value: value.trim() };
@@ -81,7 +83,7 @@
         { name: 'land_name', type: 'string', required: true, propagatesTo: 'Land' },
         { name: 'species_id', type: 'string', required: false, propagatesTo: 'Crop' },
         { name: 'planted', type: 'number', required: true },
-        { name: 'planting_date', type: 'date', required: true },
+        { name: 'planting_date', type: 'date', required: false },
         // Location fields
         { name: 'gps_lat', type: 'latitude', required: false, propagatesTo: 'Land' },
         { name: 'gps_lon', type: 'longitude', required: false, propagatesTo: 'Land' },
@@ -269,9 +271,9 @@
       land_name: { type: 'string', required: true },
       species_id: { type: 'string', required: false, propagatesTo: 'Crop' },
       planted: { type: 'number', required: true },
-      planting_date: { type: 'date', required: true },
-      gps_lat: { type: 'latitude', required: false, propagatesTo: 'Land' },
-      gps_lon: { type: 'longitude', required: false, propagatesTo: 'Land' },
+      planting_date: { type: 'date', required: false },
+      gps_lat: { type: 'latitude', required: true, propagatesTo: 'Land' },
+      gps_lon: { type: 'longitude', required: true, propagatesTo: 'Land' },
       seedlot: { type: 'string', required: false, propagatesTo: 'Crop' },
       seedzone: { type: 'string', required: false, propagatesTo: 'Crop' },
       crop_stock: { type: 'string', required: false, propagatesTo: 'Crop' },
@@ -359,9 +361,9 @@
 
       // For now, use hardcoded schema
       const plantedFields = [
-        // Core fields always come first
-        ...CORE_PLANTED_COLUMNS,
-        // Then other fields
+        'land_name', 
+        'species_id', 
+        'planted',
         'planting_date',
         'gps_lat',
         'gps_lon',
@@ -371,6 +373,7 @@
         'seedlot',
         'seedzone',
         'crop_stock',
+        'nursery',
         'notes',
       ];
 
@@ -403,10 +406,7 @@
       errorMessage = `Error fetching table headers: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
-  // test
-  // test
-  // test
-  // test
+  
 
   onMount(() => {
     fetchTableHeaders();
