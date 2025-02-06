@@ -523,7 +523,12 @@
     return { isValid: true, value: numValue };
   }
 
-  // Add these functions for drag and drop
+  // Drag and Drop Event Handlers
+  
+  /**
+   * Initiates drag operation for a CSV column header or cell
+   * Sets the dragged column name as transfer data and adds visual feedback
+   */
   function handleDragStart(event: DragEvent, csvColumn: string) {
     if (event.dataTransfer) {
       console.log(`Starting drag for column: ${csvColumn}`);
@@ -534,6 +539,10 @@
     }
   }
 
+  /**
+   * Handles dragover event to allow dropping
+   * Adds visual feedback when dragging over a valid drop target
+   */
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -543,6 +552,13 @@
     (target as HTMLElement).classList.add('drag-over');
   }
 
+  /**
+   * Processes drop event when a CSV column is dropped onto a table field
+   * - Updates mappings between CSV columns and database fields
+   * - Validates data types (e.g., numbers, dates)
+   * - Updates preview data for all affected tables
+   * - Reorders columns based on mappings
+   */
   function handleDrop(event: DragEvent, table: string, field: string) {
     event.preventDefault();
     console.log('=== Handle Drop Start ===');
@@ -794,6 +810,10 @@
     }
   }
 
+  /**
+   * Initiates drag of an existing field mapping
+   * Only allows dragging if the field is already mapped to a CSV column
+   */
   function handleMappingDragStart(event: DragEvent, table: string, field: string) {
     const fullField = `${table}.${field}`;
     // Find if this field is mapped to
@@ -806,6 +826,10 @@
     }
   }
 
+  /**
+   * Handles the end of a mapping drag operation
+   * Clears the mapping and preview data if the field was unmapped
+   */
   function handleMappingDragEnd(event: DragEvent, table: string, field: string) {
     const fullField = `${table}.${field}`;
     const mappedColumn = Object.entries(mappings).find(([_, value]) => value === fullField)?.[0];
