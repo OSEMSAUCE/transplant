@@ -8,6 +8,49 @@
   let fileInput: HTMLInputElement;
   let selectedFileName = '';
 
+  function parseGpsCoordinate(value: string): number | null {
+    if (!value) return null;
+    const cleaned = value.trim();
+
+    // Already decimal format
+    if (/^-?\d+\.\d+$/.test(cleaned)) {
+      return parseFloat(cleaned);
+    }
+
+    // DMS format with ° ' "
+    const dmsMatch = cleaned.match(/^(-?\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)''/i);
+    if (dmsMatch) {
+      const degrees = parseFloat(dmsMatch[1]);
+      const minutes = parseFloat(dmsMatch[2]);
+      const seconds = parseFloat(dmsMatch[3]);
+      return degrees + (minutes / 60) + (seconds / 3600);
+    }
+
+    // Format like "N41 04 12" or "W0 11 24"
+    const dirMatch = cleaned.match(/^([NSEW])?\s*(\d+)\s+(\d+)\s+(\d+(\.\d+)?)/i);
+    if (dirMatch) {
+      const direction = dirMatch[1]?.toUpperCase() || '';
+      const degrees = parseFloat(dirMatch[2]);
+      const minutes = parseFloat(dirMatch[3]);
+      const seconds = parseFloat(dirMatch[4]);
+      let decimal = degrees + (minutes / 60) + (seconds / 3600);
+      if (direction === 'S' || direction === 'W') {
+        decimal = -decimal;
+      }
+      return decimal;
+    }
+
+    return null;
+  }
+
+  function formatGpsCoordinate(value: string): string {
+    const decimal = parseGpsCoordinate(value);
+    if (decimal !== null) {
+      return decimal.toFixed(7);
+    }
+    return value;
+  }
+
   $: validationState = $transformStore;
 
   interface CsvRow {
@@ -54,15 +97,34 @@
             });
             if (isNumber) return 'number';
 
-            // Try to detect dates in various formats
+            // Try to detect GPS coordinates
+            const isGps = values.every(v => {
+              if (!v) return true; // Skip empty values
+              
+              // Try to parse as GPS coordinate
+              const decimal = parseGpsCoordinate(v);
+              if (decimal !== null) {
+                return decimal >= -180 && decimal <= 180;
+              }
+              return false;
+            });
+            if (isGps) return 'gps';
+
+            // Try to detect dates and years
             const isDate = values.every(v => {
-              // Try different date formats
+              if (!v) return true; // Skip empty values
               try {
+                // First check if it's a year between 1970 and 2027
+                if (/^\d{4}$/.test(v)) {
+                  const year = parseInt(v);
+                  if (year >= 1970 && year <= 2027) return true;
+                }
+
                 // Handle formats like "6 Feb 25", "6 Feb 2025", "2025-02-06"
                 const date = new Date(v);
                 if (!isNaN(date.getTime())) return true;
 
-                // Try parsing with custom formats if needed
+                // Try parsing with custom formats
                 const patterns = [
                   /^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/, // 6 Feb 25 or 6 Feb 2025
                   /^\d{4}-\d{2}-\d{2}$/, // 2025-02-06
@@ -80,22 +142,31 @@
           }
 
           // Initial analysis of columns
+          const previewLimit = 1000;
+          const previewData = results.data.slice(0, previewLimit);
+          const totalRows = results.data.length;
+
           const columns = Object.keys(results.data[0]).map((name) => {
-            const sampleValues = results.data.slice(0, 5).map((row) => row[name] || '');
-            const suggestedType = detectType(sampleValues);
+            const allValues = results.data.map((row) => row[name] || '');
+            const previewValues = previewData.map((row) => row[name] || '');
+            const suggestedType = detectType(allValues); // Use all values for type detection
             return {
-            name,
-            currentType: suggestedType,
-            suggestedType,
-            confidence: 1,
-            sampleValues,
-            invalidValues: [],
-            totalRows: results.data.length,
-            validRows: results.data.length,
-          };
+              name,
+              currentType: suggestedType,
+              suggestedType,
+              confidence: 1,
+              sampleValues: previewValues,
+              invalidValues: [],
+              totalRows,
+              validRows: totalRows,
+            };
           });
 
           transformStore.updateAnalysis(columns);
+          
+          if (totalRows > previewLimit) {
+            console.log(`Showing ${previewLimit} of ${totalRows} rows in preview`);
+          }
         },
         error: (error) => {
           transformStore.setError(error.message);
@@ -135,6 +206,11 @@
       <p>{validationState.error}</p>
     </div>
   {:else if validationState.columns.length > 0}
+    {#if validationState.columns[0].totalRows > 1000}
+      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded mb-4">
+        Showing first 1,000 of {validationState.columns[0].totalRows.toLocaleString()} rows in preview
+      </div>
+    {/if}
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
       <table class="data-table">
           <!-- Type Information -->
@@ -184,33 +260,45 @@
               <tr>
                 {#each validationState.columns as column}
                   <td class:invalid-value={column.invalidValues.includes(column.sampleValues[rowIndex])}>
-                    {#if column.currentType === 'number'}
-                      {column.sampleValues[rowIndex] ? Number(column.sampleValues[rowIndex].replace(/[,\s]/g, '')).toLocaleString() : ''}
-                    {:else if column.currentType === 'date'}
-                      {#if column.sampleValues[rowIndex]}
-                        {(() => {
-                          try {
-                            const date = new Date(column.sampleValues[rowIndex]);
-                            if (!isNaN(date.getTime())) {
-                              return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                            }
-                            return column.sampleValues[rowIndex];
-                          } catch {
-                            return column.sampleValues[rowIndex];
-                          }
-                        })()}
+                    <div class="value-display">
+                      <div class="original-value">{column.sampleValues[rowIndex] || ''}</div>
+                      {#if column.currentType !== 'string'}
+                        <div class="transformed-value">
+                          {#if column.currentType === 'number'}
+                            {column.sampleValues[rowIndex] ? Number(column.sampleValues[rowIndex].replace(/[,\s]/g, '')).toLocaleString() : ''}
+                          {:else if column.currentType === 'date'}
+                            {#if column.sampleValues[rowIndex]}
+                              {(() => {
+                                try {
+                                  const value = column.sampleValues[rowIndex];
+                                  // Check if it's just a year
+                                  if (/^\d{4}$/.test(value)) {
+                                    const year = parseInt(value);
+                                    if (year >= 1970 && year <= 2027) {
+                                      return new Date(year, 0, 1).toISOString();
+                                    }
+                                  }
+
+                                  // Handle other date formats
+                                  const date = new Date(value);
+                                  if (!isNaN(date.getTime())) {
+                                    return date.toISOString();
+                                  }
+                                  return null; // Don't show transformed if we can't parse
+                                } catch {
+                                  return null; // Don't show transformed if we can't parse
+                                }
+                              })()}
+                            {/if}
+                          {:else if column.currentType === 'gps'}
+                            {(() => {
+                              const transformed = formatGpsCoordinate(column.sampleValues[rowIndex]);
+                              return transformed !== column.sampleValues[rowIndex] ? transformed : null;
+                            })()}
+                          {/if}
+                        </div>
                       {/if}
-                    {:else if column.currentType === 'gps'}
-                      {#if column.sampleValues[rowIndex]}
-                        {(() => {
-                          const cleaned = column.sampleValues[rowIndex].replace(/[°'"\s]/g, '');
-                          const num = Number(cleaned);
-                          return !isNaN(num) ? num.toFixed(6) : column.sampleValues[rowIndex];
-                        })()}
-                      {/if}
-                    {:else}
-                      {column.sampleValues[rowIndex] || ''}
-                    {/if}
+                    </div>
                   </td>
                 {/each}
               </tr>
@@ -222,5 +310,20 @@
 </div>
 
 <style>
-  /* Add any component-specific styles here */
+  /* Value display styles */
+  .value-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .original-value {
+    font-weight: normal;
+  }
+
+  .transformed-value {
+    font-size: 0.875rem;
+    color: #6B7280;
+    font-style: italic;
+  }
 </style>
