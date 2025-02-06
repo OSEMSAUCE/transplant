@@ -58,16 +58,18 @@
             {#each headerGroup.headers as header}
               <th>
                 {#if !header.isPlaceholder}
-                  <div
+                  <button
+                    type="button"
                     class="th-content"
                     on:click={() => header.column.toggleSorting()}
-                    style="cursor: pointer;"
+                    on:keydown={(e) => e.key === 'Enter' && header.column.toggleSorting()}
+                    style="cursor: pointer; background: none; border: none; width: 100%; text-align: left;"
                   >
                     {header.column.columnDef.header}
                     <span class="sort-indicator" class:active={header.column.getIsSorted()}>
                       {header.column.getIsSorted() === 'desc' ? '▼' : '▲'}
                     </span>
-                  </div>
+                  </button>
                 {/if}
               </th>
             {/each}

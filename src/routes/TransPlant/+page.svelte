@@ -1,7 +1,9 @@
 <script lang="ts">
   /// <reference types="svelte" />
+  /// <reference types="vite/client" />
   // @ts-expect-error - PapaParse lacks TypeScript definitions
   import Papa from 'papaparse';
+  type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
   import { onMount } from 'svelte';
 
   // Core columns that must stay at the start of Planted table
@@ -9,7 +11,7 @@
 
   // Type definitions
   type CsvRow = Record<string, string>;
-  type ValidationResult = { valid: boolean; value: any };
+  type ValidationResult = { valid: boolean; value: string | number | Date | null };
 
   interface PreviewRow {
     [key: string]: string | boolean;
@@ -37,18 +39,24 @@
     let num: number;
     let coord: number;
     let date: Date;
-    
+
     switch (type) {
       case 'number':
-      num = Number(value.trim());
+        num = Number(value.trim());
 
         return { valid: !isNaN(num), value: !isNaN(num) ? num : null };
       case 'latitude':
         coord = Number(value.trim());
-        return { valid: !isNaN(coord) && coord >= -90 && coord <= 90, value: !isNaN(coord) ? coord : null };
+        return {
+          valid: !isNaN(coord) && coord >= -90 && coord <= 90,
+          value: !isNaN(coord) ? coord : null,
+        };
       case 'longitude':
         coord = Number(value.trim());
-        return { valid: !isNaN(coord) && coord >= -180 && coord <= 180, value: !isNaN(coord) ? coord : null };
+        return {
+          valid: !isNaN(coord) && coord >= -180 && coord <= 180,
+          value: !isNaN(coord) ? coord : null,
+        };
       case 'date':
         date = new Date(value);
 
@@ -70,8 +78,8 @@
         { name: 'planted', type: 'number', required: true },
         { name: 'planting_date', type: 'date', required: true },
         // Location fields
-        { name: 'gps_lat', type: 'gps', required: false, propagatesTo: 'Land' },
-        { name: 'gps_lon', type: 'gps', required: false, propagatesTo: 'Land' },
+        { name: 'gps_lat', type: 'latitude', required: false, propagatesTo: 'Land' },
+        { name: 'gps_lon', type: 'longitude', required: false, propagatesTo: 'Land' },
         { name: 'hectares', type: 'number', required: false, propagatesTo: 'Land' },
         { name: 'preparation_id', type: 'string', required: false, propagatesTo: 'Land' },
         // Crop fields
@@ -80,7 +88,7 @@
         { name: 'crop_stock', type: 'string', required: false, propagatesTo: 'Crop' },
         { name: 'nursery', type: 'string', required: false, propagatesTo: 'Crop' },
         // Additional fields
-        { name: 'notes', type: 'string', required: false }
+        { name: 'notes', type: 'string', required: false },
       ],
     },
     {
@@ -91,9 +99,9 @@
         { name: 'hectares', type: 'number', required: true },
         { name: 'preparation_id', type: 'string', required: false },
         { name: 'gis_area', type: 'number', required: false },
-        { name: 'gps_lat', type: 'gps', required: false },
-        { name: 'gps_lon', type: 'gps', required: false },
-        { name: 'notes', type: 'string', required: false }
+        { name: 'gps_lat', type: 'latitude', required: false },
+        { name: 'gps_lon', type: 'longitude', required: false },
+        { name: 'notes', type: 'string', required: false },
       ],
     },
     {
@@ -104,24 +112,21 @@
         { name: 'seedlot', type: 'string', required: false },
         { name: 'seedzone', type: 'string', required: false },
         { name: 'crop_stock', type: 'string', required: false },
-        { name: 'nursery', type: 'string', required: false }
+        { name: 'nursery', type: 'string', required: false },
       ],
-    }
+    },
   ];
 
   // Generate table headers from schema
   let databaseFields: Record<string, string[]>;
   let tableHeaders = Object.fromEntries(
-    schema.map(table => [
-      table.name,
-      table.fields.map(field => field.name)
-    ])
+    schema.map((table) => [table.name, table.fields.map((field) => field.name)])
   );
 
   let errorMessage = '';
   let csvData: CsvRow[] | null = null;
   let mappings: Record<string, string> = {};
-  let validMappings: Record<string, boolean> = {};
+  let validMappings: Record<string, boolean[]> = {};
   let previewValidation: Record<string, Record<string, boolean[]>> = {};
 
   // Validate mappings whenever they change
@@ -133,53 +138,54 @@
 
       Object.entries(mappings).forEach(([column, mapping]) => {
         if (!mapping) {
-          validMappings[column] = true;
+          validMappings[column] = [true];
           return;
         }
 
         const [table, field] = mapping.split('.');
-        const tableSchema = schema.find(s => s.name === table);
-        const fieldDef = tableSchema?.fields.find(f => f.name === field);
+        const tableSchema = schema.find((s) => s.name === table);
+        const fieldDef = tableSchema?.fields.find((f) => f.name === field);
 
         if (!fieldDef) {
-          validMappings[column] = false;
+          validMappings[column] = [false];
           return;
         }
 
         // Validate each row's value against the field type
-        const hasInvalidValues = csvData?.some(row => {
+        const hasInvalidValues = csvData?.some((row) => {
           const result = validateField(row[column], fieldDef.type);
           return !result.valid;
         });
 
-        validMappings[column] = !hasInvalidValues;
+        validMappings[column] = [!hasInvalidValues];
 
         // Store validation results for preview
         if (hasInvalidValues) {
           previewValidation[column] = {};
           csvData?.slice(0, 5).forEach((row, i) => {
             const result = validateField(row[column], fieldDef.type);
-            previewValidation[column][i] = result.valid;
+            previewValidation[column][i] = [result.valid];
           });
         }
 
         // If field is required and all values are empty, mark as invalid
-        if (fieldDef.required && csvData?.every(row => !row[column])) {
-          validMappings[column] = false;
+        if (fieldDef.required && csvData?.every((row) => !row[column])) {
+          validMappings[column] = [false];
           previewValidation[column] = {};
           csvData.slice(0, 5).forEach((_, i) => {
-            previewValidation[column][i] = false;
+            previewValidation[column][i] = [false];
           });
           delete mappings[column];
         } else {
-          validMappings[column] = true;
+          validMappings[column] = [true];
         }
       });
-      validMappings = validMappings; // Trigger reactivity
-      mappings = mappings; // Trigger reactivity
+      // Trigger reactivity by creating new objects
+      validMappings = { ...validMappings };
+      mappings = { ...mappings };
     }
   }
-  let fileInput: any;
+  let fileInput: HTMLInputElement;
   import ColumnHeader from '$lib/components/ColumnHeader.svelte';
 
   let csvColumns: string[] = [];
@@ -209,10 +215,6 @@
   };
 
   // Track actual land-crop combinations from import data
-  let importedPlantings: Array<{ land_name: string; crop_name: string }> = [];
-
-  // Add these type definitions at the top of the script
-  type FieldType = 'number' | 'string' | 'latitude' | 'longitude' | 'date';
 
   // FieldDefinition interface is already defined above
 
@@ -250,7 +252,6 @@
       notes: { type: 'string', required: false },
     },
   } as const;
-
 
   // Add this mock data for development
   const MOCK_CSV_DATA = [
@@ -370,7 +371,7 @@
           .map(() => Object.fromEntries(tableHeaders.Planted.map((header) => [header, '']))),
       };
     } catch (error) {
-      errorMessage = 'Error fetching table headers';
+      errorMessage = `Error fetching table headers: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
   // test
@@ -382,7 +383,7 @@
     fetchTableHeaders();
 
     // Auto-load mock data in development
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV === true) {
       csvData = MOCK_CSV_DATA;
       csvColumns = Object.keys(MOCK_CSV_DATA[0] || {});
       orderedCsvColumns = [...csvColumns];
@@ -396,7 +397,7 @@
     if (file) {
       Papa.parse(file, {
         header: true,
-        complete: (results) => {
+        complete: (results: Papa.ParseResult<CsvRow>) => {
           csvData = results.data;
           csvColumns = Object.keys(results.data[0] || {});
           orderedCsvColumns = [...csvColumns];
@@ -416,7 +417,7 @@
               .map(() => Object.fromEntries(tableHeaders.Planted.map((header) => [header, '']))),
           };
         },
-        error: (error) => {
+        error: (error: Papa.ParseError) => {
           errorMessage = `Error parsing CSV file: ${error.message}`;
         },
       });
@@ -431,10 +432,9 @@
 
     // Create arrays to hold columns in their new order
     const newOrder = [];
-    const processedColumns = new Set();
 
     // Create a map of target positions based on Planted table order
-    const fieldPositions = {};
+    const fieldPositions: Record<string, number> = {};
     tableHeaders.Planted.forEach((field, index) => {
       fieldPositions[field] = index;
     });
@@ -483,198 +483,36 @@
     console.log('=== Finished column reorder ===');
   }
 
-  function handleColumnMap(csvColumn: string, value: string) {
-    console.log(`Mapping column ${csvColumn} to ${value}`);
-
-    // Update mapping - validation will happen in reactive statement
-    if (value) {
-      mappings[csvColumn] = value;
-    } else {
-      delete mappings[csvColumn];
+  // Validate numeric fields
+  function validateNumber(
+    value: string | number,
+    decimals = 0
+  ): { isValid: boolean; value?: number } {
+    // Handle empty or undefined values
+    if (value === undefined || value === null || value === '') {
+      return { isValid: false };
     }
 
-    // Trigger validation
-    mappings = mappings;
+    // Convert to string for validation
+    const strValue = String(value).trim();
 
-    // Only reorder if the mapping is valid
-    if (validMappings[csvColumn]) {
-      const [targetTable] = value?.split('.') || [];
-      if (targetTable === 'Planted') {
-        reorderColumns();
-      }
+    // Check if it's a valid number
+    const numValue = parseFloat(strValue);
+    if (isNaN(numValue)) {
+      return { isValid: false };
     }
 
-    // Handle special cases for land_name and crop_name
-    if (
-      (targetTable === 'Land' && field === 'land_name') ||
-      (targetTable === 'Crop' && field === 'crop_name')
-    ) {
-      // Map to both the original table and Planted table
-      const baseCol = csvColumn.replace('_planted', '');
-      mappings[`${baseCol}_planted`] = `Planted.${field}`;
-      mappings[baseCol] = `${targetTable}.${field}`; // Keep the original table mapping
+    // Check if it has the correct number of decimal places
+    if (decimals === 0 && strValue.includes('.')) {
+      return { isValid: false };
     }
 
-    // Update preview data for all tables
-    if (csvData) {
-      // Reset imported plantings
-      importedPlantings = [];
-
-      // Update Planted table first
-      const plantedMappings = new Map();
-      Object.entries(mappings).forEach(([col, mapping]) => {
-        if (mapping) {
-          const [mapTable, field] = mapping.split('.');
-          if (mapTable === 'Planted') {
-            plantedMappings.set(field, col);
-            console.log(`Setting Planted mapping: ${field} -> ${col}`);
-          }
-        }
-      });
-      
-      console.log('Planted mappings:', Object.fromEntries(plantedMappings));
-
-      // Create preview rows for Planted table
-      previewData.Planted = csvData.slice(0, 5).map((row) => {
-        const previewRow = {};
-        plantedMappings.forEach((csvCol, field) => {
-          const rawValue = row[csvCol];
-          const fieldType = tableFieldTypes.Planted?.[field]?.type || 'string';
-          const { valid, value } = validateField(rawValue, fieldType);
-
-          // Store validation result
-          if (!previewValidation.Planted) {
-            previewValidation.Planted = {};
-          }
-          if (!previewValidation.Planted[field]) {
-            previewValidation.Planted[field] = [];
-          }
-          previewValidation.Planted[field].push(valid);
-
-          previewRow[field] = value || '';
-        });
-        return previewRow;
-      });
-
-      // Then update Land and Crop tables
-      ['Land', 'Crop'].forEach((table) => {
-        const tableMappings = new Map();
-        
-        // First, get direct mappings from CSV
-        Object.entries(mappings).forEach(([col, mapping]) => {
-          if (mapping) {
-            const [mapTable, field] = mapping.split('.');
-            if (mapTable === table) {
-              tableMappings.set(field, col);
-            }
-          }
-        });
-
-        // Then get propagated fields from Planted
-        Object.entries(tableFieldTypes.Planted).forEach(([field, def]: [string, any]) => {
-          if (def.propagatesTo === table) {
-            // First check if we have a direct mapping in Planted table
-            const plantedCol = Array.from(plantedMappings.entries())
-              .find(([key]) => key === field)?.[1];
-            if (plantedCol && !tableMappings.has(field)) {
-              tableMappings.set(field, plantedCol);
-              console.log(`Propagating ${field} from Planted to ${table} using column ${plantedCol}`);
-            }
-          }
-        });
-
-        // Create preview rows with mapped and validated data
-        previewData[table] = csvData?.slice(0, 5)?.map((row) => {
-          const previewRow = {};
-
-          // Process all fields for this table
-          tableHeaders[table].forEach((field) => {
-            const mappedColumn = tableMappings.get(field);
-            if (mappedColumn) {
-              const rawValue = row[mappedColumn];
-              const fieldType = tableFieldTypes[table]?.[field]?.type || 'string';
-              const { valid, value } = validateField(rawValue, fieldType);
-
-              // Store validation result
-              if (!previewValidation[table]) {
-                previewValidation[table] = {};
-              }
-              if (!previewValidation[table][field]) {
-                previewValidation[table][field] = [];
-              }
-              previewValidation[table][field].push(valid);
-
-              // Only set the value if it's valid
-              previewRow[field] = valid ? (value || '') : '';
-              previewRow[`${field}_valid`] = valid;
-
-              // Clear any existing mappings to this field in other tables
-              const existingMapping = Object.entries(mappings).find(
-                ([, val]) => val === `${table}.${field}`
-              );
-              if (existingMapping) {
-                mappings[existingMapping[0]] = '';
-              }
-            } else {
-              previewRow[field] = '';
-              previewRow[`${field}_valid`] = true;
-            }
-          });
-
-          return previewRow;
-        });
-        // Track valid land-crop combinations and their planting data from import data
-        if (table === 'Land' || table === 'Crop') {
-          const landNameMapping = Object.entries(mappings).find(
-            ([, val]) => val === 'Land.land_name'
-          )?.[0];
-          const cropNameMapping = Object.entries(mappings).find(
-            ([, val]) => val === 'Crop.crop_name'
-          )?.[0];
-
-          if (landNameMapping && cropNameMapping) {
-            // Get all valid land-crop combinations from import data
-            importedPlantings = csvData
-              .map((row) => ({
-                land_name: row[landNameMapping],
-                crop_name: row[cropNameMapping],
-              }))
-              .filter(
-                (planting) =>
-                  // Ensure both land_name and crop_name exist and are valid
-                  planting.land_name &&
-                  planting.crop_name &&
-                  previewData.Land.some((land) => land.land_name === planting.land_name) &&
-                  previewData.Crop.some((crop) => crop.crop_name === planting.crop_name)
-              );
-
-            // Update Planted table preview with actual planting combinations
-            previewData.Planted = importedPlantings.map((planting) => ({
-              land_name: planting.land_name,
-              crop_name: planting.crop_name,
-              planted: '',
-              planted_valid: true,
-              planting_date: '',
-              gps_lat: '',
-              gps_lon: '',
-              species_id: '',
-              seedlot: '',
-              seedzone: '',
-              crop_stock: '',
-              hectares: '',
-              preparation_id: '',
-              notes: '',
-            }));
-          }
-        }
-      });
-
-      // Force reactivity for preview data
-      previewData = { ...previewData };
-
-      // Force reactivity
-      previewData = { ...previewData };
+    const parts = strValue.split('.');
+    if (parts[1] && parts[1].length > decimals) {
+      return { isValid: false };
     }
+
+    return { isValid: true, value: numValue };
   }
 
   // Add these functions for drag and drop
@@ -684,7 +522,7 @@
       event.dataTransfer.setData('text/plain', csvColumn);
       event.dataTransfer.effectAllowed = 'move';
       const target = /** @type {HTMLElement} */ (event.target);
-      target.classList.add('dragging');
+      (target as HTMLElement).classList.add('dragging');
     }
   }
 
@@ -694,7 +532,7 @@
       event.dataTransfer.dropEffect = 'move';
     }
     const target = /** @type {HTMLElement} */ (event.target);
-    target.classList.add('drag-over');
+    (target as HTMLElement).classList.add('drag-over');
   }
 
   function handleDrop(event: DragEvent, table: string, field: string) {
@@ -708,7 +546,7 @@
     }
 
     const target = /** @type {HTMLElement} */ (event.target);
-    target.classList.remove('drag-over');
+    (target as HTMLElement).classList.remove('drag-over');
 
     const csvColumn = event.dataTransfer?.getData('text/plain');
     console.log(`Dropped ${csvColumn} onto ${table}.${field}`);
@@ -978,6 +816,11 @@
 </script>
 
 <div class="csv-mapper">
+  {#if errorMessage}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <span class="block sm:inline">{errorMessage}</span>
+    </div>
+  {/if}
   <main class="container">
     {#if !csvData}
       <div class="file-upload">
@@ -1003,7 +846,8 @@
                   } else {
                     excludedColumns.delete(csvColumn);
                   }
-                  excludedColumns = excludedColumns;
+                  // Trigger reactivity by creating a new array
+                  excludedColumns = [...excludedColumns];
 
                   // Reorder columns
                   const nonExcluded = orderedCsvColumns.filter((col) => !excludedColumns.has(col));

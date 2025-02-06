@@ -7,11 +7,11 @@ declare global {
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
-		interface Locals {
-			// ... other locals ...
+		interface Locals extends Record<string, unknown> {
+			// Add specific locals here when needed
 		}
-		interface Platform {
-			// ... platform specific ...
+		interface Platform extends Record<string, unknown> {
+			// Add platform-specific properties here when needed
 		}
 		interface PrivateEnv {
 			DATABASE_URL: string;
