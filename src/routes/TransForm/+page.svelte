@@ -40,17 +40,60 @@
             return;
           }
 
+          function detectType(values: string[]): CsvColumnType {
+            // Skip empty values for type detection
+            values = values.filter(v => v !== '' && v != null);
+            if (values.length === 0) return 'string';
+
+            // Try to detect numbers
+            const isNumber = values.every(v => {
+              // Remove commas and spaces
+              const cleaned = v.replace(/[,\s]/g, '');
+              // Check if it's a valid number
+              return !isNaN(Number(cleaned)) && cleaned.length > 0;
+            });
+            if (isNumber) return 'number';
+
+            // Try to detect dates in various formats
+            const isDate = values.every(v => {
+              // Try different date formats
+              try {
+                // Handle formats like "6 Feb 25", "6 Feb 2025", "2025-02-06"
+                const date = new Date(v);
+                if (!isNaN(date.getTime())) return true;
+
+                // Try parsing with custom formats if needed
+                const patterns = [
+                  /^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/, // 6 Feb 25 or 6 Feb 2025
+                  /^\d{4}-\d{2}-\d{2}$/, // 2025-02-06
+                  /^\d{1,2}\/\d{1,2}\/\d{2,4}$/ // MM/DD/YY or MM/DD/YYYY
+                ];
+                return patterns.some(pattern => pattern.test(v));
+              } catch {
+                return false;
+              }
+            });
+            if (isDate) return 'date';
+
+            // Default to string
+            return 'string';
+          }
+
           // Initial analysis of columns
-          const columns = Object.keys(results.data[0]).map((name) => ({
+          const columns = Object.keys(results.data[0]).map((name) => {
+            const sampleValues = results.data.slice(0, 5).map((row) => row[name] || '');
+            const suggestedType = detectType(sampleValues);
+            return {
             name,
-            currentType: 'string' as CsvColumnType,
-            suggestedType: 'string' as CsvColumnType,
+            currentType: suggestedType,
+            suggestedType,
             confidence: 1,
-            sampleValues: results.data.slice(0, 5).map((row) => row[name] || ''),
+            sampleValues,
             invalidValues: [],
             totalRows: results.data.length,
             validRows: results.data.length,
-          }));
+          };
+          });
 
           transformStore.updateAnalysis(columns);
         },
@@ -141,7 +184,33 @@
               <tr>
                 {#each validationState.columns as column}
                   <td class:invalid-value={column.invalidValues.includes(column.sampleValues[rowIndex])}>
-                    {column.sampleValues[rowIndex] || ''}
+                    {#if column.currentType === 'number'}
+                      {column.sampleValues[rowIndex] ? Number(column.sampleValues[rowIndex].replace(/[,\s]/g, '')).toLocaleString() : ''}
+                    {:else if column.currentType === 'date'}
+                      {#if column.sampleValues[rowIndex]}
+                        {(() => {
+                          try {
+                            const date = new Date(column.sampleValues[rowIndex]);
+                            if (!isNaN(date.getTime())) {
+                              return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                            }
+                            return column.sampleValues[rowIndex];
+                          } catch {
+                            return column.sampleValues[rowIndex];
+                          }
+                        })()}
+                      {/if}
+                    {:else if column.currentType === 'gps'}
+                      {#if column.sampleValues[rowIndex]}
+                        {(() => {
+                          const cleaned = column.sampleValues[rowIndex].replace(/[°'"\s]/g, '');
+                          const num = Number(cleaned);
+                          return !isNaN(num) ? num.toFixed(6) : column.sampleValues[rowIndex];
+                        })()}
+                      {/if}
+                    {:else}
+                      {column.sampleValues[rowIndex] || ''}
+                    {/if}
                   </td>
                 {/each}
               </tr>

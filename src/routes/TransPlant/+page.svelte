@@ -30,9 +30,67 @@
   }
 
   // Validation functions
+  function formatValue(value: any, field: string): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    // Get field type based on the field name
+    let fieldType = 'string';
+    if (field === 'hectares' || field === 'planted' || field === 'numberTrees') {
+      fieldType = 'number';
+    } else if (field === 'planting_date' || field === 'Dates') {
+      fieldType = 'date';
+    } else if (field === 'gps_lat' || field === 'gps_lon' || field === 'lon') {
+      fieldType = 'gps';
+    }
+
+    switch (fieldType) {
+      case 'number':
+        // Remove any commas or spaces first
+        const cleanedValue = String(value).replace(/[,\s]/g, '');
+        const num = Number(cleanedValue);
+        return !isNaN(num) ? num.toLocaleString() : value;
+      case 'date':
+        try {
+          // First try to parse the date
+          let date: Date;
+          
+          // Try parsing various formats
+          if (/^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/.test(value)) {
+            // Format: 6 Feb 25 or 6 Feb 2025
+            date = new Date(value);
+          } else if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            // Format: 2025-02-06
+            date = new Date(value);
+          } else {
+            date = new Date(value);
+          }
+
+          if (!isNaN(date.getTime())) {
+            // Format as YYYY-MM-DD
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          }
+          return value;
+        } catch {
+          return value;
+        }
+      case 'gps':
+        // Handle GPS coordinates in various formats
+        const cleanedCoord = String(value).replace(/[°'"\s]/g, '');
+        const coord = Number(cleanedCoord);
+        return !isNaN(coord) ? coord.toFixed(6) : value;
+      default:
+        return String(value);
+    }
+  }
+
   function getRowValue(row: CsvRow | PreviewRow, column: string): string {
     const value = row[column];
-    return value === null || value === undefined || typeof value === 'boolean' ? '' : String(value);
+    return value === null || value === undefined || typeof value === 'boolean' ? '' : formatValue(value, column);
   }
 
   function validateField(value: string, type: FieldType): ValidationResult {
@@ -947,9 +1005,9 @@
               <table
                 style="background: {tableName !== 'Planted'
                   ? '#333333'
-                  : 'inherit'} !important; color: {tableName !== 'Planted'
+                  : 'inherit'} ; color: {tableName !== 'Planted'
                   ? 'white'
-                  : 'inherit'} !important;"
+                  : 'inherit'} ;"
               >
                 <thead>
                   <tr>
@@ -957,8 +1015,8 @@
                       <th
                         style="background: {tableName !== 'Planted'
                           ? '#333333'
-                          : 'inherit'} !important;
-                               color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
+                          : 'inherit'} ;
+                               color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                         draggable={tableName === 'Planted'}
                         on:dragstart={tableName === 'Planted'
                           ? (e) => handleMappingDragStart(e, tableName, header)
@@ -993,14 +1051,14 @@
                     <tr
                       style="background: {tableName !== 'Planted'
                         ? '#333333'
-                        : 'inherit'} !important;"
+                        : 'inherit'} ;"
                     >
                       {#each tableHeaders[tableName] || [] as header}
                         <td
                           style="background: {tableName !== 'Planted'
                             ? '#333333'
-                            : 'inherit'} !important;
-                                 color: {tableName !== 'Planted' ? 'white' : 'inherit'} !important;"
+                            : 'inherit'} ;
+                                 color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                           draggable={tableName === 'Planted'}
                           on:dragstart={tableName === 'Planted'
                             ? (e) => handleMappingDragStart(e, tableName, header)
@@ -1144,8 +1202,8 @@
 
   .table-container {
     overflow-x: auto;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 ;
+    padding: 0 ;
     width: 100%;
   }
 
@@ -1174,22 +1232,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    background-color: var(--background-color, #1e1e1e);
-    color: var(--text-color, #ffffff);
     vertical-align: middle;
     box-sizing: border-box;
   }
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border) !important;
+    border: 2px solid var(--required-border) ;
   }
 
   /* Mapped fields - only in Import and Planted tables */
   .table-container th[data-mapped='true'],
   .table-container td[data-mapped='true'],
   .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid var(--mapped-border) !important;
+    border: 2px solid var(--mapped-border) ;
   }
 
   th {
@@ -1197,19 +1253,19 @@
   }
 
   .database-tables {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 ;
+    padding: 0 ;
   }
 
   .table-info {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 ;
+    padding: 0 ;
   }
 
   .table-preview {
     overflow-x: auto;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 ;
+    padding: 0 ;
   }
 
   .table-preview table {
@@ -1270,7 +1326,7 @@
 
   /* Invalid number field styling */
   td.invalid {
-    background-color: #4a1c1c !important;
+    background-color: #4a1c1c ;
     position: relative;
   }
 
@@ -1286,7 +1342,7 @@
 
   /* Invalid cell styling */
   .invalid {
-    background-color: #4a1c1c !important;
+    background-color: #4a1c1c ;
     position: relative;
   }
 

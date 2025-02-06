@@ -69,7 +69,7 @@ select:hover {
 
 /* Invalid value styling */
 .invalid-value {
-  background: #991b1b !important;
+  background: #991b1b ;
 }
 
 /* Warning styles */
@@ -130,8 +130,8 @@ select:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.875rem;
-  background: var(--header-bg) !important;
-  color: white !important;
+  background: var(--header-bg) ;
+  color: white ;
 }
 
 /* Dropdown styles */
@@ -170,7 +170,7 @@ select:hover {
 
 /* Validation */
 .invalid-value {
-  background: #991b1b !important;
+  background: #991b1b ;
 }
 
 .confidence-warning {
@@ -181,11 +181,11 @@ select:hover {
 
 /* Mapped Field Styles */
 .mapped-field {
-  border: 2px solid #34d399 !important;
+  border: 2px solid #34d399 ;
 }
 
 /* Required Field Styles */
 .required-field {
-  border: 2px solid #f87171 !important;
+  border: 2px solid #f87171 ;
 }
 
