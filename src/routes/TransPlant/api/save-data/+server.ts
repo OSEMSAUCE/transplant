@@ -6,12 +6,12 @@ import { repository } from '$lib/db/schema';
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const data = await request.json();
-    
+
     // Validate the data
     if (!Array.isArray(data)) {
       throw error(400, { message: 'Expected array of data' });
     }
-    
+
     // Insert the data using Drizzle
     const result = await db.insert(repository).values(data).returning();
     return json({ success: true, data: result });

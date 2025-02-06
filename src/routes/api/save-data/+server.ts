@@ -5,7 +5,7 @@ import { repository } from '$lib/db/schema';
 
 export const POST: RequestHandler = async ({ request }) => {
   const data = await request.json();
-  
+
   try {
     // Insert the data using Drizzle
     const result = await db.insert(repository).values(data).returning();

@@ -19,6 +19,16 @@ export default [
         ecmaVersion: 2020,
         extraFileExtensions: ['.svelte'],
       },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        module: 'readonly',
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        DragEvent: 'readonly',
+      },
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,

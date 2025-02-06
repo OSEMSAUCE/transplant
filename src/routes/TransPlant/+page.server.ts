@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/db';
 import { land, crop } from '$lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async () => {
   try {
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async () => {
         notes: land.notes,
       })
       .from(land)
-      .where(land.deleted.eq(false));
+      .where(eq(land.deleted, false));
 
     // Get crops
     const crops = await db
@@ -26,7 +27,7 @@ export const load: PageServerLoad = async () => {
         stock: crop.crop_stock,
       })
       .from(crop)
-      .where(crop.deleted.eq(false));
+      .where(eq(crop.deleted, false));
 
     return { lands, crops };
   } catch (error) {
