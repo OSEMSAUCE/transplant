@@ -1,10 +1,11 @@
 <script lang="ts">
   /// <reference types="svelte" />
   /// <reference types="vite/client" />
+  import { onMount } from 'svelte';
   // @ts-expect-error - PapaParse lacks TypeScript definitions
   import Papa from 'papaparse';
+
   type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
-  import { onMount } from 'svelte';
 
 
   // Type definitions
