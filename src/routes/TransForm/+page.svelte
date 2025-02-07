@@ -14,11 +14,15 @@
   }
 
   function isLatitude(value: string): boolean {
+    if (!value) return false;
+    if (value.includes('°') || /^[NS]\d+/.test(value.trim())) return true;
     const num = parseFloat(value);
     return !isNaN(num) && Math.abs(num) <= 90;
   }
 
   function isLongitude(value: string): boolean {
+    if (!value) return false;
+    if (value.includes('°') || /^[EW]\d+/.test(value.trim())) return true;
     const num = parseFloat(value);
     return !isNaN(num) && Math.abs(num) <= 180;
   }
@@ -28,6 +32,25 @@
       i > startIndex && // Only look at columns after this one
       col.sampleValues.every(v => v === '' || isLongitude(v))
     ) || null;
+  }
+
+  function isDirectionalPart(value: string): boolean {
+    // Matches patterns like "N41 04 12" or "W0 11 24"
+    return /^[NSEW]\d+\s+\d+\s+\d+$/.test(value.trim());
+  }
+
+  function parseDirectionalPart(value: string): number | null {
+    const match = value.trim().match(/^([NSEW])(\d+)\s+(\d+)\s+(\d+)$/);
+    if (!match) return null;
+    
+    const [_, direction, degrees, minutes, seconds] = match;
+    let decimal = parseInt(degrees) + parseInt(minutes)/60 + parseInt(seconds)/3600;
+    
+    if (direction === 'S' || direction === 'W') {
+      decimal = -decimal;
+    }
+    
+    return decimal;
   }
 
   function parseGpsCoordinate(value: string, lonValue?: string): GpsPoint | null {
@@ -454,11 +477,25 @@
                               
                               // First try parsing as a combined coordinate
                               let point = parseGpsCoordinate(val);
-                              console.log('Combined parse result:', point);
                               if (point) {
-                                const result = `${point.lat.toFixed(7)}, ${point.lon.toFixed(7)}`;
-                                console.log('Returning formatted:', result);
-                                return result;
+                                return `${point.lat.toFixed(7)}, ${point.lon.toFixed(7)}`;
+                              }
+                              
+                              // Try parsing as directional format
+                              if (val.match(/^[NSEW]\d+/)) {
+                                const nextColumns = validationState.columns.slice(columnIndex + 1);
+                                const lonColumn = nextColumns.find(col => {
+                                  const lonVal = col.sampleValues[rowIndex];
+                                  return lonVal && lonVal.match(/^[NSEW]\d+/);
+                                });
+                                
+                                if (lonColumn) {
+                                  const lonVal = lonColumn.sampleValues[rowIndex];
+                                  point = parseGpsCoordinate(val, lonVal);
+                                  if (point) {
+                                    return `${point.lat.toFixed(7)}, ${point.lon.toFixed(7)}`;
+                                  }
+                                }
                               }
                               
                               // If that fails and this looks like a latitude, try to find matching longitude
