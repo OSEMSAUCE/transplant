@@ -3,6 +3,7 @@
   /// <reference types="vite/client" />
   import { onMount } from 'svelte';
   import Papa from 'papaparse';
+  import ColumnHeader from '$lib/components/ColumnHeader.svelte';
 
   type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
 
@@ -134,20 +135,43 @@
     switch (type) {
       case 'number':
         num = Number(value.trim());
-
         return { valid: !isNaN(num), value: !isNaN(num) ? num : null };
+
       case 'latitude':
-        coord = Number(value.trim());
-        return {
-          valid: !isNaN(coord) && coord >= -90 && coord <= 90,
-          value: !isNaN(coord) ? coord : null,
-        };
       case 'longitude':
-        coord = Number(value.trim());
-        return {
-          valid: !isNaN(coord) && coord >= -180 && coord <= 180,
-          value: !isNaN(coord) ? coord : null,
-        };
+        // Handle various GPS formats
+        console.log('Parsing GPS:', value, type);
+        let gpsValue = value.trim();
+        
+        // Handle DMS format (e.g. "47° 52' 12.846''E")
+        if (gpsValue.includes('°')) {
+          const parts = gpsValue.match(/(-?\d+)°\s*(\d+)'\s*(\d+(?:\.\d+)?)''/i);
+          if (parts) {
+            const degrees = Number(parts[1]);
+            const minutes = Number(parts[2]);
+            const seconds = Number(parts[3]);
+            coord = degrees + (minutes / 60) + (seconds / 3600);
+          } else {
+            coord = NaN;
+          }
+        } else {
+          // Handle decimal format
+          coord = Number(gpsValue.replace(/[^\d.-]/g, ''));
+        }
+
+        // Validate range based on type
+        if (type === 'latitude') {
+          return {
+            valid: !isNaN(coord) && coord >= -90 && coord <= 90,
+            value: !isNaN(coord) ? coord : null,
+          };
+        } else {
+          return {
+            valid: !isNaN(coord) && coord >= -180 && coord <= 180,
+            value: !isNaN(coord) ? coord : null,
+          };
+        }
+
       case 'date':
         // Check if input is just a year (4 digits)
         if (/^\d{4}$/.test(value.trim())) {
@@ -156,6 +180,7 @@
           date = new Date(value);
         }
         return { valid: !isNaN(date.getTime()), value: !isNaN(date.getTime()) ? date : null };
+
       default:
         return { valid: true, value: value.trim() };
     }
@@ -219,9 +244,22 @@
   );
   // previewData is already declared above
 
+  // State variables
   let errorMessage = '';
-  let csvData: CsvRow[] | null = null;
+  let csvData: any[] = [];
   let typedCsvData: PreviewRow[] = [];
+  let csvColumns: string[] = [];
+  let orderedCsvColumns: string[] = [];
+  let excludedColumns = new Set<string>();
+  let fileInput: HTMLInputElement;
+  let mappings: Record<string, string> = {};
+  let validMappings: Record<string, boolean[]> = {};
+  let previewValidation: Record<string, Record<string, boolean[]>> = {};
+  let previewData: Record<string, PreviewRow[]> = {
+    Land: [] as Array<Record<string, string>>,
+    Crop: [] as Array<Record<string, string>>,
+    Planted: [] as Array<Record<string, string>>
+  };
 
   function isValidKey(key: string): key is keyof PreviewRow {
     const allKeys = [
@@ -244,9 +282,7 @@
       return typedRow;
     });
   }
-  let mappings: Record<string, string> = {};
-  let validMappings: Record<string, boolean[]> = {};
-  let previewValidation: Record<string, Record<string, boolean[]>> = {};
+
 
   // Validate mappings whenever they change
   $: {
@@ -304,34 +340,7 @@
       mappings = { ...mappings };
     }
   }
-  let fileInput: HTMLInputElement;
-  import ColumnHeader from '$lib/components/ColumnHeader.svelte';
 
-  let csvColumns: string[] = [];
-  let orderedCsvColumns: string[] = [];
-  let excludedColumns = new Set<string>();
-
-  // Initialize preview data with empty rows and all fields
-  let previewData: Record<string, PreviewRow[]> = {
-    Land: [] as Array<Record<string, string>>,
-    Crop: [] as Array<Record<string, string>>,
-    Planted: [] as Array<
-      Record<
-        string,
-        string & {
-          gps_lat?: string;
-          gps_lon?: string;
-          species_id?: string;
-          seedlot?: string;
-          seedzone?: string;
-          crop_stock?: string;
-          hectares?: string;
-          preparation_id?: string;
-          notes?: string;
-        }
-      >
-    >,
-  };
 
   // Track actual land-crop combinations from import data
 
@@ -373,72 +382,61 @@
   } as const;
 
   // Add this mock data for development
-  const MOCK_CSV_DATA = [
-    {
-      parcelID: '3BEE6680',
-      pledgeID: '3BEE66',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'ES',
-      countryName: 'Germany',
-      lat: '52.223473',
-      lon: '13.3522415',
-      areaHa: '0.2',
-      numberTrees: '180',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3747',
-      pledgeID: '3BEE37',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'ES',
-      countryName: 'Spain',
-      lat: '41.070263',
-      lon: '-0.1900329',
-      areaHa: '0.3',
-      numberTrees: '364',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3747',
-      pledgeID: '3BEE14',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'FR',
-      countryName: 'France',
-      lat: '47.870235',
-      lon: '6.4099884',
-      areaHa: '0.2',
-      numberTrees: '204',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3888',
-      pledgeID: '3BEE22',
-      organisationType: 'Something else',
-      organisationWebsite: 'https://groundtruth.app/',
-      Species: 'GT',
-      countryName: 'Canada',
-      lat: '47.870255',
-      lon: '6.4099855',
-      areaHa: '12.2',
-      numberTrees: '2200',
-      plantingYear: '2024',
-      'trees/ha': '1,500',
-      parcelOwnership: 'Public',
-      CRS: '4323',
-    },
-  ];
+  // Load data from sessionStorage on mount
+  onMount(() => {
+    try {
+      const storedData = sessionStorage.getItem('csvData');
+      const storedColumns = sessionStorage.getItem('csvColumns');
+      
+      if (!storedData || !storedColumns) {
+        errorMessage = 'No CSV data found. Please go back to CSVStaging to upload or import data.';
+        return;
+      }
+
+      csvData = JSON.parse(storedData);
+      csvColumns = JSON.parse(storedColumns);
+      orderedCsvColumns = [...csvColumns];
+      
+      // Initialize preview data
+      previewData = {
+        Land: [],
+        Crop: [],
+        Planted: []
+      };
+
+      // Show imported data in Import Table
+      const importTableElement = document.querySelector('.import-table');
+      if (importTableElement && csvData.length > 0) {
+        const headers = Object.keys(csvData[0]);
+        const rows = csvData.slice(0, 5); // Show first 5 rows
+        
+        // Create table headers
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = header;
+          headerRow.appendChild(th);
+        });
+        importTableElement.appendChild(headerRow);
+        
+        // Create data rows
+        rows.forEach(row => {
+          const tr = document.createElement('tr');
+          headers.forEach(header => {
+            const td = document.createElement('td');
+            td.textContent = row[header] || '';
+            tr.appendChild(td);
+          });
+          importTableElement.appendChild(tr);
+        });
+      }
+    } catch (err) {
+      errorMessage = 'Error loading CSV data: ' + (err instanceof Error ? err.message : String(err));
+    }
+  });
+
+  // Initialize empty data array
+  const emptyData = [] as any[];
 
   async function fetchTableHeaders() {
     try {
@@ -972,6 +970,32 @@
       <div class="table-container">
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
         <div class="overflow-x-auto">
+          <!-- Import Table Preview -->
+          <div class="table-preview">
+            <table class="import-table">
+              <thead>
+                <tr>
+                  {#each orderedCsvColumns as column}
+                    <th>{column}</th>
+                  {/each}
+                </tr>
+              </thead>
+              <tbody>
+                {#each csvData.slice(0, 5) as row, rowIndex}
+                  <tr>
+                    {#each orderedCsvColumns as column}
+                      <td
+                        class:invalid={previewValidation[column]?.[rowIndex]?.[0] === false}
+                      >
+                        {getRowValue(row, column)}
+                      </td>
+                    {/each}
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+
           <!-- Mapping Dropdowns Row -->
           <div
             class="grid"

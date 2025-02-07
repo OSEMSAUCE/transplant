@@ -711,25 +711,20 @@
     return transformedData;
   }
 
-  // Function to handle pushing data to TransPlant
+  // Function to handle pushing data to CSVStaging
   async function handlePushToTransplant() {
     const transformedData = getTransformedData(validationState.columns);
-    const headers = validationState.columns.map((col) => ({
-      name: col.name,
-      type: col.currentType,
-    }));
-
-    // Store the data in session storage
-    sessionStorage.setItem(
-      'transplantData',
-      JSON.stringify({
-        data: transformedData,
-        headers: headers,
-      })
-    );
-
-    // Navigate to the TransPlant page
-    await goto('/TransPlant');
+    
+    // Store the CSV data and columns in sessionStorage
+    try {
+      sessionStorage.setItem('csvData', JSON.stringify(transformedData));
+      sessionStorage.setItem('csvColumns', JSON.stringify(validationState.columns.map(col => col.name)));
+      
+      // Navigate to the CSVStaging page
+      await goto('/CSVStaging');
+    } catch (err) {
+      transformStore.setError('Error storing data: ' + (err instanceof Error ? err.message : String(err)));
+    }
   }
 </script>
 
