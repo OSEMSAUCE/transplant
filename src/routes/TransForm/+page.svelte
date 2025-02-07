@@ -56,6 +56,61 @@
     return !isNaN(num) && Math.abs(num) <= 180;
   }
 
+  // Function to update default_gps column based on current GPS columns
+  function updateDefaultGps() {
+    console.log('Updating default_gps');
+    const defaultGpsCol = validationState.columnsData[0];
+    const numRows = defaultGpsCol.allValues.length;
+    
+    // Reset default_gps values
+    defaultGpsCol.allValues = new Array(numRows).fill('');
+    defaultGpsCol.previewValues = new Array(Math.min(numRows, previewLimit)).fill('');
+    
+    // Look for lat/lon pairs or complete GPS coordinates
+    validationState.columnsData.forEach((col, index) => {
+      if (index === 0 || col.currentType !== 'gps') return;
+      
+      const colName = col.name.toLowerCase();
+      if (colName.includes('lat')) {
+        // Look for matching lon column
+        const lonCol = validationState.columnsData.find(c => 
+          c.name.toLowerCase().includes('lon') && 
+          c.currentType === 'gps'
+        );
+        if (lonCol) {
+          col.allValues.forEach((v, i) => {
+            if (v && lonCol.allValues[i]) {
+              const lat = parseFloat(v);
+              const lon = parseFloat(lonCol.allValues[i]);
+              if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+                defaultGpsCol.allValues[i] = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
+                if (i < previewLimit) {
+                  defaultGpsCol.previewValues[i] = defaultGpsCol.allValues[i];
+                }
+              }
+            }
+          });
+        }
+      } else if (!colName.includes('lon')) {
+        // Check for complete GPS coordinates
+        col.allValues.forEach((v, i) => {
+          if (v && v.includes(',')) {
+            // Skip if it looks like a comma-separated number
+            if (isCommaSeparatedNumber(v)) return;
+            
+            const [lat, lon] = v.split(',').map(p => parseFloat(p.trim()));
+            if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+              defaultGpsCol.allValues[i] = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
+              if (i < previewLimit) {
+                defaultGpsCol.previewValues[i] = defaultGpsCol.allValues[i];
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+
   function parseGpsCoordinate(value: string, lonValue?: string): GpsPoint | null {
     console.log('Parsing GPS:', value, lonValue);
     if (!value) return null;
@@ -503,90 +558,10 @@
                 }
               }
 
-              // Check for decimal degree columns
-              if (colName.includes('lat') || colName.includes('latitude')) {
-                console.log(`Checking potential latitude column: ${col.name}`);
-                console.log('Found lat column:', col.name);
-                console.log('Sample values:', values.slice(0, 5));
-                // First check if these are complete GPS coordinates
-                const hasCompleteGps = values.some((v) => {
-                  if (!v) return false;
-                  // Check if value contains a comma and two numbers
-                  const parts = v.split(',');
-                  if (parts.length === 2) {
-                    const [lat, lon] = parts.map((p) => parseFloat(p.trim()));
-                    return (
-                      !isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180
-                    );
-                  }
-                  return false;
-                });
-
-                if (hasCompleteGps) {
-                  console.log(`Found complete GPS coordinates in column ${col.name}`);
-                  // Copy valid GPS coordinates to default_gps
-                  const defaultGpsCol = validationState.columnsData[0];
-                  values.forEach((v, i) => {
-                    if (v && (!defaultGpsCol.allValues[i] || defaultGpsCol.allValues[i] === '')) {
-                      defaultGpsCol.allValues[i] = v;
-                      if (i < defaultGpsCol.previewValues.length) {
-                        defaultGpsCol.previewValues[i] = v;
-                      }
-                    }
-                  });
-                  return 'gps';
-                }
-
-                // If not complete GPS, check if it's just latitude
-                const isValidLat = values.every((v) => {
-                  if (!v) return true;
-                  const num = parseFloat(v.trim());
-                  const isValid = !isNaN(num) && Math.abs(num) <= 90;
-                  console.log(`Checking lat value: ${v} -> ${num} -> valid: ${isValid}`);
-                  return isValid;
-                });
-
-                if (isValidLat) {
-                  console.log('Valid lat values in:', col.name);
-                  // Look for a matching longitude column
-                  const matchingLon = validationState.columnsData.find((otherCol, otherIndex) => {
-                    const isMatch =
-                      otherIndex !== index &&
-                      otherCol.name.toLowerCase().includes('lon') &&
-                      otherCol.allValues.every((v) => {
-                        if (!v) return true;
-                        const num = parseFloat(v.trim());
-                        return !isNaN(num) && Math.abs(num) <= 180;
-                      });
-                    if (isMatch) console.log('Found matching lon:', otherCol.name);
-                    return isMatch;
-                  });
-
-                  if (matchingLon) {
-                    console.log('Processing lat/lon pair:', col.name, matchingLon.name);
-                    // Get default_gps column (we know it exists since we created it first)
-                    const defaultGpsCol = validationState.columnsData[0];
-
-                    // Populate values
-                    values.forEach((lat, i) => {
-                      if (lat && matchingLon.allValues[i]) {
-                        const latNum = parseFloat(lat.trim());
-                        const lonNum = parseFloat(matchingLon.allValues[i].trim());
-                        if (!isNaN(latNum) && !isNaN(lonNum)) {
-                          const combined = `${latNum}, ${lonNum}`;
-                          console.log(
-                            `Combined GPS from ${col.name}: ${lat}, ${matchingLon.allValues[i]} -> ${combined}`
-                          );
-                          defaultGpsCol.allValues[i] = combined;
-                          if (i < defaultGpsCol.previewValues.length) {
-                            defaultGpsCol.previewValues[i] = combined;
-                          }
-                        }
-                      }
-                    });
-                    return 'gps';
-                  }
-                }
+              // Any column containing 'lat' should be GPS
+              if (colName.includes('lat')) {
+                console.log(`Found potential latitude column: ${col.name}`);
+                return 'gps';
               }
 
               // Check for longitude columns
@@ -785,10 +760,9 @@
                       column.suggestedType = value;
                       column.currentType = value;
 
-                      // Transform the data based on type
-                      column.sampleValues = column.sampleValues.map((val) => {
+                      // Transform both allValues and sampleValues based on type
+                      const transformValue = (val) => {
                         if (!val) return '';
-
                         switch (value) {
                           case 'number':
                             // Extract only numbers, ignore everything else
@@ -804,7 +778,36 @@
                           default:
                             return val;
                         }
-                      });
+                      };
+
+                      // Update both allValues and sampleValues
+                      column.allValues = column.allValues.map(transformValue);
+                      column.sampleValues = column.sampleValues.map(transformValue);
+
+                      // If changing to GPS type, force a rerun of detectType
+                      if (value === 'gps') {
+                        const colName = column.name.toLowerCase();
+                        if (colName.includes('lat')) {
+                          // Look for matching lon column
+                          const lonCol = validationState.columnsData.find(c => 
+                            c.name.toLowerCase().includes('lon')
+                          );
+                          if (lonCol) {
+                            column.allValues.forEach((v, i) => {
+                              if (v && lonCol.allValues[i]) {
+                                const lat = parseFloat(v);
+                                const lon = parseFloat(lonCol.allValues[i]);
+                                if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+                                  validationState.columnsData[0].allValues[i] = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
+                                  if (i < validationState.columnsData[0].previewValues.length) {
+                                    validationState.columnsData[0].previewValues[i] = validationState.columnsData[0].allValues[i];
+                                  }
+                                }
+                              }
+                            });
+                          }
+                        }
+                      }
 
                       // Update the store
                       transformStore.updateAnalysis(validationState.columns);
