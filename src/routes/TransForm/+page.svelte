@@ -998,16 +998,22 @@
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           on:click={() => {
             // Get all the transformed values (green text) from the table
-            const columnsWithTransformed = validationState.columns.map(col => {
+            const columnsWithTransformed = validationState.columns.map((col) => {
               // Find all transformed values for this column
-              const transformedElements = document.querySelectorAll(`[data-column="${col.name}"] .transformed-value`);
-              const transformedValues = Array.from(transformedElements).map(el => el.textContent || '');
-              
+              const transformedElements = document.querySelectorAll(
+                `[data-column="${col.name}"] .transformed-value`
+              );
+              const transformedValues = Array.from(transformedElements).map(
+                (el) => el.textContent || ''
+              );
+
               return {
                 ...col,
                 // For non-string types, use transformed values if available
-                allValues: col.currentType !== 'string' && transformedValues.length > 0 ? 
-                  transformedValues : col.allValues
+                allValues:
+                  col.currentType !== 'string' && transformedValues.length > 0
+                    ? transformedValues
+                    : col.allValues,
               };
             });
 
