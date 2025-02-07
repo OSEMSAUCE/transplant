@@ -341,22 +341,47 @@
           console.log('Starting column processing');
 
           // First pass: Create all columns including default_gps
+          const regularColumns = Object.keys(results.data[0]).map((col) => {
+            const values = results.data.map((row) => row[col] || '');
+            return {
+              name: col,
+              allValues: values,
+              previewValues: values.slice(0, previewLimit),
+            };
+          });
+
+          // Find lat/lon columns
+          const latCol = regularColumns.find(col => col.name.toLowerCase().includes('lat'));
+          const lonCol = regularColumns.find(col => col.name.toLowerCase().includes('lon'));
+
+          // Create default_gps values
+          const defaultGpsValues = new Array(results.data.length).fill('');
+          const defaultGpsPreviewValues = new Array(Math.min(results.data.length, previewLimit)).fill('');
+
+          // If we have both lat and lon, combine them
+          if (latCol && lonCol) {
+            latCol.allValues.forEach((lat, i) => {
+              if (lat && lonCol.allValues[i]) {
+                const latNum = parseFloat(lat);
+                const lonNum = parseFloat(lonCol.allValues[i]);
+                if (!isNaN(latNum) && !isNaN(lonNum) && Math.abs(latNum) <= 90 && Math.abs(lonNum) <= 180) {
+                  defaultGpsValues[i] = `${latNum}, ${lonNum}`;
+                  if (i < defaultGpsPreviewValues.length) {
+                    defaultGpsPreviewValues[i] = defaultGpsValues[i];
+                  }
+                }
+              }
+            });
+          }
+
+          // Set the columnsData with default_gps first
           validationState.columnsData = [
-            // Add default_gps column first
             {
               name: 'default_gps',
-              allValues: new Array(results.data.length).fill(''),
-              previewValues: new Array(Math.min(results.data.length, previewLimit)).fill(''),
+              allValues: defaultGpsValues,
+              previewValues: defaultGpsPreviewValues,
             },
-            // Then add all other columns
-            ...Object.keys(results.data[0]).map((col) => {
-              const values = results.data.map((row) => row[col] || '');
-              return {
-                name: col,
-                allValues: values,
-                previewValues: values.slice(0, previewLimit),
-              };
-            }),
+            ...regularColumns
           ];
 
           console.log(
