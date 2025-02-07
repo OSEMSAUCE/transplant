@@ -3,6 +3,7 @@
   /// <reference lib="dom" />
   import '$lib/styles/tables.css';
   import { transformStore } from '$lib/shared/csv/stores/transformStore';
+  import { goto } from '$app/navigation';
   import Papa from 'papaparse';
   import type { CsvColumnType } from '$lib/shared/csv/validation/types';
 
@@ -54,7 +55,6 @@
     const num = parseFloat(cleaned);
     return !isNaN(num) && Math.abs(num) <= 180;
   }
-
 
   function parseGpsCoordinate(value: string, lonValue?: string): GpsPoint | null {
     console.log('Parsing GPS:', value, lonValue);
@@ -337,9 +337,19 @@
                 values.slice(0, 3)
               );
 
+              // Function to check if a string looks like a number with commas
+              function isCommaSeparatedNumber(value: string): boolean {
+                if (!value) return false;
+                // Match patterns like 1,234 or 1,234.56
+                return /^-?\d{1,3}(,\d{3})*(\.\d+)?$/.test(value.trim());
+              }
+
               // First check if any values contain complete GPS coordinates
               const hasCompleteCoords = values.some((v) => {
                 if (!v) return false;
+                // Skip if it looks like a comma-separated number
+                if (isCommaSeparatedNumber(v)) return false;
+
                 const parts = v.split(',');
                 if (parts.length === 2) {
                   const [lat, lon] = parts.map((p) => parseFloat(p.trim()));
@@ -670,6 +680,50 @@
     };
     reader.readAsText(file);
   }
+
+  // Helper function to get transformed data
+  function getTransformedData(columns) {
+    const transformedData = [];
+    const numRows = columns[0]?.sampleValues.length || 0;
+
+    for (let i = 0; i < numRows; i++) {
+      const row = {};
+      columns.forEach((column) => {
+        if (column.currentType !== 'string') {
+          // Get the transformed value if it exists
+          const transformedValue = document.querySelector(
+            `.transformed-value[data-row="${i}"][data-col="${column.name}"]`
+          )?.textContent;
+          row[column.name] = transformedValue || column.sampleValues[i];
+        } else {
+          row[column.name] = column.sampleValues[i];
+        }
+      });
+      transformedData.push(row);
+    }
+    return transformedData;
+  }
+
+  // Function to handle pushing data to TransPlant
+  async function handlePushToTransplant() {
+    const transformedData = getTransformedData(validationState.columns);
+    const headers = validationState.columns.map((col) => ({
+      name: col.name,
+      type: col.currentType,
+    }));
+
+    // Store the data in session storage
+    sessionStorage.setItem(
+      'transplantData',
+      JSON.stringify({
+        data: transformedData,
+        headers: headers,
+      })
+    );
+
+    // Navigate to the TransPlant page
+    await goto('/TransPlant');
+  }
 </script>
 
 <div class="container mx-auto p-4">
@@ -732,9 +786,9 @@
                       column.currentType = value;
 
                       // Transform the data based on type
-                      column.sampleValues = column.sampleValues.map(val => {
+                      column.sampleValues = column.sampleValues.map((val) => {
                         if (!val) return '';
-                        
+
                         switch (value) {
                           case 'number':
                             // Extract only numbers, ignore everything else
@@ -894,6 +948,17 @@
         {/if}
       </table>
     </div>
+    <!-- Add button to push data to TransPlant -->
+    {#if validationState.columns.length > 0}
+      <div class="mt-4">
+        <button
+          class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          on:click={handlePushToTransplant}
+        >
+          Push to TransPlant
+        </button>
+      </div>
+    {/if}
   {/if}
 </div>
 

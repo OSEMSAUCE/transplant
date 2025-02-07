@@ -497,6 +497,24 @@
   
 
   onMount(() => {
+    // Check for data from TransForm
+    const transplantDataStr = sessionStorage.getItem('transplantData');
+    if (transplantDataStr) {
+      const { data, headers } = JSON.parse(transplantDataStr);
+      csvData = data;
+      // Map the headers to our schema
+      headers.forEach(header => {
+        const matchingField = schema.find(table => 
+          table.fields.some(field => field.name === header.name)
+        );
+        if (matchingField) {
+          mappings[header.name] = `${matchingField.name}.${header.name}`;
+        }
+      });
+      // Clear the session storage
+      sessionStorage.removeItem('transplantData');
+    }
+
     fetchTableHeaders();
 
     // Auto-load mock data in development
