@@ -2,7 +2,6 @@
   /// <reference types="svelte" />
   /// <reference types="vite/client" />
   import { onMount } from 'svelte';
-  // @ts-expect-error - PapaParse lacks TypeScript definitions
   import Papa from 'papaparse';
 
   type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
@@ -14,6 +13,36 @@
 
   interface PreviewRow extends Record<string, string | boolean> {
     [key: `${string}_valid`]?: boolean;
+  }
+
+  interface Mappings {
+    [key: string]: string;
+  }
+
+  interface PreviewData {
+    [key: string]: PreviewRow[];
+  }
+
+  interface PreviewValidation {
+    [tableName: string]: {
+      [field: string]: boolean;
+    };
+  }
+
+  interface LandEntry {
+    land_name: string | null;
+    gps_lat?: string;
+    gps_lon?: string;
+    hectares?: string;
+    preparation_id?: string;
+  }
+
+  interface CropEntry {
+    crop_name: string | null;
+    species_id?: string;
+    seedlot?: string;
+    seedzone?: string;
+    crop_stock?: string;
   }
 
   interface FieldDefinition {
@@ -30,7 +59,7 @@
   }
 
   // Validation functions
-  function formatValue(value: any, field: string): string {
+  function formatValue(value: unknown, field: string): string {
     if (value === null || value === undefined || value === '') {
       return '';
     }
@@ -1005,17 +1034,13 @@
               <table
                 style="background: {tableName !== 'Planted'
                   ? '#333333'
-                  : 'inherit'} ; color: {tableName !== 'Planted'
-                  ? 'white'
-                  : 'inherit'} ;"
+                  : 'inherit'} ; color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
               >
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
                       <th
-                        style="background: {tableName !== 'Planted'
-                          ? '#333333'
-                          : 'inherit'} ;
+                        style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                         draggable={tableName === 'Planted'}
                         on:dragstart={tableName === 'Planted'
@@ -1048,16 +1073,10 @@
                 </thead>
                 <tbody>
                   {#each previewData[tableName] as row, rowIndex}
-                    <tr
-                      style="background: {tableName !== 'Planted'
-                        ? '#333333'
-                        : 'inherit'} ;"
-                    >
+                    <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;">
                       {#each tableHeaders[tableName] || [] as header}
                         <td
-                          style="background: {tableName !== 'Planted'
-                            ? '#333333'
-                            : 'inherit'} ;
+                          style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                  color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                           draggable={tableName === 'Planted'}
                           on:dragstart={tableName === 'Planted'
@@ -1202,8 +1221,8 @@
 
   .table-container {
     overflow-x: auto;
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
     width: 100%;
   }
 
@@ -1238,14 +1257,14 @@
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border) ;
+    border: 2px solid var(--required-border);
   }
 
   /* Mapped fields - only in Import and Planted tables */
   .table-container th[data-mapped='true'],
   .table-container td[data-mapped='true'],
   .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid var(--mapped-border) ;
+    border: 2px solid var(--mapped-border);
   }
 
   th {
@@ -1253,19 +1272,19 @@
   }
 
   .database-tables {
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-info {
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-preview {
     overflow-x: auto;
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-preview table {
@@ -1326,7 +1345,7 @@
 
   /* Invalid number field styling */
   td.invalid {
-    background-color: #4a1c1c ;
+    background-color: #4a1c1c;
     position: relative;
   }
 
@@ -1342,7 +1361,7 @@
 
   /* Invalid cell styling */
   .invalid {
-    background-color: #4a1c1c ;
+    background-color: #4a1c1c;
     position: relative;
   }
 

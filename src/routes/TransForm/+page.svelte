@@ -1,5 +1,6 @@
 <!-- TransForm.svelte -->
 <script lang="ts">
+  /// <reference lib="dom" />
   import '$lib/styles/tables.css';
   import { transformStore } from '$lib/shared/csv/stores/transformStore';
   import Papa from 'papaparse';
@@ -12,17 +13,20 @@
     lon: number;
   }
 
-  interface ColumnAnalysis {
+  interface ColumnData {
     name: string;
     sampleValues: string[];
     allValues: string[];
     previewValues: string[];
-    currentType?: CsvColumnType;
-    suggestedType?: CsvColumnType;
-    confidence?: number;
-    totalRows?: number;
-    validRows?: number;
-    invalidValues?: string[];
+  }
+
+  interface ColumnAnalysis extends ColumnData {
+    currentType: CsvColumnType;
+    suggestedType: CsvColumnType;
+    confidence: number;
+    totalRows: number;
+    validRows: number;
+    invalidValues: string[];
   }
 
   function isLatitude(value: string): boolean {
@@ -51,18 +55,6 @@
     return !isNaN(num) && Math.abs(num) <= 180;
   }
 
-  function findMatchingLonColumn(
-    columns: ColumnAnalysis[],
-    startIndex: number
-  ): ColumnAnalysis | null {
-    return (
-      columns.find(
-        (col, i) =>
-          i > startIndex && // Only look at columns after this one
-          col.sampleValues.every((v) => v === '' || isLongitude(v))
-      ) || null
-    );
-  }
 
   function parseGpsCoordinate(value: string, lonValue?: string): GpsPoint | null {
     console.log('Parsing GPS:', value, lonValue);
@@ -334,7 +326,7 @@
             function detectType(values: string[]): CsvColumnType {
               // Skip empty values for type detection
               values = values.filter((v) => v !== '' && v != null);
-              if (values.length === 0) return 'string';
+              if (values.length === 0) return 'string' as CsvColumnType;
 
               // Check for GPS coordinates based on column names and value ranges
               const colName = col.name.toLowerCase();
@@ -646,20 +638,23 @@
               if (isDate) return 'date';
 
               // Default to string
-              return 'string';
+              return 'string' as CsvColumnType;
             }
 
             const suggestedType = detectType(col.allValues);
-            return {
+            const analysis: ColumnAnalysis = {
               name: col.name,
               currentType: suggestedType,
               suggestedType,
               confidence: 1,
               sampleValues: col.previewValues,
+              allValues: col.allValues,
+              previewValues: col.previewValues,
               invalidValues: [],
               totalRows,
               validRows: totalRows,
             };
+            return analysis;
           });
 
           transformStore.updateAnalysis(columns);
@@ -717,9 +712,11 @@
         <tr class="bg-gray-800 text-white">
           {#each validationState.columns as column}
             <th>
-              <div class="type-container">
-                <span class="type-value">{column.currentType}</span>
-              </div>
+              {#if column.currentType !== 'gps'}
+                <div class="type-container">
+                  <span class="type-value">{column.currentType}</span>
+                </div>
+              {/if}
               <div class="type-container mt-2">
                 <select
                   class="type-select"
@@ -824,7 +821,10 @@
 
                               // Try parsing as directional format
                               if (val.match(/^[NSEW]\d+/)) {
-                                const nextColumns = validationState.columns.slice(columnIndex + 1);
+                                const currentIndex = validationState.columns.findIndex(
+                                  (c) => c.name === column.name
+                                );
+                                const nextColumns = validationState.columns.slice(currentIndex + 1);
                                 const lonColumn = nextColumns.find((col) => {
                                   const lonVal = col.sampleValues[rowIndex];
                                   return lonVal && lonVal.match(/^[NSEW]\d+/);
@@ -841,7 +841,10 @@
 
                               // If that fails and this looks like a latitude, try to find matching longitude
                               if (isLatitude(val)) {
-                                const nextColumns = validationState.columns.slice(columnIndex + 1);
+                                const currentIndex = validationState.columns.findIndex(
+                                  (c) => c.name === column.name
+                                );
+                                const nextColumns = validationState.columns.slice(currentIndex + 1);
                                 const lonColumn = nextColumns.find((col) => {
                                   const lonVal = col.sampleValues[rowIndex];
                                   return lonVal && isLongitude(lonVal);
