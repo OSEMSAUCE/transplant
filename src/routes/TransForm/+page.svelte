@@ -6,51 +6,56 @@
   import type { CsvColumnType } from '$lib/shared/csv/validation/types';
 
   let fileInput: HTMLInputElement;
-  let selectedFileName = '';
 
   interface GpsPoint {
     lat: number;
     lon: number;
   }
 
+  interface ColumnAnalysis {
+    name: string;
+    sampleValues: string[];
+    allValues: string[];
+    previewValues: string[];
+    currentType?: CsvColumnType;
+    suggestedType?: CsvColumnType;
+    confidence?: number;
+    totalRows?: number;
+    validRows?: number;
+    invalidValues?: string[];
+  }
+
   function isLatitude(value: string): boolean {
     if (!value) return false;
-    if (value.includes('°') || /^[NS]\d+/.test(value.trim())) return true;
-    const num = parseFloat(value);
+    // Remove trailing comma if present
+    const cleaned = value.trim().replace(/,$/, '');
+    
+    // Check DMS format with optional comma
+    if (cleaned.match(/^\d+°\s*\d+'\s*\d+"\s*[NS]$/i)) return true;
+    
+    // Check decimal format
+    const num = parseFloat(cleaned);
     return !isNaN(num) && Math.abs(num) <= 90;
   }
 
   function isLongitude(value: string): boolean {
     if (!value) return false;
-    if (value.includes('°') || /^[EW]\d+/.test(value.trim())) return true;
-    const num = parseFloat(value);
+    const cleaned = value.trim();
+    
+    // Check DMS format
+    if (cleaned.match(/^\d+°\s*\d+'\s*\d+"\s*[EW]$/i)) return true;
+    
+    // For decimal format, must be explicitly marked as longitude
+    // or be paired with a valid latitude
+    const num = parseFloat(cleaned);
     return !isNaN(num) && Math.abs(num) <= 180;
   }
 
   function findMatchingLonColumn(columns: ColumnAnalysis[], startIndex: number): ColumnAnalysis | null {
     return columns.find((col, i) => 
-      i > startIndex && // Only look at columns after this one
-      col.sampleValues.every(v => v === '' || isLongitude(v))
-    ) || null;
-  }
-
-  function isDirectionalPart(value: string): boolean {
-    // Matches patterns like "N41 04 12" or "W0 11 24"
-    return /^[NSEW]\d+\s+\d+\s+\d+$/.test(value.trim());
-  }
-
-  function parseDirectionalPart(value: string): number | null {
-    const match = value.trim().match(/^([NSEW])(\d+)\s+(\d+)\s+(\d+)$/);
-    if (!match) return null;
-    
-    const [_, direction, degrees, minutes, seconds] = match;
-    let decimal = parseInt(degrees) + parseInt(minutes)/60 + parseInt(seconds)/3600;
-    
-    if (direction === 'S' || direction === 'W') {
-      decimal = -decimal;
-    }
-    
-    return decimal;
+          i > startIndex && // Only look at columns after this one
+          col.sampleValues.every((v) => v === '' || isLongitude(v))
+      ) || null
   }
 
   function parseGpsCoordinate(value: string, lonValue?: string): GpsPoint | null {
@@ -76,14 +81,14 @@
         const hemisphere = utmMatch[2].toUpperCase();
         const easting = parseInt(utmMatch[3]);
         const northing = parseInt(utmMatch[4]);
-        
+
         // Rough conversion (this is approximate)
-        const lon = (zone * 6 - 183) + (easting - 500000) / 100000;
+        const lon = zone * 6 - 183 + (easting - 500000) / 100000;
         let lat = (northing - 10000000) / 100000;
         if (hemisphere === 'N') {
-          lat = (northing) / 100000;
+          lat = northing / 100000;
         }
-        
+
         return { lat, lon };
       } catch {
         return null;
@@ -91,7 +96,7 @@
     }
 
     // Try decimal pair format (e.g., "41.070263, -0.190329")
-    const decimalPairMatch = cleaned.match(/^(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)$/);    
+    const decimalPairMatch = cleaned.match(/^(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)$/);
     if (decimalPairMatch) {
       const lat = parseFloat(decimalPairMatch[1]);
       const lon = parseFloat(decimalPairMatch[2]);
@@ -101,18 +106,20 @@
     }
 
     // Try DMS format (e.g., "47° 52' 12.846"N, 6° 24' 35.958"E")
-    const dmsPattern = /([NS])?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)"?\s*([NS])?[,\s]+([EW])?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)"?\s*([EW])?/i;
+    const dmsPattern =
+      /([NS])?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)"?\s*([NS])?[,\s]+([EW])?\s*(\d+)°\s*(\d+)'\s*(\d+(\.\d+)?)"?\s*([EW])?/i;
     const dmsMatch = cleaned.match(dmsPattern);
     if (dmsMatch) {
       const latDir = (dmsMatch[1] || dmsMatch[6] || 'N').toUpperCase();
       const lonDir = (dmsMatch[7] || dmsMatch[12] || 'E').toUpperCase();
-      
-      let lat = parseInt(dmsMatch[2]) + parseInt(dmsMatch[3])/60 + parseFloat(dmsMatch[4])/3600;
-      let lon = parseInt(dmsMatch[8]) + parseInt(dmsMatch[9])/60 + parseFloat(dmsMatch[10])/3600;
-      
+
+      let lat = parseInt(dmsMatch[2]) + parseInt(dmsMatch[3]) / 60 + parseFloat(dmsMatch[4]) / 3600;
+      let lon =
+        parseInt(dmsMatch[8]) + parseInt(dmsMatch[9]) / 60 + parseFloat(dmsMatch[10]) / 3600;
+
       if (latDir === 'S') lat = -lat;
       if (lonDir === 'W') lon = -lon;
-      
+
       if (Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
         return { lat, lon };
       }
@@ -124,13 +131,13 @@
     if (dirMatch) {
       const latDir = dirMatch[1].toUpperCase();
       const lonDir = dirMatch[5].toUpperCase();
-      
-      let lat = parseInt(dirMatch[2]) + parseInt(dirMatch[3])/60 + parseInt(dirMatch[4])/3600;
-      let lon = parseInt(dirMatch[6]) + parseInt(dirMatch[7])/60 + parseInt(dirMatch[8])/3600;
-      
+
+      let lat = parseInt(dirMatch[2]) + parseInt(dirMatch[3]) / 60 + parseInt(dirMatch[4]) / 3600;
+      let lon = parseInt(dirMatch[6]) + parseInt(dirMatch[7]) / 60 + parseInt(dirMatch[8]) / 3600;
+
       if (latDir === 'S') lat = -lat;
       if (lonDir === 'W') lon = -lon;
-      
+
       if (Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
         return { lat, lon };
       }
@@ -139,17 +146,11 @@
     return null;
   }
 
-  function formatGpsCoordinate(value: string): string {
-    const point = parseGpsCoordinate(value);
-    if (point !== null) {
-      return `${point.lat.toFixed(7)}, ${point.lon.toFixed(7)}`;
-    }
-    return value;
-  }
+
 
   $: validationState = {
     ...$transformStore,
-    columnsData: [] as Array<{ name: string; allValues: string[]; previewValues: string[] }>
+    columnsData: [] as Array<{ name: string; allValues: string[]; previewValues: string[] }>,
   };
 
   interface CsvRow {
@@ -162,10 +163,9 @@
 
     if (!file) return;
 
-    selectedFileName = file.name;
     transformStore.setFile(file.name);
 
-    const reader = new FileReader();
+    const reader: FileReader = new FileReader();
     reader.onload = (e) => {
       const csv = e.target?.result as string;
       Papa.parse<CsvRow>(csv, {
@@ -198,7 +198,7 @@
 
             // Try to detect GPS coordinates
             // First check if this could be a latitude column
-            const couldBeLat = values.every(v => v === '' || isLatitude(v));
+            const couldBeLat = values.every((v) => v === '' || isLatitude(v));
             if (couldBeLat && validationState.columns) {
               // Look for a matching longitude column
               const lonColumn = findMatchingLonColumn(validationState.columns, columnIndex);
@@ -252,12 +252,40 @@
           const previewData = results.data.slice(0, previewLimit);
           const totalRows = results.data.length;
 
-          // First pass: collect all column data
-          validationState.columnsData = Object.keys(results.data[0]).map((name) => ({
-            name,
-            allValues: results.data.map((row) => row[name] || ''),
-            previewValues: previewData.map((row) => row[name] || '')
-          }));
+          // First pass: collect all column data including default_gps
+          const csvColumns = Object.keys(results.data[0]);
+          const defaultGpsColumn = {
+            name: 'default_gps',
+            allValues: results.data.map((row) => {
+              // Try GPS DD first
+              if (row['GPS DD'] && parseGpsCoordinate(row['GPS DD'])) {
+                return row['GPS DD'];
+              }
+              // Then try GPS DMS
+              if (row['GPS DMS'] && parseGpsCoordinate(row['GPS DMS'])) {
+                return row['GPS DMS'];
+              }
+              return '';
+            }),
+            previewValues: results.data.slice(0, previewLimit).map((row) => {
+              if (row['GPS DD'] && parseGpsCoordinate(row['GPS DD'])) {
+                return row['GPS DD'];
+              }
+              if (row['GPS DMS'] && parseGpsCoordinate(row['GPS DMS'])) {
+                return row['GPS DMS'];
+              }
+              return '';
+            }),
+          };
+
+          validationState.columnsData = [
+            defaultGpsColumn,
+            ...csvColumns.map((name) => ({
+              name,
+              allValues: results.data.map((row) => row[name] || ''),
+              previewValues: previewData.map((row) => row[name] || ''),
+            })),
+          ];
 
           // Second pass: analyze each column with access to all columns
           const columns = validationState.columnsData.map((col, index) => {
@@ -266,22 +294,55 @@
               values = values.filter((v) => v !== '' && v != null);
               if (values.length === 0) return 'string';
 
-              // Try to detect numbers
-              const isNumber = values.every((v) => {
-                const cleaned = v.replace(/[,\s]/g, '');
-                return !isNaN(Number(cleaned));
-              });
-              if (isNumber) return 'number';
-
-              // Try to detect GPS coordinates
-              // First check if this could be a latitude column
-              const couldBeLat = values.every(v => v === '' || isLatitude(v));
-              if (couldBeLat) {
-                // Look for a matching longitude column in remaining columns
-                const hasMatchingLon = validationState.columnsData.slice(index + 1).some(otherCol => 
-                  otherCol.allValues.every(v => v === '' || isLongitude(v))
-                );
-                if (hasMatchingLon) return 'gps';
+              // Check for GPS coordinates based on column names and value ranges
+              const colName = col.name.toLowerCase();
+              
+              // Check for latitude columns
+              if (colName.includes('lat')) {
+                const isValidLat = values.every(v => {
+                  if (!v) return true;
+                  const num = parseFloat(v.trim());
+                  return !isNaN(num) && Math.abs(num) <= 90;
+                });
+                if (isValidLat) {
+                  // Look for a matching longitude column
+                  const matchingLon = validationState.columnsData
+                    .find((otherCol, otherIndex) => 
+                      otherIndex !== index && 
+                      otherCol.name.toLowerCase().includes('lon') &&
+                      otherCol.allValues.every(v => {
+                        if (!v) return true;
+                        const num = parseFloat(v.trim());
+                        return !isNaN(num) && Math.abs(num) <= 180;
+                      })
+                    );
+                  
+                  if (matchingLon) return 'gps';
+                }
+              }
+              
+              // Check for longitude columns
+              if (colName.includes('lon')) {
+                const isValidLon = values.every(v => {
+                  if (!v) return true;
+                  const num = parseFloat(v.trim());
+                  return !isNaN(num) && Math.abs(num) <= 180;
+                });
+                if (isValidLon) {
+                  // Look for a matching latitude column
+                  const matchingLat = validationState.columnsData
+                    .find((otherCol, otherIndex) => 
+                      otherIndex !== index && 
+                      otherCol.name.toLowerCase().includes('lat') &&
+                      otherCol.allValues.every(v => {
+                        if (!v) return true;
+                        const num = parseFloat(v.trim());
+                        return !isNaN(num) && Math.abs(num) <= 90;
+                      })
+                    );
+                  
+                  if (matchingLat) return 'gps';
+                }
               }
 
               // If not part of a lat/lon pair, check if it's a combined GPS column
@@ -291,6 +352,13 @@
                 return point !== null;
               });
               if (isGps) return 'gps';
+
+              // Try to detect numbers
+              const isNumber = values.every((v) => {
+                const cleaned = v.replace(/[,\s]/g, '');
+                return !isNaN(Number(cleaned));
+              });
+              if (isNumber) return 'number';
 
               // Try to detect dates
               const isDate = values.every((v) => {
@@ -342,7 +410,7 @@
             console.log(`Showing ${previewLimit} of ${totalRows} rows in preview`);
           }
         },
-        error: (error) => {
+        error: (error: Error) => {
           transformStore.setError(error.message);
         },
       });
@@ -399,8 +467,11 @@
                   class="type-select"
                   value={column.suggestedType}
                   on:change={(e) => {
-                    column.suggestedType = e.currentTarget.value;
-                    transformStore.updateAnalysis(validationState.columns);
+                    const value = e.currentTarget.value;
+                    if (value === 'string' || value === 'number' || value === 'date' || value === 'gps' || value === 'email' || value === 'url') {
+                      column.suggestedType = value;
+                      transformStore.updateAnalysis(validationState.columns);
+                    }
                   }}
                 >
                   <option value="string">text</option>
@@ -430,16 +501,21 @@
 
         <!-- Data Rows -->
         {#if validationState.columns[0]?.sampleValues}
-          {#each validationState.columns[0].sampleValues as _, rowIndex}
+          {#each validationState.columns[0].sampleValues as _value, rowIndex}
             <tr>
               {#each validationState.columns as column, columnIndex}
                 <td
-                  class:invalid-value={column.invalidValues.includes(column.sampleValues[rowIndex])}
+                  class:invalid-value={column.invalidValues?.includes(
+                    column.sampleValues[rowIndex]
+                  )}
                 >
                   <div class="value-display">
                     <div class="original-value">{column.sampleValues[rowIndex] || ''}</div>
                     {#if column.currentType !== 'string'}
-                      <div class="transformed-value" style="color: #4CAF50; font-size: 0.9em; margin-top: 4px;">
+                      <div
+                        class="transformed-value"
+                        style="color: #4CAF50; font-size: 0.9em; margin-top: 4px;"
+                      >
                         {#if column.currentType === 'number'}
                           {column.sampleValues[rowIndex]
                             ? Number(
@@ -474,21 +550,21 @@
                           {#if column.sampleValues[rowIndex]}
                             {(() => {
                               const val = column.sampleValues[rowIndex];
-                              
+
                               // First try parsing as a combined coordinate
                               let point = parseGpsCoordinate(val);
                               if (point) {
                                 return `${point.lat.toFixed(7)}, ${point.lon.toFixed(7)}`;
                               }
-                              
+
                               // Try parsing as directional format
                               if (val.match(/^[NSEW]\d+/)) {
                                 const nextColumns = validationState.columns.slice(columnIndex + 1);
-                                const lonColumn = nextColumns.find(col => {
+                                const lonColumn = nextColumns.find((col) => {
                                   const lonVal = col.sampleValues[rowIndex];
                                   return lonVal && lonVal.match(/^[NSEW]\d+/);
                                 });
-                                
+
                                 if (lonColumn) {
                                   const lonVal = lonColumn.sampleValues[rowIndex];
                                   point = parseGpsCoordinate(val, lonVal);
@@ -497,15 +573,15 @@
                                   }
                                 }
                               }
-                              
+
                               // If that fails and this looks like a latitude, try to find matching longitude
                               if (isLatitude(val)) {
                                 const nextColumns = validationState.columns.slice(columnIndex + 1);
-                                const lonColumn = nextColumns.find(col => {
+                                const lonColumn = nextColumns.find((col) => {
                                   const lonVal = col.sampleValues[rowIndex];
                                   return lonVal && isLongitude(lonVal);
                                 });
-                                
+
                                 if (lonColumn) {
                                   const lonVal = lonColumn.sampleValues[rowIndex];
                                   point = parseGpsCoordinate(val, lonVal);
@@ -514,7 +590,7 @@
                                   }
                                 }
                               }
-                              
+
                               return null;
                             })()}
                           {/if}
