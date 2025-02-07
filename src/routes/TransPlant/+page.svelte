@@ -485,6 +485,27 @@
         complete: (results: Papa.ParseResult<CsvRow>) => {
           csvData = results.data;
           console.log('Parsed CSV Data:', csvData);
+          
+          // Get column headers
+          if (results.data.length > 0) {
+            orderedCsvColumns = Object.keys(results.data[0]);
+          }
+          
+          // Show first 5 rows in the import table
+          typedCsvData = results.data.slice(0, 5).map(row => {
+            const newRow: Record<string, string> = {};
+            Object.keys(row).forEach(key => {
+              newRow[key] = row[key]?.toString() || '';
+            });
+            return newRow;
+          });
+
+          // Initialize preview data
+          previewData = {
+            Land: [],
+            Crop: [],
+            Planted: []
+          };
         },
         header: true,
       });
@@ -917,31 +938,24 @@
   <main class="container">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">TransPlant</h1>
-      <button 
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        on:click={() => {
-          const storedData = sessionStorage.getItem('csvData');
-          const storedColumns = sessionStorage.getItem('csvColumns');
-          if (storedData && storedColumns) {
-            csvData = JSON.parse(storedData);
-            orderedCsvColumns = JSON.parse(storedColumns);
-            // Clear mock data to ensure we use imported data
-            MOCK_CSV_DATA.length = 0;
-          } else {
-            errorMessage = 'No CSV data found in session storage. Please go to CSVStaging first.';
-          }
-        }}
-      >
-        Import from Staging
-      </button>
+      <div class="flex gap-4">
+        <label 
+          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+          for="csvUpload"
+        >
+          Upload CSV
+          <input 
+            id="csvUpload"
+            type="file" 
+            accept=".csv" 
+            on:change={handleFileSelect} 
+            class="hidden"
+          />
+        </label>
+      </div>
     </div>
 
-    {#if !csvData}
-      <div class="file-upload">
-        <input type="file" accept=".csv" on:change={handleFileSelect} bind:this={fileInput} />
-        <p>Select a CSV file to begin mapping</p>
-      </div>
-    {:else}
+    {#if csvData}
       <div class="table-container">
         <h2 class="text-lg font-bold" style="margin: 0; padding: 0;">Import Table</h2>
         <div class="overflow-x-auto">
@@ -991,7 +1005,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each typedCsvData.slice(0, 5) as row}
+              {#each csvData?.slice(0, 5) || [] as row}
                 <tr class="flex flex-row flex-nowrap">
                   {#each orderedCsvColumns as column}
                     <td
@@ -1004,7 +1018,7 @@
                       data-mapped={mappings[column]}
                       title={row[`${column}_valid`] === false ? 'Invalid number format' : ''}
                     >
-                      {getRowValue(row, column)}
+                      {row[column] || ''}
                       {#if row[`${column}_valid`] === false}
                         <span class="text-red-500 text-xs"> (invalid)</span>
                       {/if}
@@ -1025,17 +1039,13 @@
               <table
                 style="background: {tableName !== 'Planted'
                   ? '#333333'
-                  : 'inherit'} ; color: {tableName !== 'Planted'
-                  ? 'white'
-                  : 'inherit'} ;"
+                  : 'inherit'} ; color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
               >
                 <thead>
                   <tr>
                     {#each tableHeaders[tableName] || [] as header}
                       <th
-                        style="background: {tableName !== 'Planted'
-                          ? '#333333'
-                          : 'inherit'} ;
+                        style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                         draggable={tableName === 'Planted'}
                         on:dragstart={tableName === 'Planted'
@@ -1068,16 +1078,10 @@
                 </thead>
                 <tbody>
                   {#each previewData[tableName] as row, rowIndex}
-                    <tr
-                      style="background: {tableName !== 'Planted'
-                        ? '#333333'
-                        : 'inherit'} ;"
-                    >
+                    <tr style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;">
                       {#each tableHeaders[tableName] || [] as header}
                         <td
-                          style="background: {tableName !== 'Planted'
-                            ? '#333333'
-                            : 'inherit'} ;
+                          style="background: {tableName !== 'Planted' ? '#333333' : 'inherit'} ;
                                  color: {tableName !== 'Planted' ? 'white' : 'inherit'} ;"
                           draggable={tableName === 'Planted'}
                           on:dragstart={tableName === 'Planted'
@@ -1222,8 +1226,8 @@
 
   .table-container {
     overflow-x: auto;
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
     width: 100%;
   }
 
@@ -1258,14 +1262,14 @@
 
   /* Required fields - only in Planted table */
   .table-preview:has(th[data-table='Planted']) th[data-required='true'] {
-    border: 2px solid var(--required-border) ;
+    border: 2px solid var(--required-border);
   }
 
   /* Mapped fields - only in Import and Planted tables */
   .table-container th[data-mapped='true'],
   .table-container td[data-mapped='true'],
   .table-preview:has(th[data-table='Planted']) th[data-mapped='true'] {
-    border: 2px solid var(--mapped-border) ;
+    border: 2px solid var(--mapped-border);
   }
 
   th {
@@ -1273,19 +1277,19 @@
   }
 
   .database-tables {
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-info {
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-preview {
     overflow-x: auto;
-    margin: 0 ;
-    padding: 0 ;
+    margin: 0;
+    padding: 0;
   }
 
   .table-preview table {
@@ -1346,7 +1350,7 @@
 
   /* Invalid number field styling */
   td.invalid {
-    background-color: #4a1c1c ;
+    background-color: #4a1c1c;
     position: relative;
   }
 
@@ -1362,7 +1366,7 @@
 
   /* Invalid cell styling */
   .invalid {
-    background-color: #4a1c1c ;
+    background-color: #4a1c1c;
     position: relative;
   }
 
