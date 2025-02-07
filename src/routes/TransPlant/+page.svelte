@@ -915,6 +915,27 @@
     </div>
   {/if}
   <main class="container">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">TransPlant</h1>
+      <button 
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        on:click={() => {
+          const storedData = sessionStorage.getItem('csvData');
+          const storedColumns = sessionStorage.getItem('csvColumns');
+          if (storedData && storedColumns) {
+            csvData = JSON.parse(storedData);
+            orderedCsvColumns = JSON.parse(storedColumns);
+            // Clear mock data to ensure we use imported data
+            MOCK_CSV_DATA.length = 0;
+          } else {
+            errorMessage = 'No CSV data found in session storage. Please go to CSVStaging first.';
+          }
+        }}
+      >
+        Import from Staging
+      </button>
+    </div>
+
     {#if !csvData}
       <div class="file-upload">
         <input type="file" accept=".csv" on:change={handleFileSelect} bind:this={fileInput} />
