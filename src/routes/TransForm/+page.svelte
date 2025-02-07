@@ -4,6 +4,7 @@
   import '$lib/styles/tables.css';
   import { transformStore } from '$lib/shared/csv/stores/transformStore';
   import { goto } from '$app/navigation';
+  import { exportToCSV } from './csvExport';
   import Papa from 'papaparse';
   import type { CsvColumnType } from '$lib/shared/csv/validation/types';
 
@@ -61,21 +62,20 @@
     console.log('Updating default_gps');
     const defaultGpsCol = validationState.columnsData[0];
     const numRows = defaultGpsCol.allValues.length;
-    
+
     // Reset default_gps values
     defaultGpsCol.allValues = new Array(numRows).fill('');
     defaultGpsCol.previewValues = new Array(Math.min(numRows, previewLimit)).fill('');
-    
+
     // Look for lat/lon pairs or complete GPS coordinates
     validationState.columnsData.forEach((col, index) => {
       if (index === 0 || col.currentType !== 'gps') return;
-      
+
       const colName = col.name.toLowerCase();
       if (colName.includes('lat')) {
         // Look for matching lon column
-        const lonCol = validationState.columnsData.find(c => 
-          c.name.toLowerCase().includes('lon') && 
-          c.currentType === 'gps'
+        const lonCol = validationState.columnsData.find(
+          (c) => c.name.toLowerCase().includes('lon') && c.currentType === 'gps'
         );
         if (lonCol) {
           col.allValues.forEach((v, i) => {
@@ -97,8 +97,8 @@
           if (v && v.includes(',')) {
             // Skip if it looks like a comma-separated number
             if (isCommaSeparatedNumber(v)) return;
-            
-            const [lat, lon] = v.split(',').map(p => parseFloat(p.trim()));
+
+            const [lat, lon] = v.split(',').map((p) => parseFloat(p.trim()));
             if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
               defaultGpsCol.allValues[i] = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
               if (i < previewLimit) {
@@ -351,12 +351,14 @@
           });
 
           // Find lat/lon columns
-          const latCol = regularColumns.find(col => col.name.toLowerCase().includes('lat'));
-          const lonCol = regularColumns.find(col => col.name.toLowerCase().includes('lon'));
+          const latCol = regularColumns.find((col) => col.name.toLowerCase().includes('lat'));
+          const lonCol = regularColumns.find((col) => col.name.toLowerCase().includes('lon'));
 
           // Create default_gps values
           const defaultGpsValues = new Array(results.data.length).fill('');
-          const defaultGpsPreviewValues = new Array(Math.min(results.data.length, previewLimit)).fill('');
+          const defaultGpsPreviewValues = new Array(
+            Math.min(results.data.length, previewLimit)
+          ).fill('');
 
           // If we have both lat and lon, combine them
           if (latCol && lonCol) {
@@ -364,7 +366,12 @@
               if (lat && lonCol.allValues[i]) {
                 const latNum = parseFloat(lat);
                 const lonNum = parseFloat(lonCol.allValues[i]);
-                if (!isNaN(latNum) && !isNaN(lonNum) && Math.abs(latNum) <= 90 && Math.abs(lonNum) <= 180) {
+                if (
+                  !isNaN(latNum) &&
+                  !isNaN(lonNum) &&
+                  Math.abs(latNum) <= 90 &&
+                  Math.abs(lonNum) <= 180
+                ) {
                   defaultGpsValues[i] = `${latNum}, ${lonNum}`;
                   if (i < defaultGpsPreviewValues.length) {
                     defaultGpsPreviewValues[i] = defaultGpsValues[i];
@@ -381,7 +388,7 @@
               allValues: defaultGpsValues,
               previewValues: defaultGpsPreviewValues,
             },
-            ...regularColumns
+            ...regularColumns,
           ];
 
           console.log(
@@ -814,7 +821,7 @@
                         const colName = column.name.toLowerCase();
                         if (colName.includes('lat')) {
                           // Look for matching lon column
-                          const lonCol = validationState.columnsData.find(c => 
+                          const lonCol = validationState.columnsData.find((c) =>
                             c.name.toLowerCase().includes('lon')
                           );
                           if (lonCol) {
@@ -822,10 +829,17 @@
                               if (v && lonCol.allValues[i]) {
                                 const lat = parseFloat(v);
                                 const lon = parseFloat(lonCol.allValues[i]);
-                                if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
-                                  validationState.columnsData[0].allValues[i] = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
+                                if (
+                                  !isNaN(lat) &&
+                                  !isNaN(lon) &&
+                                  Math.abs(lat) <= 90 &&
+                                  Math.abs(lon) <= 180
+                                ) {
+                                  validationState.columnsData[0].allValues[i] =
+                                    `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
                                   if (i < validationState.columnsData[0].previewValues.length) {
-                                    validationState.columnsData[0].previewValues[i] = validationState.columnsData[0].allValues[i];
+                                    validationState.columnsData[0].previewValues[i] =
+                                      validationState.columnsData[0].allValues[i];
                                   }
                                 }
                               }
@@ -870,6 +884,7 @@
             <tr>
               {#each validationState.columns as column, columnIndex}
                 <td
+                  data-column={column.name}
                   class:invalid-value={column.invalidValues?.includes(
                     column.sampleValues[rowIndex]
                   )}
@@ -976,9 +991,32 @@
         {/if}
       </table>
     </div>
-    <!-- Add button to push data to TransPlant -->
+    <!-- Buttons for actions -->
     {#if validationState.columns.length > 0}
-      <div class="mt-4">
+      <div class="mt-4 space-x-4">
+        <button
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          on:click={() => {
+            // Get all the transformed values (green text) from the table
+            const columnsWithTransformed = validationState.columns.map(col => {
+              // Find all transformed values for this column
+              const transformedElements = document.querySelectorAll(`[data-column="${col.name}"] .transformed-value`);
+              const transformedValues = Array.from(transformedElements).map(el => el.textContent || '');
+              
+              return {
+                ...col,
+                // For non-string types, use transformed values if available
+                allValues: col.currentType !== 'string' && transformedValues.length > 0 ? 
+                  transformedValues : col.allValues
+              };
+            });
+
+            console.log('Exporting with transformed values:', columnsWithTransformed);
+            exportToCSV(columnsWithTransformed);
+          }}
+        >
+          Export to CSV
+        </button>
         <button
           class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
           on:click={handlePushToTransplant}
