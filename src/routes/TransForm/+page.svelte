@@ -712,11 +712,7 @@
         <tr class="bg-gray-800 text-white">
           {#each validationState.columns as column}
             <th>
-              {#if column.currentType !== 'gps'}
-                <div class="type-container">
-                  <span class="type-value">{column.currentType}</span>
-                </div>
-              {/if}
+              <!-- Type labels removed -->
               <div class="type-container mt-2">
                 <select
                   class="type-select"
