@@ -731,7 +731,32 @@
                       value === 'email' ||
                       value === 'url'
                     ) {
+                      // Update the type
                       column.suggestedType = value;
+                      column.currentType = value;
+
+                      // Transform the data based on type
+                      column.sampleValues = column.sampleValues.map(val => {
+                        if (!val) return '';
+                        
+                        switch (value) {
+                          case 'number':
+                            // Extract only numbers, ignore everything else
+                            const num = val.replace(/[^0-9.-]/g, '');
+                            return num ? num : '';
+                          case 'date':
+                            try {
+                              const date = new Date(val);
+                              return date.toISOString().split('T')[0];
+                            } catch {
+                              return '';
+                            }
+                          default:
+                            return val;
+                        }
+                      });
+
+                      // Update the store
                       transformStore.updateAnalysis(validationState.columns);
                     }
                   }}
