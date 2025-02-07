@@ -1,17 +1,10 @@
-export type CsvColumnType = 
-  | 'string'
-  | 'number'
-  | 'date'
-  | 'gps'
-  | 'email'
-  | 'url'
-  | 'boolean';
+export type CsvColumnType = 'string' | 'number' | 'date' | 'gps' | 'email' | 'url' | 'boolean';
 
 export interface ColumnAnalysis {
   name: string;
   currentType: string;
   suggestedType: CsvColumnType;
-  confidence: number;  // 0-1
+  confidence: number; // 0-1
   sampleValues: string[];
   invalidValues: string[];
   totalRows: number;
