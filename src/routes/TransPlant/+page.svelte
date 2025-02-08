@@ -3,6 +3,10 @@
   /// <reference types="vite/client" />
   import { onMount } from 'svelte';
   import Papa from 'papaparse';
+  import ColumnHeader from '$lib/components/ColumnHeader.svelte';
+
+  export let data;
+
 
   type FieldType = 'string' | 'number' | 'date' | 'latitude' | 'longitude';
 
@@ -28,63 +32,60 @@
     isInteractive?: boolean;
   }
 
-  // Validation functions
-  function formatValue(value: any, field: string): string {
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
+    // Validation functions
+    function formatValue(value: any, field: string): string {
+      if (value === null || value === undefined || value === '') {
+        return '';
+      }
 
-    // Get field type based on the field name
-    let fieldType = 'string';
-    if (field === 'hectares' || field === 'planted' || field === 'numberTrees') {
-      fieldType = 'number';
-    } else if (field === 'planting_date' || field === 'Dates') {
-      fieldType = 'date';
-    } else if (field === 'gps_lat' || field === 'gps_lon' || field === 'lon') {
-      fieldType = 'gps';
-    }
+      // Get field type based on the field name
+      let fieldType = 'string';
+      if (field === 'hectares' || field === 'planted' || field === 'numberTrees') {
+        fieldType = 'number';
+      } else if (field === 'planting_date' || field === 'Dates') {
+        fieldType = 'date';
+      } else if (field === 'gps_lat' || field === 'gps_lon' || field === 'lon') {
+        fieldType = 'gps';
+      }
 
-    switch (fieldType) {
-      case 'number':
-        // Remove any commas or spaces first
-        const cleanedValue = String(value).replace(/[,\s]/g, '');
-        const num = Number(cleanedValue);
-        return !isNaN(num) ? num.toLocaleString() : value;
-      case 'date':
-        try {
-          // First try to parse the date
-          let date: Date;
-          
-          // Try parsing various formats
-          if (/^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/.test(value)) {
-            // Format: 6 Feb 25 or 6 Feb 2025
-            date = new Date(value);
-          } else if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-            // Format: 2025-02-06
-            date = new Date(value);
-          } else {
-            date = new Date(value);
-          }
-
-          if (!isNaN(date.getTime())) {
-            // Format as YYYY-MM-DD
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-          }
-          return value;
-        } catch {
+      switch (fieldType) {
+    case 'number':
+      // Remove any commas or spaces first
+      const cleanedValue = String(value).replace(/[,\s]/g, '');
+      const num = Number(cleanedValue);
+      return !isNaN(num) ? num.toLocaleString() : value;
+    case 'date':
+      try {
+        // First try to parse the date
+        let date: Date;
+        
+        // Try parsing various formats
+        if (/^\d{1,2}\s+[A-Za-z]{3}\s+\d{2,4}$/.test(value)) {
+          // Format: 6 Feb 25 or 6 Feb 2025
+          date = new Date(value);
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          // Format: 2025-02-06
+          date = new Date(value);
+        } else {
+          date = new Date(value);
+        }
+        
+        if (isNaN(date.getTime())) {
           return value;
         }
-      case 'gps':
-        // Handle GPS coordinates in various formats
-        const cleanedCoord = String(value).replace(/[°'"\s]/g, '');
-        const coord = Number(cleanedCoord);
-        return !isNaN(coord) ? coord.toFixed(6) : value;
-      default:
-        return String(value);
-    }
+        
+        return date.toLocaleDateString();
+      } catch (error) {
+        return value;
+      }
+    case 'gps':
+      // Handle GPS coordinates in various formats
+      const cleanedCoord = String(value).replace(/[°'"\s]/g, '');
+      const coord = Number(cleanedCoord);
+      return !isNaN(coord) ? coord.toFixed(6) : value;
+    default:
+      return String(value);
+  }
   }
 
   function getRowValue(row: CsvRow | PreviewRow, column: string): string {
@@ -215,6 +216,7 @@
     });
   }
   let mappings: Record<string, string> = {};
+  $: console.log('Mappings updated:', mappings);
   let validMappings: Record<string, boolean[]> = {};
   let previewValidation: Record<string, Record<string, boolean[]>> = {};
 
@@ -274,8 +276,8 @@
       mappings = { ...mappings };
     }
   }
-  let fileInput: HTMLInputElement;
-  import ColumnHeader from '$lib/components/ColumnHeader.svelte';
+  let fileInput: HTMLInputElement | null = null;
+  
 
   let csvColumns: string[] = [];
   let orderedCsvColumns: string[] = [];
@@ -338,77 +340,9 @@
       nursery: { type: 'string', required: false, propagatesTo: 'Crop' },
       hectares: { type: 'number', required: false, propagatesTo: 'Land' },
       preparation_id: { type: 'string', required: false, propagatesTo: 'Land' },
-      notes: { type: 'string', required: false },
-    },
-  } as const;
-
-  // Add this mock data for development
-  const MOCK_CSV_DATA = [
-    {
-      parcelID: '3BEE6680',
-      pledgeID: '3BEE66',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'ES',
-      countryName: 'Germany',
-      lat: '52.223473',
-      lon: '13.3522415',
-      areaHa: '0.2',
-      numberTrees: '180',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3747',
-      pledgeID: '3BEE37',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'ES',
-      countryName: 'Spain',
-      lat: '41.070263',
-      lon: '-0.1900329',
-      areaHa: '0.3',
-      numberTrees: '364',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3747',
-      pledgeID: '3BEE14',
-      organisationType: 'Private company or corporation',
-      organisationWebsite: 'https://www.3bee.com/',
-      Species: 'FR',
-      countryName: 'France',
-      lat: '47.870235',
-      lon: '6.4099884',
-      areaHa: '0.2',
-      numberTrees: '204',
-      plantingYear: '2023',
-      'trees/ha': '1,111',
-      parcelOwnership: 'Private',
-      CRS: '4326',
-    },
-    {
-      parcelID: '3BEE3888',
-      pledgeID: '3BEE22',
-      organisationType: 'Something else',
-      organisationWebsite: 'https://groundtruth.app/',
-      Species: 'GT',
-      countryName: 'Canada',
-      lat: '47.870255',
-      lon: '6.4099855',
-      areaHa: '12.2',
-      numberTrees: '2200',
-      plantingYear: '2024',
-      'trees/ha': '1,500',
-      parcelOwnership: 'Public',
-      CRS: '4323',
-    },
-  ];
+      notes: { type: 'string', required: false }
+    }
+  };
 
   async function fetchTableHeaders() {
     try {
@@ -490,6 +424,24 @@
           if (results.data.length > 0) {
             orderedCsvColumns = Object.keys(results.data[0]);
           }
+
+          // Initialize empty preview data with 5 rows for each table
+          previewData = {
+            Land: Array(5).fill().map(() => ({})),
+            Crop: Array(5).fill().map(() => ({})),
+            Planted: Array(5).fill().map(() => ({}))
+          };
+          console.log('Preview Data after init:', JSON.parse(JSON.stringify(previewData)));
+
+          // Initialize mappings
+          mappings = {};
+          
+          // Initialize table headers from schema
+          tableHeaders = {};
+          schema.forEach(table => {
+            tableHeaders[table.name] = table.fields.map(f => f.name);
+          });
+          console.log('Table Headers after init:', tableHeaders);
           
           // Show first 5 rows in the import table
           typedCsvData = results.data.slice(0, 5).map(row => {
@@ -513,6 +465,8 @@
   }
 
   function reorderColumns() {
+    if (!csvData || csvData.length === 0) return;
+    
     console.log('=== Starting column reorder ===');
     console.log('Current columns:', [...orderedCsvColumns]);
     console.log('Current mappings:', { ...mappings });
@@ -666,6 +620,9 @@
         }
       });
 
+      // Keep track of existing mappings
+      const existingMappings = { ...mappings };
+
       // Check if target field is a number field
       const fieldType = tableFieldTypes[table]?.[field]?.type;
       if (fieldType === 'number') {
@@ -695,8 +652,11 @@
         }
       }
 
-      // Set the new mapping
-      mappings[csvColumn] = `${table}.${field}`;
+      // Set the new mapping while preserving others
+      mappings = {
+        ...existingMappings,
+        [csvColumn]: `${table}.${field}`
+      };
       console.log('MAPPING DEBUG:', {
         csvColumn,
         table,
@@ -921,9 +881,9 @@
         [field]: '',
       }));
     }
-  }
+  };
 
-  export let data;
+  
 </script>
 
 <div class="csv-mapper">
@@ -939,16 +899,16 @@
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">TransPlant</h1>
       <div class="flex gap-4">
-        <label 
+        <label
           class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
           for="csvUpload"
         >
           Upload CSV
-          <input 
+          <input
             id="csvUpload"
-            type="file" 
-            accept=".csv" 
-            on:change={handleFileSelect} 
+            type="file"
+            accept=".csv"
+            on:change={handleFileSelect}
             class="hidden"
           />
         </label>
