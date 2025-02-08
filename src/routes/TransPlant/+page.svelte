@@ -324,7 +324,7 @@
       species_id: { type: 'string', required: true },
       seedlot: { type: 'string', required: false },
       seedzone: { type: 'string', required: false },
-      crop_stock: { type: 'number', required: true },
+      crop_stock: { type: 'string', required: false },
       nursery: { type: 'string', required: false },
     },
     Planted: {
@@ -415,52 +415,67 @@
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      Papa.parse(file, {
-        complete: (results: Papa.ParseResult<CsvRow>) => {
-          csvData = results.data;
-          console.log('Parsed CSV Data:', csvData);
-          
-          // Get column headers
-          if (results.data.length > 0) {
-            orderedCsvColumns = Object.keys(results.data[0]);
-          }
+      let processingStage = 'start';
+      try {
+        processingStage = 'parsing';
+        Papa.parse(file, {
+          complete: (results: Papa.ParseResult<CsvRow>) => {
+            processingStage = 'mapping';
+            csvData = results.data;
+            console.log('Parsed CSV Data:', csvData);
+            
+            // Get column headers
+            if (results.data.length > 0) {
+              orderedCsvColumns = Object.keys(results.data[0]);
+            }
 
-          // Initialize empty preview data with 5 rows for each table
-          previewData = {
-            Land: Array(5).fill().map(() => ({})),
-            Crop: Array(5).fill().map(() => ({})),
-            Planted: Array(5).fill().map(() => ({}))
-          };
-          console.log('Preview Data after init:', JSON.parse(JSON.stringify(previewData)));
+            // Initialize empty preview data with 5 rows for each table
+            previewData = {
+              Land: Array(5).fill().map(() => ({})),
+              Crop: Array(5).fill().map(() => ({})),
+              Planted: Array(5).fill().map(() => ({}))
+            };
+            console.log('Preview Data after init:', JSON.parse(JSON.stringify(previewData)));
 
-          // Initialize mappings
-          mappings = {};
-          
-          // Initialize table headers from schema
-          tableHeaders = {};
-          schema.forEach(table => {
-            tableHeaders[table.name] = table.fields.map(f => f.name);
-          });
-          console.log('Table Headers after init:', tableHeaders);
-          
-          // Show first 5 rows in the import table
-          typedCsvData = results.data.slice(0, 5).map(row => {
-            const newRow: Record<string, string> = {};
-            Object.keys(row).forEach(key => {
-              newRow[key] = row[key]?.toString() || '';
+            // Initialize mappings
+            mappings = {};
+            
+            // Initialize table headers from schema
+            tableHeaders = {};
+            schema.forEach(table => {
+              tableHeaders[table.name] = table.fields.map(f => f.name);
             });
-            return newRow;
-          });
+            console.log('Table Headers after init:', tableHeaders);
+            
+            // Show first 5 rows in the import table
+            typedCsvData = results.data.slice(0, 5).map(row => {
+              const newRow: Record<string, string> = {};
+              Object.keys(row).forEach(key => {
+                newRow[key] = row[key]?.toString() || '';
+              });
+              return newRow;
+            });
 
-          // Initialize preview data
-          previewData = {
-            Land: [],
-            Crop: [],
-            Planted: []
-          };
-        },
-        header: true,
-      });
+            // Initialize preview data
+            previewData = {
+              Land: [],
+              Crop: [],
+              Planted: []
+            };
+          },
+          header: true,
+        });
+      } catch (e) {
+        console.error(`CSV processing failed at stage: ${processingStage}`, e);
+        errorMessage = `CSV Processing Error: ${e.message}`;
+        return;
+      }
+      // Add required field check
+      if (!previewData.some(d => d.land_name && d.crop_name)) {
+        console.error('Missing required land_name/crop_name in:', previewData);
+        errorMessage = 'CSV missing required land_name or crop_name columns';
+        return;
+      }
     }
   }
 
@@ -690,9 +705,11 @@
         plantedMappings.set(field, csvColumn);
 
         // Create preview rows with all mapped fields
-        previewData.Planted = csvData.slice(0, 5).map((row: any, index: number) => {
+        const validationErrors: Record<string, string[]> = {};
+        previewData.Planted = csvData.slice(0, 5).map((row, index) => {
           console.log(`Processing row ${index}:`, row);
           const previewRow = {};
+          validationErrors[index] = [];
           plantedMappings.forEach((csvCol, mapField) => {
             const rawValue = row[csvCol];
             console.log(`Row ${index} - ${mapField} from ${csvCol}:`, {
@@ -707,7 +724,10 @@
             if (fieldType === 'number' && rawValue) {
               const decimals = mapField === 'hectares' ? 1 : 0;
               const validation = validateNumber(rawValue, decimals);
-              previewRow[mapField] = rawValue;
+              if (!validation.isValid) {
+                validationErrors[index].push(`${mapField}: ${validation.message}`);
+              }
+              previewRow[mapField] = validation.value ?? rawValue;
               previewRow[`${mapField}_valid`] = validation.isValid;
             } else {
               previewRow[mapField] = rawValue || '';
@@ -720,6 +740,10 @@
 
         // Force reactivity
         previewData = { ...previewData };
+
+        if (validationErrors.length > 0) {
+          console.warn('Validation errors detected:', validationErrors);
+        }
       }
 
       // Force reorder
