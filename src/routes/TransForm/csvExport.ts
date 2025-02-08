@@ -3,6 +3,7 @@ interface Column {
   currentType: string;
   allValues: string[];
   sampleValues: string[];
+  transformedValues?: string[];
 }
 
 export function exportToCSV(columns: Column[]) {
@@ -21,7 +22,7 @@ export function exportToCSV(columns: Column[]) {
   const rows = [];
   for (let i = 0; i < numRows; i++) {
     const row = columns.map(col => {
-      const value = col.allValues[i] || '';
+      const value = (col.transformedValues?.[i] ?? col.allValues[i]) || ''.toString();
       // Escape values containing commas
       return value.includes(',') ? `"${value}"` : value;
     }).join(',');
