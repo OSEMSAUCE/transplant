@@ -4,6 +4,8 @@
   import '$lib/styles/tables.css';
   import { transformStore } from '$lib/shared/csv/stores/transformStore';
   import { goto } from '$app/navigation';
+
+  const previewLimit = 1000; // Maximum number of rows to show in preview
   import { exportToCSV } from './csvExport';
   import Papa from 'papaparse';
   import type { CsvColumnType } from '$lib/shared/csv/validation/types';
@@ -675,6 +677,7 @@
           });
 
           transformStore.updateAnalysis(columns);
+          updateDefaultGps();
 
           if (totalRows > previewLimit) {
             console.log(`Showing ${previewLimit} of ${totalRows} rows in preview`);
