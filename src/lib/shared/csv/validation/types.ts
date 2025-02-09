@@ -2,8 +2,8 @@ export type CsvColumnType = 'string' | 'number' | 'date' | 'gps' | 'email' | 'ur
 
 export interface ColumnAnalysis {
   name: string;
-  currentType: string;
   suggestedType: CsvColumnType;
+  currentType: string;
   confidence: number; // 0-1
   sampleValues: string[];
   invalidValues: string[];

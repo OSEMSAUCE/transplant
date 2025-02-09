@@ -1,16 +1,22 @@
 <!-- TransForm.svelte -->
 <script lang="ts">
   /// <reference lib="dom" />
+  /// <reference lib="dom.iterable" />
+  
   import '$lib/styles/tables.css';
   import { transformStore } from '$lib/shared/csv/stores/transformStore';
   import { goto } from '$app/navigation';
-
-  const previewLimit = 1000; // Maximum number of rows to show in preview
+  import type { ColumnAnalysis, CsvColumnType } from '$lib/shared/csv/validation/types';  const previewLimit = 1000; // Maximum number of rows to show in preview
   import { exportToCSV } from './csvExport';
   import Papa from 'papaparse';
-  import type { CsvColumnType } from '$lib/shared/csv/validation/types';
+
+  
 
   let fileInput: HTMLInputElement;
+
+  // let validationState: { columnsData: ColumnAnalysis[] } = {
+  // columnsData: []
+  // };
 
   interface GpsPoint {
     lat: number;
@@ -59,6 +65,13 @@
     return !isNaN(num) && Math.abs(num) <= 180;
   }
 
+  // Function to check if a string looks like a number with commas
+  function isCommaSeparatedNumber(value: string): boolean {
+    if (!value) return false;
+    // Match patterns like 1,234 or 1,234.56
+    return /^-?\d{1,3}(,\d{3})*(\.\d+)?$/.test(value.trim());
+  }
+
   // Function to update default_gps column based on current GPS columns
   function updateDefaultGps() {
     console.log('Updating default_gps');
@@ -69,6 +82,7 @@
     defaultGpsCol.allValues = new Array(numRows).fill('');
     defaultGpsCol.previewValues = new Array(Math.min(numRows, previewLimit)).fill('');
 
+    
     // Look for lat/lon pairs or complete GPS coordinates
     validationState.columnsData.forEach((col, index) => {
       if (index === 0 || col.currentType !== 'gps') return;
@@ -203,7 +217,7 @@
 
   $: validationState = {
     ...$transformStore,
-    columnsData: [] as Array<{ name: string; allValues: string[]; previewValues: string[] }>,
+    columnsData: [] as ColumnData[],
   };
 
   interface CsvRow {
@@ -218,7 +232,7 @@
 
     transformStore.setFile(file.name);
 
-    const reader: FileReader = new FileReader();
+    const reader = new window.FileReader(); // Explicit window reference
     reader.onload = (e) => {
       const csv = e.target?.result as string;
       Papa.parse<CsvRow>(csv, {
@@ -235,7 +249,7 @@
             return;
           }
 
-          function detectType(
+          function detectColumnType(
             values: string[],
             columnName: string,
             columnIndex: number
@@ -412,7 +426,7 @@
               };
             }
 
-            function detectType(values: string[]): CsvColumnType {
+            function detectValueType(values: string[]): CsvColumnType {
               // Skip empty values for type detection
               values = values.filter((v) => v !== '' && v != null);
               if (values.length === 0) return 'string' as CsvColumnType;
@@ -425,13 +439,6 @@
                 'with first few values:',
                 values.slice(0, 3)
               );
-
-              // Function to check if a string looks like a number with commas
-              function isCommaSeparatedNumber(value: string): boolean {
-                if (!value) return false;
-                // Match patterns like 1,234 or 1,234.56
-                return /^-?\d{1,3}(,\d{3})*(\.\d+)?$/.test(value.trim());
-              }
 
               // First check if any values contain complete GPS coordinates
               const hasCompleteCoords = values.some((v) => {
@@ -660,7 +667,7 @@
               return 'string' as CsvColumnType;
             }
 
-            const suggestedType = detectType(col.allValues);
+            const suggestedType = detectValueType(col.allValues);
             const analysis: ColumnAnalysis = {
               name: col.name,
               currentType: suggestedType,
