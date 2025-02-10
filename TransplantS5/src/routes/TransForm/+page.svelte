@@ -11,12 +11,42 @@
 
   const previewLimit = 1000; // Maximum number of rows to show in preview
 
+  // Types for upload state management
+  interface UploadedColumn {
+    uploadColumnName: string;
+    uploadDataType: 'string' | 'number' | 'gps' | 'date' | 'boolean';
+    uploadValues: string[];
+    mappedTo?: {
+      targetTable: 'land' | 'crop' | 'planting' | 'species' | 'organization';
+      targetField: string;
+    };
+  }
+
   // State management with runes
   let fileName = $state('');
   let totalRows = $state(0);
   let columns = $state<ColumnAnalysis[]>([]);
   let status = $state<'ready' | 'processing' | 'validated' | 'mapped' | 'error'>('ready');
   let error = $state<string | null>(null);
+  let uploadColumns = $state<UploadedColumn[]>([]);
+
+  // State management functions
+  function resetUploadState() {
+    fileName = '';
+    totalRows = 0;
+    columns = [];
+    status = 'ready';
+    error = null;
+    uploadColumns = [];
+  }
+
+  function updateUploadState(newData: Partial<typeof uploadState>) {
+    if (newData.fileName !== undefined) fileName = newData.fileName;
+    if (newData.totalRows !== undefined) totalRows = newData.totalRows;
+    if (newData.columns !== undefined) columns = newData.columns;
+    if (newData.status !== undefined) status = newData.status;
+    if (newData.uploadColumns !== undefined) uploadColumns = newData.uploadColumns;
+  }
 
   // Derived state
   let hasData = $derived(columns.length > 0);
@@ -97,83 +127,83 @@
   }
 </script>
 
-<div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">TransForm - CSV Cleanup</h1>
+<main class="container">
+  <h1>TransForm - CSV Cleanup</h1>
 
   <!-- File Upload -->
-  <div class="mb-6">
+  <article>
     <input
       type="file"
       accept=".csv"
       bind:this={fileInput}
       on:change={handleFileSelect}
-      class="hidden"
+      style="display: none;"
     />
     <button
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      class="primary"
       on:click={() => fileInput.click()}
     >
       Upload CSV
     </button>
-  </div>
+  </article>
 
   <!-- Error Display -->
   {#if error}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+    <article class="error">
       {error}
-    </div>
+    </article>
   {/if}
 
   <!-- Data Preview -->
   {#if hasData}
     {#if showPreviewWarning}
-      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded mb-4">
+      <article class="info">
         Showing first {previewLimit} of {totalRows.toLocaleString()} rows in preview
-      </div>
+      </article>
     {/if}
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <article>
       <table class="data-table">
         <!-- Headers -->
-        <tr class="bg-gray-800 text-white">
-          {#each columns as column}
-            <th>{column.name}</th>
-          {/each}
-        </tr>
+        <thead>
+          <tr>
+            {#each columns as column}
+              <th scope="col">{column.name}</th>
+            {/each}
+          </tr>
+        </thead>
 
         <!-- Data -->
-        {#if columns[0]?.sampleValues}
-          {#each columns[0].sampleValues as _value, rowIndex}
-            <tr>
-              {#each columns as column}
-                <td>
-                  <div class="value-display">
-                    <div class="original-value">{column.sampleValues[rowIndex] || ''}</div>
-                  </div>
-                </td>
-              {/each}
-            </tr>
-          {/each}
-        {/if}
+        <tbody>
+          {#if columns[0]?.sampleValues}
+            {#each columns[0].sampleValues as _value, rowIndex}
+              <tr>
+                {#each columns as column}
+                  <td>
+                    <div class="value-display">
+                      <div class="original-value">{column.sampleValues[rowIndex] || ''}</div>
+                    </div>
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          {/if}
+        </tbody>
       </table>
-    </div>
+    </article>
   {/if}
-</div>
+</main>
 
 <style>
-  .value-display {
-    @apply p-2;
+  article.error {
+    background: var(--del-background-color);
+    border-color: var(--del-color);
+    color: var(--del-color);
   }
-  
-  .data-table {
-    @apply w-full;
-  }
-  
-  .data-table th {
-    @apply px-4 py-2 text-left;
-  }
-  
-  .data-table td {
-    @apply border-t border-gray-200;
+
+  article.info {
+    background: var(--ins-background-color);
+    border-color: var(--ins-color);
+    color: var(--ins-color);
   }
 </style>
