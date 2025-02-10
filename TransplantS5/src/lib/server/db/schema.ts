@@ -1,31 +1,12 @@
-// 👍️🌲️ DATABASE SCHEMA
-// /**
-//  * Database Schema Definition
-//  *
-//  * This file defines the database schema using Drizzle ORM.
-//  */
+/**
+ * Database Schema Definition
+ * 
+ * This file defines the database schema using Drizzle ORM.
+ * It matches the Supabase structure exactly to ensure compatibility.
+ * Each table includes timestamps, audit fields, and proper relationships.
+ */
 
-// Define table interfaces to break circular dependencies
-interface LandRow {
-	land_id: string;
-	land_name: string;
-	hectares?: number;
-	land_holder?: string;
-	gps_lat?: number;
-	gps_lon?: number;
-	polygon_id?: string;
-	preparation_id?: number;
-	project_id?: string;
-}
-
-interface PolygonRow {
-	polygon_id: string;
-	land_id?: string;
-	geojson?: unknown;
-}
-//  * It matches the Supabase structure exactly to ensure compatibility.
-//  * Each table includes timestamps, audit fields, and proper relationships.
-//  */
+import { type BaseColumns } from './types';
 
 import {
 	pgTable,
@@ -160,6 +141,8 @@ export const polygons = pgTable('Polygons', {
  */
 export const preparationTypes = pgTable('PreparationTypes', {
 	preparation_id: serial('preparation_id').primaryKey(),
+	name: text('name').notNull(),
+	description: text('description'),
 	...baseColumns
 });
 
