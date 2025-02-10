@@ -1,38 +1,101 @@
-# sv
+# Transplant
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A modern data pipeline for managing agricultural planting data, built with Svelte 5 and TypeScript.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **CSV Data Import**: Easily import planting data from CSV files
+- **Data Validation**: Robust validation with TypeScript and business rules
+- **Database Integration**: Seamless PostgreSQL integration via Drizzle ORM
+- **Modern UI**: Clean, accessible interface built with Svelte 5 and Pico CSS
+- **Type Safety**: Full TypeScript support throughout the application
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL 15+
+- npm 9+
+
+### Installation
 
 ```bash
-# create a new project in the current directory
-npx sv create
+# Clone the repository
+git clone [repository-url]
+cd transplant
 
-# create a new project in my-app
-npx sv create my-app
-```
+# Install dependencies
+npm install
 
-## Developing
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+# Push database schema
+npm run db:push
 
-```bash
+# Start development server
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Development
 
-To create a production version of your app:
+### State Management
+
+Transplant uses Svelte 5's runes for state management:
+
+```typescript
+// Primary States
+const csvData = $state<CsvData | null>(null);
+const transformedData = $state<TransformedData | null>(null);
+
+// Derived States
+const isReady = $derived(transformedData !== null);
+```
+
+### Available Scripts
 
 ```bash
-npm run build
+# Development
+npm run dev         # Start development server
+npm run lint        # Run ESLint
+npm run lint:fix    # Fix ESLint issues
+
+# Database
+npm run db:push     # Push schema changes
+npm run db:generate # Generate migrations
+npm run db:studio   # Open Drizzle Studio
+
+# Testing
+npm run test        # Run all tests
+npm test:unit      # Run unit tests
+npm test:integration # Run integration tests
 ```
 
-You can preview the production build with `npm run preview`.
+## Contributing
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for our development process, coding standards, and state management patterns.
+
+## Architecture
+
+Transplant follows a three-stage data pipeline:
+
+1. **CSV Stage**: Raw data ingestion
+2. **Transform Stage**: Data validation and cleaning
+3. **Map Stage**: Schema mapping and database preparation
+
+Each stage maintains its own typed state and validation rules.
+
+## Testing
+
+We use Vitest for unit testing and Playwright for integration tests. Run the full suite:
+
+```bash
+npm run test
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
