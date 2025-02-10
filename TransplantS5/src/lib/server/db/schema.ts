@@ -42,7 +42,7 @@ const baseColumns = {
  * - polygon_id → Polygons
  * - project_id → Projects
  */
-export const land = pgTable('Land', {
+export const land = pgTable('land', {
 	land_id: text('land_id').primaryKey(),
 	land_name: text('land_name').notNull(),
 	hectares: numeric('hectares'),
@@ -64,14 +64,15 @@ export const land = pgTable('Land', {
  * - project_id → Projects
  */
 
-export const crop = pgTable('Crop', {
+export const crop = pgTable('crop', {
 	crop_id: text('crop_id').primaryKey(),
 	crop_name: text('crop_name').notNull(),
 	species_id: text('species_id').references(() => species.species_id),
 	organization_id: text('organization_id').references(() => organizations.organization_id),
 	project_id: text('project_id').references(() => projects.project_id),
-	crop_stock: text('crop_stock'),
-	seed_info: text('seed_info'),
+	crop_stock: integer('crop_stock'),
+	seedlot: text('seedlot'),
+	seedzone: text('seedzone'),
 	...baseColumns
 });
 
@@ -80,7 +81,7 @@ export const crop = pgTable('Crop', {
  * Central table tracking what crops are planted where
  * Forms many-to-many relationship between Land and Crop
  */
-export const planting = pgTable('Planting', {
+export const planting = pgTable('planting', {
 	id: text('id').primaryKey(),
 	land_id: text('land_id').references(() => land.land_id),
 	crop_id: text('crop_id').references(() => crop.crop_id),
@@ -94,7 +95,7 @@ export const planting = pgTable('Planting', {
  * Scientific classification of crops
  * Referenced by Crop table
  */
-export const species = pgTable('Species', {
+export const species = pgTable('species', {
 	species_id: text('species_id').primaryKey(),
 	scientific_name: text('scientific_name'),
 	common_name: text('common_name'),

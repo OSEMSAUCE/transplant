@@ -692,8 +692,9 @@ let showPreviewWarning = $derived(totalRows > previewLimit);
             return analysis;
           });
 
-          columns = columns;
-status = 'validated';
+          // Update columns and status
+          columns = newColumns;
+          status = 'validated';
           updateDefaultGps();
 
           if (totalRows > previewLimit) {
