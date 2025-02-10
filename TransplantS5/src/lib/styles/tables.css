@@ -1,0 +1,30 @@
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  background-color: #1a202c;
+  color: white;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.data-table td {
+  padding: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.data-table tr:hover {
+  background-color: #f7fafc;
+}
+
+.invalid-value {
+  background-color: #fff5f5;
+}
+
+.transformed-value {
+  color: #48bb78;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}

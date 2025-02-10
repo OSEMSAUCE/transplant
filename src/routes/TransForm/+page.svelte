@@ -4,7 +4,16 @@
   /// <reference lib="dom.iterable" />
   
   import '$lib/styles/tables.css';
-  import { transformStore } from '$lib/shared/csv/stores/transformStore';
+  // State management with runes
+let fileName = $state('');
+let totalRows = $state(0);
+let columns = $state<ColumnAnalysis[]>([]);
+let status = $state<'ready' | 'processing' | 'validated' | 'mapped' | 'error'>('ready');
+let error = $state<string | null>(null);
+
+// Derived state
+let hasData = $derived(columns.length > 0);
+let showPreviewWarning = $derived(totalRows > previewLimit);
   import { goto } from '$app/navigation';
   import type { ColumnAnalysis, CsvColumnType } from '$lib/shared/csv/validation/types';  const previewLimit = 1000; // Maximum number of rows to show in preview
   import { exportToCSV } from './csvExport';
@@ -240,7 +249,7 @@
         skipEmptyLines: true,
         complete: (results) => {
           if (results.errors.length > 0) {
-            transformStore.setError(results.errors[0].message);
+            error = results.errors[0].message;
             return;
           }
 
@@ -683,7 +692,8 @@
             return analysis;
           });
 
-          transformStore.updateAnalysis(columns);
+          columns = columns;
+status = 'validated';
           updateDefaultGps();
 
           if (totalRows > previewLimit) {
