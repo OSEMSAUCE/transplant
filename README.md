@@ -8,6 +8,14 @@ If you're interested to help please let me know if you have any questions. It's 
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
+## Gotcha's
+GOTCHA: when you run `npm run db:pull` two issues happen:
+
+1. it errors on the `export const land: any` you have to add `: any`
+2. search `""` and replace with `"` (remove the extra quotes)
+
+
+
 ## Creating a project
 
 If you're seeing this, you've probably already done this step. Congrats!
@@ -30,6 +38,13 @@ npm run dev
 # or start the server and open the app in a new browser tab
 npm run dev -- --open
 ```
+
+## Database
+you run `npm run db:pull` to sync the orm
+GOTCHA: when you run `npm run db:pull` two issues happen:
+
+1. it errors on the `export const land: any` you have to add `: any`
+2. search `""` and replace with `"` (remove the extra quotes)
 
 ## Building
 

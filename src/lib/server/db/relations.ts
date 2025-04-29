@@ -51,7 +51,12 @@ export const landRelations = relations(land, ({one, many}) => ({
 	polygons: many(polygons, {
 		relationName: "polygons_landId_land_landId"
 	}),
-	plantings: many(planting),
+	plantings_landId: many(planting, {
+		relationName: "planting_landId_land_landId"
+	}),
+	plantings_landId: many(planting, {
+		relationName: "planting_landId_land_landId"
+	}),
 }));
 
 export const polygonsRelations = relations(polygons, ({one, many}) => ({
@@ -98,18 +103,35 @@ export const stakeholderTypesRelations = relations(stakeholderTypes, ({many}) =>
 }));
 
 export const plantingRelations = relations(planting, ({one}) => ({
-	land: one(land, {
+	land_landId: one(land, {
 		fields: [planting.landId],
-		references: [land.landId]
+		references: [land.landId],
+		relationName: "planting_landId_land_landId"
 	}),
-	crop: one(crop, {
+	crop_cropId: one(crop, {
 		fields: [planting.cropId],
-		references: [crop.cropId]
+		references: [crop.cropId],
+		relationName: "planting_cropId_crop_cropId"
+	}),
+	land_landId: one(land, {
+		fields: [planting.landId],
+		references: [land.landId],
+		relationName: "planting_landId_land_landId"
+	}),
+	crop_cropId: one(crop, {
+		fields: [planting.cropId],
+		references: [crop.cropId],
+		relationName: "planting_cropId_crop_cropId"
 	}),
 }));
 
 export const cropRelations = relations(crop, ({one, many}) => ({
-	plantings: many(planting),
+	plantings_cropId: many(planting, {
+		relationName: "planting_cropId_crop_cropId"
+	}),
+	plantings_cropId: many(planting, {
+		relationName: "planting_cropId_crop_cropId"
+	}),
 	species: one(species, {
 		fields: [crop.speciesId],
 		references: [species.speciesId]
