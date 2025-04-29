@@ -1,14 +1,3 @@
-<!-- 
-Key Changes:
-1. Added max_transplant_rows constant (line 7) to limit preview rows
-2. Added pageIs prop (line 10) to differentiate between transfer/transplant modes
-3. Added isTransplant derived state (line 13) based on pageIs prop
-4. Added numberFormat utility function (lines 16-22) for consistent number display
-5. Enhanced dragstartHandler (lines 27-50) to:
-   - Add visual feedback with 'dragging' class
-   - Create dynamic drag preview showing column header and sample rows
-   - Use importedData for preview content
--->
 <script lang="ts">
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';

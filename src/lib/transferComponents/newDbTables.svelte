@@ -1,3 +1,7 @@
+// 29 Apr 2025  To DO 9:04 AM
+// make drag drop prevent wrog types
+// go to newTablesData - dragstartHandler - make a dynamic class thing to show user wrong types. 
+
 <script lang="ts">
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { formatValue, matchesFormat } from './newFormatDetection';
