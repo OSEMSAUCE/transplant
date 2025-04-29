@@ -12,7 +12,9 @@
 	const landUserTable = $derived(data?.landsDbTable || []);
 	const plantingUserTable = $derived(data?.plantingDbTable || []);
 	const cropUserTable = $derived(data?.cropDbTable || []);
-	const dbFormat = $derived(data?.dbFormat || 'string');
+	const landDbFormat = $derived(data?.landDbFormat || 'string');
+	const plantingDbFormat = $derived(data?.plantingDbFormat || 'string');
+	const cropDbFormat = $derived(data?.cropDbFormat || 'string');
 
 	let pageIs = $state<'transfer' | 'transplant'>('transfer');
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
@@ -96,7 +98,7 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-		<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} />
+		<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
 	{/if}
 {/if}
 

@@ -9,23 +9,25 @@ export async function load() {
 		
 	);
 	// console.log(land.gpsLat.columnType);
-	const dbFormat = dbFormatSelector(land);
+	const landDbFormat = dbFormatSelector(land);
 	const plantingDbFormat = dbFormatSelector(planting);
 	const cropDbFormat = dbFormatSelector(crop);
-	console.log('dbFormat', dbFormat);
-	return { landsDbTable, plantingDbTable, cropDbTable, dbFormat };
+	console.log('dbFormat', landDbFormat);
+	return { landsDbTable, plantingDbTable, cropDbTable, landDbFormat, plantingDbFormat, cropDbFormat };
 }
 
 interface ColumnDescription {
 	columnType:
 		| 'PgNumeric'
-		| 'PgDate'
+		| 'PgDateString'
 		| 'PgUUID'
 		| 'PgText'
 		| 'PgTimestampString'
 		| 'PgBoolean'
 		| 'PgEnumColumn'
-		| 'PgBigInt53';
+		| 'PgBigInt53'
+		| 'PgInteger';
+	dataType: 'number' | 'string' | 'boolean' | 'date' | 'gps';
 	// Add other properties if they exist
 }
 
@@ -36,9 +38,11 @@ function dbFormatSelector(table: PgTableWithColumns<any>) {
 		if (column && typeof column === 'object' && 'columnType' in column) {
 			const columnDescription = column as ColumnDescription;
 			let format = 'string';
-			if (columnDescription.columnType === 'PgNumeric') {
+			if (columnDescription.dataType === 'number') {
 				format = 'number';
-			} else if (columnDescription.columnType === 'PgDate') {
+			} else if (columnDescription.columnType === 'PgNumeric' || columnDescription.columnType === 'PgInteger') {
+				format = 'number';
+			} else if (columnDescription.columnType === 'PgDateString') {
 				format = 'date';
 			} else if (columnDescription.columnType === 'PgUUID') {
 				format = 'string';

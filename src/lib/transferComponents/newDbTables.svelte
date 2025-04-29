@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { formatValue, matchesFormat } from './newFormatDetection';
+	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 
-	const { landUserTable, plantingUserTable, cropUserTable } = $props<{
+	const { landUserTable, plantingUserTable, cropUserTable, landDbFormat, plantingDbFormat, cropDbFormat } = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
 		cropUserTable: any[];
+		landDbFormat: Record<string, string>;
+		plantingDbFormat: Record<string, string>;
+		cropDbFormat: Record<string, string>;
 	}>();
 
 	const landColumns = Object.keys(landUserTable[0] || {});
@@ -78,6 +82,7 @@
 	function cropDropHandler(ev: DragEvent) {
 		dropHandler(ev, cropTable);
 	}
+
 </script>
 
 <h3>Planting Table</h3>
@@ -90,9 +95,22 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={plantingDropHandler}
-					>{column.name}
-					<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
+				>
+				<div class="column-header">
+					<FormatSelectorComponent
+					columnData={[]}
+					currentFormat={plantingDbFormat[column.name]}
+					currentColumnHeader={column.name}
+					onformatchange={(event) => {
+					}}
+						isTransplant={true}
+						isToggled={true}
+					/>
+						{column.name}
+						<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
+				</div>
 				</th>
+
 			{/each}
 		</tr>
 	</thead>
@@ -189,3 +207,4 @@
 		{/each}
 	</tbody>
 </table>
+
