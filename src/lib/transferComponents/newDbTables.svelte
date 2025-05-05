@@ -146,11 +146,25 @@
 		<tr>
 			{#each landTable as column, index}
 				<th
-					data-header-name={column.name}
-					data-column-index={index}
-					ondragover={dragoverHandler}
-					ondrop={landDropHandler}>{column.name}</th
-				>
+						data-header-name={column.name}
+						data-column-index={index}
+						ondragover={dragoverHandler}
+						ondrop={landDropHandler}
+					>
+					<div class="column-header">
+						<FormatSelectorComponent
+							columnData={[]}
+							currentFormat={landDbFormat[column.name]}
+							currentColumnHeader={column.name}
+							onformatchange={(event) => {
+							}}
+							isTransplant={true}
+							isToggled={true}
+						/>
+						{column.name}
+						<span onclick={() => clearDbColumn(landTable, index)} class="material-symbols-outlined">cancel</span>
+					</div>
+				</th>
 			{/each}
 		</tr>
 	</thead>
@@ -182,11 +196,25 @@
 		<tr>
 			{#each cropTable as column, index}
 				<th
-					data-header-name={column.name}
-					data-column-index={index}
-					ondragover={dragoverHandler}
-					ondrop={cropDropHandler}>{column.name}</th
-				>
+						data-header-name={column.name}
+						data-column-index={index}
+						ondragover={dragoverHandler}
+						ondrop={cropDropHandler}
+					>
+					<div class="column-header">
+						<FormatSelectorComponent
+							columnData={[]}
+							currentFormat={cropDbFormat[column.name]}
+							currentColumnHeader={column.name}
+							onformatchange={(event) => {
+							}}
+							isTransplant={true}
+							isToggled={true}
+						/>
+						{column.name}
+						<span onclick={() => clearDbColumn(cropTable, index)} class="material-symbols-outlined">cancel</span>
+					</div>
+				</th>
 			{/each}
 		</tr>
 	</thead>
