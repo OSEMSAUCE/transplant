@@ -12,6 +12,7 @@ export async function load() {
 	const landDbFormat = dbFormatSelector(land);
 	const plantingDbFormat = dbFormatSelector(planting);
 	const cropDbFormat = dbFormatSelector(crop);
+	await db.insert(land).values({ landId: "testIDString1", landName: 'test' });
 	console.log('dbFormat', landDbFormat);
 	return { landsDbTable, plantingDbTable, cropDbTable, landDbFormat, plantingDbFormat, cropDbFormat };
 }
