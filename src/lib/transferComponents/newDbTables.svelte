@@ -104,7 +104,7 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={plantingDropHandler}
-					class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name]}
+					class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name] && column.modelRepColumnIndex === -1}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -134,8 +134,8 @@
 						data-column-index={index}
 						ondragover={dragoverHandler}
 						ondrop={plantingDropHandler}
-						class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name]}
-					>
+						class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name] && column.modelRepColumnIndex === -1}
+						>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
 						{:else}
