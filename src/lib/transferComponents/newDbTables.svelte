@@ -5,6 +5,7 @@
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
+	import type { ColumnFormat } from '$lib/types/columnModel';
 
 	const {
 		landUserTable,
@@ -71,26 +72,37 @@
 	}
 
 	// 18 Apr 2025 9:02 AM  Get state from top table and update local $state here.
-	function dropHandler(ev: DragEvent, dbDropTable: TableColumn[]) {
+	function dropHandler(ev: DragEvent, dbDropTable: TableColumn[], dropFormat: Record<string, string>) {
 		if (!ev.dataTransfer || !ev.target) return;
 		ev.preventDefault();
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
 		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
+		const draggedColumnFormat = importedData.columns[draggedColumnIndex].currentFormat;
+		const targetColumnFormat = dropFormat[dbDropTable[targetColumnIndex].name];
+		if (draggedColumnFormat !== targetColumnFormat) {
+			console.log('Formats do not match');
+			return;
+		}
+		if (dbDropTable[targetColumnIndex].modelRepColumnIndex !== -1) {
+			console.log('Column already mapped');
+			return;
+		}
+
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
 		importedData.columns[draggedColumnIndex].mappedTo = `${dbDropTable[targetColumnIndex].name}`;
 	}
 
 	function plantingDropHandler(ev: DragEvent) {
-		dropHandler(ev, plantingTable);
+		dropHandler(ev, plantingTable, plantingDbFormat);
 	}
 
 	function landDropHandler(ev: DragEvent) {
-		dropHandler(ev, landTable);
+		dropHandler(ev, landTable, landDbFormat);
 	}
 
 	function cropDropHandler(ev: DragEvent) {
-		dropHandler(ev, cropTable);
+		dropHandler(ev, cropTable, cropDbFormat);
 	}
 </script>
 
@@ -158,7 +170,8 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={landDropHandler}
-				>
+					class:legal-droptarget={dragColumnState.currentFormat === landDbFormat[column.name] && column.modelRepColumnIndex === -1}
+					>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
@@ -186,6 +199,7 @@
 						data-column-index={index}
 						ondragover={dragoverHandler}
 						ondrop={landDropHandler}
+						class:legal-droptarget={dragColumnState.currentFormat === landDbFormat[column.name] && column.modelRepColumnIndex === -1}
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
@@ -209,7 +223,8 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={cropDropHandler}
-				>
+					class:legal-droptarget={dragColumnState.currentFormat === cropDbFormat[column.name] && column.modelRepColumnIndex === -1}
+					>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
@@ -237,6 +252,7 @@
 						data-column-index={index}
 						ondragover={dragoverHandler}
 						ondrop={cropDropHandler}
+						class:legal-droptarget={dragColumnState.currentFormat === cropDbFormat[column.name] && column.modelRepColumnIndex === -1}
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
