@@ -3,7 +3,7 @@
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { formatValue, matchesFormat } from './newFormatDetection';
-
+	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	// Add this constant
 	const max_transplant_rows = 3;
 
@@ -31,7 +31,10 @@
 		const target = ev.target as HTMLElement;
 		const columnIndex = Number(target.dataset.columnIndex);
 		const columnName = target.dataset.headerName ?? '';
-
+		// set drag column state, legal color thing. 
+		dragColumnState.headerName = columnName;
+		dragColumnState.currentFormat = importedData.columns[columnIndex].currentFormat;
+		dragColumnState.index = columnIndex;
 		// Add class to all cells in this column
 		document
 			.querySelectorAll(`[data-column-index="${columnIndex}"]`)

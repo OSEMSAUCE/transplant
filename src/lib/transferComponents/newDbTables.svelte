@@ -1,13 +1,19 @@
-
 <script lang="ts">
 	// 29 Apr 2025  To DO 9:04 AM
 	// make drag drop prevent wrog types
-	// go to newTablesData - dragstartHandler - make a dynamic class thing to show user wrong types. 
+	// go to newTablesData - dragstartHandler - make a dynamic class thing to show user wrong types.
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	import { formatValue, matchesFormat } from './newFormatDetection';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 
-	const { landUserTable, plantingUserTable, cropUserTable, landDbFormat, plantingDbFormat, cropDbFormat } = $props<{
+	const {
+		landUserTable,
+		plantingUserTable,
+		cropUserTable,
+		landDbFormat,
+		plantingDbFormat,
+		cropDbFormat
+	} = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
 		cropUserTable: any[];
@@ -25,7 +31,7 @@
 		importedData.columns[dbTable[index].modelRepColumnIndex].isMapped = false;
 		importedData.columns[dbTable[index].modelRepColumnIndex].mappedTo = undefined;
 		dbTable[index].modelRepColumnIndex = -1;
-		console.log("clicked")
+		console.log('clicked');
 	}
 
 	interface TableColumn {
@@ -86,7 +92,6 @@
 	function cropDropHandler(ev: DragEvent) {
 		dropHandler(ev, cropTable);
 	}
-
 </script>
 
 <h3>Planting Table</h3>
@@ -99,22 +104,24 @@
 					data-column-index={index}
 					ondragover={dragoverHandler}
 					ondrop={plantingDropHandler}
+					class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name]}
 				>
-				<div class="column-header">
-					<FormatSelectorComponent
-					columnData={[]}
-					currentFormat={plantingDbFormat[column.name]}
-					currentColumnHeader={column.name}
-					onformatchange={(event) => {
-					}}
-						isTransplant={true}
-						isToggled={true}
-					/>
+					<div class="column-header">
+						<FormatSelectorComponent
+							columnData={[]}
+							currentFormat={plantingDbFormat[column.name]}
+							currentColumnHeader={column.name}
+							onformatchange={(event) => {}}
+							isTransplant={true}
+							isToggled={true}
+						/>
 						{column.name}
-						<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
-				</div>
+						<span
+							onclick={() => clearDbColumn(plantingTable, index)}
+							class="material-symbols-outlined">cancel</span
+						>
+					</div>
 				</th>
-
 			{/each}
 		</tr>
 	</thead>
@@ -127,6 +134,7 @@
 						data-column-index={index}
 						ondragover={dragoverHandler}
 						ondrop={plantingDropHandler}
+						class:legal-droptarget={dragColumnState.currentFormat === plantingDbFormat[column.name]}
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
@@ -146,23 +154,24 @@
 		<tr>
 			{#each landTable as column, index}
 				<th
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={dragoverHandler}
-						ondrop={landDropHandler}
-					>
+					data-header-name={column.name}
+					data-column-index={index}
+					ondragover={dragoverHandler}
+					ondrop={landDropHandler}
+				>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
 							currentFormat={landDbFormat[column.name]}
 							currentColumnHeader={column.name}
-							onformatchange={(event) => {
-							}}
+							onformatchange={(event) => {}}
 							isTransplant={true}
 							isToggled={true}
 						/>
 						{column.name}
-						<span onclick={() => clearDbColumn(landTable, index)} class="material-symbols-outlined">cancel</span>
+						<span onclick={() => clearDbColumn(landTable, index)} class="material-symbols-outlined"
+							>cancel</span
+						>
 					</div>
 				</th>
 			{/each}
@@ -196,23 +205,24 @@
 		<tr>
 			{#each cropTable as column, index}
 				<th
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={dragoverHandler}
-						ondrop={cropDropHandler}
-					>
+					data-header-name={column.name}
+					data-column-index={index}
+					ondragover={dragoverHandler}
+					ondrop={cropDropHandler}
+				>
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
 							currentFormat={cropDbFormat[column.name]}
 							currentColumnHeader={column.name}
-							onformatchange={(event) => {
-							}}
+							onformatchange={(event) => {}}
 							isTransplant={true}
 							isToggled={true}
 						/>
 						{column.name}
-						<span onclick={() => clearDbColumn(cropTable, index)} class="material-symbols-outlined">cancel</span>
+						<span onclick={() => clearDbColumn(cropTable, index)} class="material-symbols-outlined"
+							>cancel</span
+						>
 					</div>
 				</th>
 			{/each}
@@ -239,4 +249,3 @@
 		{/each}
 	</tbody>
 </table>
-
