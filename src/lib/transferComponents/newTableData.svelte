@@ -59,6 +59,9 @@
 		document.querySelectorAll('.dragging').forEach((el) => el.classList.remove('dragging'));
 		// Clean up drag preview
 		document.querySelector('.drag-preview')?.remove();
+		dragColumnState.headerName = null;
+		dragColumnState.currentFormat = null;
+		dragColumnState.index = null;
 	}
 </script>
 
