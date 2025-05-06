@@ -1,5 +1,8 @@
 // const data is what we're sending to the DB
 // src/lib/transferComponents/dbButton.ts
+
+// we need to take teh data from the browser and put in here somehow. 
+
 export async function submitToDB(data: Record<string, any>) {
     try {
       const response = await fetch('/api/submitToDB', {

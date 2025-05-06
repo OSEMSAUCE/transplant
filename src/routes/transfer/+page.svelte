@@ -82,6 +82,7 @@
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
+			<button onclick={submitToDB}>Submit to DB</button>	
 			{#if pageIs === 'transfer'}
 				<div class="toggle-row">
 					{#each importedData.columns as column}
@@ -100,10 +101,9 @@
 
 	{#if pageIs === 'transplant'}
 	<p>test</p>
-	<button onclick={submitToDB}>Submit to DB</button>	
 	<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
 	{/if}
-{/if}
+	{/if}
 
 {#if importedData.columns}
 	<h2>Current Column Model State</h2>
