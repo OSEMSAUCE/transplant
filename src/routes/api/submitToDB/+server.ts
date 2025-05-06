@@ -40,17 +40,17 @@ export async function POST({ request }) {
             const landResults = [];
             
             for (const landItem of landEntries) {
-                // Create land entry
+                // Create land entry using the connect pattern for relationships
                 const landEntry = await prismaClient.land.create({
                     data: {
                         landName: landItem.landName,
-                        projectId: project.projectId,
+                        project: { connect: { projectId: project.projectId } },
                         hectares: landItem.hectares ? parseFloat(landItem.hectares) : null,
                         landHolder: landItem.landHolder || null,
                         gpsLat: landItem.gpsLat ? parseFloat(landItem.gpsLat) : null,
                         gpsLon: landItem.gpsLon ? parseFloat(landItem.gpsLon) : null,
                         landNotes: landItem.landNotes || null,
-                        csvobjId: csvObjId
+                        csvobj: { connect: { csvobjId: csvObjId } }
                     }
                 });
                 
@@ -74,16 +74,16 @@ export async function POST({ request }) {
             const cropResults = [];
             
             for (const cropItem of cropEntries) {
-                // Create crop entry
+                // Create crop entry with fields that match the actual database structure
                 const cropEntry = await prismaClient.crop.create({
                     data: {
                         cropName: cropItem.cropName,
-                        projectId: project.projectId,
-                        seedlot: cropItem.seedlot || null,
-                        seedzone: cropItem.seedzone || null,
+                        project: { connect: { projectId: project.projectId } },
+                        // Use seedInfo field from the updated schema
+                        seedInfo: cropItem.seedInfo || cropItem.seedlot || null,
                         cropStock: cropItem.cropStock || null,
                         cropNotes: cropItem.cropNotes || null,
-                        csvobjId: csvObjId
+                        csvobj: { connect: { csvobjId: csvObjId } }
                     }
                 });
                 
@@ -110,15 +110,16 @@ export async function POST({ request }) {
                 const cropEntry = cropResults.find(c => c.cropName === plantingItem.cropName);
                 
                 if (landEntry && cropEntry) {
-                    // Create planting entry
+                    // Create planting entry using the correct Planting model
+                    // Connect the land and crop using their IDs
                     const plantingEntry = await prismaClient.planting.create({
                         data: {
-                            landId: landEntry.landId,
-                            cropId: cropEntry.cropId,
+                            land: { connect: { landId: landEntry.landId } },
+                            crop: { connect: { cropId: cropEntry.cropId } },
                             planted: plantingItem.planted ? parseInt(plantingItem.planted) : null,
                             plantingDate: plantingItem.plantingDate ? new Date(plantingItem.plantingDate) : null,
                             planting_notes: plantingItem.planting_notes || null,
-                            csvobjId: csvObjId
+                            csvobj: { connect: { csvobjId: csvObjId } }
                         }
                     });
                     
@@ -154,9 +155,13 @@ export async function POST({ request }) {
         
     } catch (error) {
         console.error('Error submitting data to DB:', error);
+        // Log the full error for debugging
+        if (error instanceof Error && error.stack) {
+            console.error('Error stack:', error.stack);
+        }
         return json({ 
             error: 'Failed to submit data to database',
-            details: error.message 
+            details: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
     }
 }
