@@ -5,16 +5,20 @@ import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 export async function load() {
 	const landsDbTable = await db.select().from(land).limit(1);
 	const plantingDbTable = await db.select().from(planting).limit(1);
-	const cropDbTable = await db.select().from(crop).limit(1
-		
-	);
+	const cropDbTable = await db.select().from(crop).limit(1);
 	// console.log(land.gpsLat.columnType);
 	const landDbFormat = dbFormatSelector(land);
 	const plantingDbFormat = dbFormatSelector(planting);
 	const cropDbFormat = dbFormatSelector(crop);
-	await db.insert(land).values({ landId: "testIDString1", landName: 'test' });
 	console.log('dbFormat', landDbFormat);
-	return { landsDbTable, plantingDbTable, cropDbTable, landDbFormat, plantingDbFormat, cropDbFormat };
+	return {
+		landsDbTable,
+		plantingDbTable,
+		cropDbTable,
+		landDbFormat,
+		plantingDbFormat,
+		cropDbFormat
+	};
 }
 
 interface ColumnDescription {
@@ -41,7 +45,10 @@ function dbFormatSelector(table: PgTableWithColumns<any>) {
 			let format = 'string';
 			if (columnDescription.dataType === 'number') {
 				format = 'number';
-			} else if (columnDescription.columnType === 'PgNumeric' || columnDescription.columnType === 'PgInteger') {
+			} else if (
+				columnDescription.columnType === 'PgNumeric' ||
+				columnDescription.columnType === 'PgInteger'
+			) {
 				format = 'number';
 			} else if (columnDescription.columnType === 'PgDateString') {
 				format = 'date';

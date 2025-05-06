@@ -5,6 +5,7 @@
 	import { importedData, setImportedData } from '$lib/transferComponents/modelState.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
+	import { submitToDB } from '$lib/transferComponents/dbButton';
 	
 
 	const { data } = $props();
@@ -98,7 +99,8 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-		<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
+	<button onclick={submitToDB}>Submit to DB</button>	
+	<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
 	{/if}
 {/if}
 
