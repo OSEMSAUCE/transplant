@@ -1,5 +1,4 @@
-import { db } from '$lib/server/db';
-
+// const data is what we're sending to the DB
 // src/lib/transferComponents/dbButton.ts
 export async function submitToDB(data: Record<string, any>) {
     try {

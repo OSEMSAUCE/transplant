@@ -99,6 +99,7 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
+	<p>test</p>
 	<button onclick={submitToDB}>Submit to DB</button>	
 	<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
 	{/if}
