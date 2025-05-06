@@ -1,66 +1,162 @@
 // http://localhost:5173/api/submitToDB
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { projects } from '$lib/server/db/schema';
+import { projects, land, crop, csvobj, metadata } from '$lib/server/db/schema';
+import { prisma } from '$lib/server/prisma';
 
-const testData = 
-{
-    "type": "FeatureCollection",
-    "features": [
-      {
-        "type": "Feature",
-        "properties": {
-          "projectName": "Latur (Maharashtra)",
-          "url": "https://restor.eco/sites/e4c3773f-3727-4bdc-944c-d2bbb13a4317/?interventionTypes=ACTIVE_RESTORATION|SUSTAINABLE_FORESTRY|RESTORING_NATURAL_DISTURBANCE_REGIMES|AGROFORESTRY|ASSISTED_NATURAL_REGENERATION",
-          "hectares": "0.50",
-          "organization_name": "",
-          "orgUrlRestor": "",
-          "activity": "Sustainable Land Management",
-          "land_notes": "No description available",
-          "error": "Missing orgUrlRestor"
-        },
-        "geometry": {
-          "type": "MultiPolygon",
-          "coordinates": [[[[76.59145856,18.08082383],[76.59143297,18.08004135],[76.59216227,18.08004541],[76.59217933,18.08019947],[76.59198314,18.08019542],[76.59200447,18.0807022],[76.59145856,18.08082383]]]]
-        }
-      },
-      {
-        "type": "Feature",
-        "properties": {
-          "projectName": "Sunnymount",
-          "url": "https://restor.eco/sites/e6367c9e-adf2-4953-a94e-47779c60aad8/?interventionTypes=ACTIVE_RESTORATION|SUSTAINABLE_FORESTRY|RESTORING_NATURAL_DISTURBANCE_REGIMES|AGROFORESTRY|ASSISTED_NATURAL_REGENERATION",
-          "hectares": "0.022",
-          "organization_name": "",
-          "orgUrlRestor": "",
-          "activity": "Restoration",
-          "land_notes": "No description available",
-          "error": "Missing orgUrlRestor"
-        },
-        "geometry": {
-          "type": "MultiPolygon",
-          "coordinates": [[[[-1.26661139,51.46057554],[-1.2666257,51.46042848],[-1.2664147,51.46041511],[-1.26640575,51.46053432],[-1.26661139,51.46057554]]]]
-        }
-      },
-    ]
-}
-
-export async function POST() {
+export async function POST({ request }) {
     console.log('API: Submit to DB request received');
- 
-    const [projectData] = await db.insert(projects)
-    .values([{
-        // 6 May 2025 - we need to map the client side data to the db somehow. 
-        // we data on the client for planting, crop, land.
-        // we 
-
-        projectName: testData.features[1].properties.projectName
-    }])
-    .returning();
- 
-    console.log(projectData);
-
-
-    return json({ message: 'Submit to DB request received', projectData });
+    
+    try {
+        // Parse the incoming data
+        const data = await request.json();
+        console.log('Received data:', data);
+        
+        // First, store the original JSON data in the csvobj table
+        const csvObjData = await db.insert(csvobj)
+            .values({
+                jsonData: data
+            })
+            .returning();
+        
+        const csvObjId = csvObjData[0].csvobjId;
+        console.log('Created csvobj with ID:', csvObjId);
+        
+        // Process the data using Prisma for nested operations
+        const result = await prisma.$transaction(async (prismaClient) => {
+            // Create the project first
+            const project = await prismaClient.projects.create({
+                data: {
+                    projectName: data.projectName || 'Unnamed Project',
+                    projectNotes: data.projectNotes || '',
+                    csvobjId: csvObjId
+                }
+            });
+            
+            console.log('Created project:', project);
+            
+            // Process land data with nested crops and plantings
+            const landEntries = data.land || [];
+            const landResults = [];
+            
+            for (const landItem of landEntries) {
+                // Create land entry
+                const landEntry = await prismaClient.land.create({
+                    data: {
+                        landName: landItem.landName,
+                        projectId: project.projectId,
+                        hectares: landItem.hectares ? parseFloat(landItem.hectares) : null,
+                        landHolder: landItem.landHolder || null,
+                        gpsLat: landItem.gpsLat ? parseFloat(landItem.gpsLat) : null,
+                        gpsLon: landItem.gpsLon ? parseFloat(landItem.gpsLon) : null,
+                        landNotes: landItem.landNotes || null,
+                        csvobjId: csvObjId
+                    }
+                });
+                
+                landResults.push(landEntry);
+                
+                // Store mapping information in metadata table
+                for (const [key, value] of Object.entries(landItem)) {
+                    if (key !== 'crops' && key !== 'plantings') {
+                        await db.insert(metadata)
+                            .values({
+                                csvobjId: csvObjId,
+                                csvKey: key,
+                                dbKey: `land.${key}`
+                            });
+                    }
+                }
+            }
+            
+            // Process crop data
+            const cropEntries = data.crops || [];
+            const cropResults = [];
+            
+            for (const cropItem of cropEntries) {
+                // Create crop entry
+                const cropEntry = await prismaClient.crop.create({
+                    data: {
+                        cropName: cropItem.cropName,
+                        projectId: project.projectId,
+                        seedlot: cropItem.seedlot || null,
+                        seedzone: cropItem.seedzone || null,
+                        cropStock: cropItem.cropStock || null,
+                        cropNotes: cropItem.cropNotes || null,
+                        csvobjId: csvObjId
+                    }
+                });
+                
+                cropResults.push(cropEntry);
+                
+                // Store mapping information in metadata table
+                for (const [key, value] of Object.entries(cropItem)) {
+                    await db.insert(metadata)
+                        .values({
+                            csvobjId: csvObjId,
+                            csvKey: key,
+                            dbKey: `crop.${key}`
+                        });
+                }
+            }
+            
+            // Process planting data (connecting land and crops)
+            const plantingEntries = data.plantings || [];
+            const plantingResults = [];
+            
+            for (const plantingItem of plantingEntries) {
+                // Find the corresponding land and crop entries
+                const landEntry = landResults.find(l => l.landName === plantingItem.landName);
+                const cropEntry = cropResults.find(c => c.cropName === plantingItem.cropName);
+                
+                if (landEntry && cropEntry) {
+                    // Create planting entry
+                    const plantingEntry = await prismaClient.planting.create({
+                        data: {
+                            landId: landEntry.landId,
+                            cropId: cropEntry.cropId,
+                            planted: plantingItem.planted ? parseInt(plantingItem.planted) : null,
+                            plantingDate: plantingItem.plantingDate ? new Date(plantingItem.plantingDate) : null,
+                            planting_notes: plantingItem.planting_notes || null,
+                            csvobjId: csvObjId
+                        }
+                    });
+                    
+                    plantingResults.push(plantingEntry);
+                    
+                    // Store mapping information in metadata table
+                    for (const [key, value] of Object.entries(plantingItem)) {
+                        if (key !== 'landName' && key !== 'cropName') {
+                            await db.insert(metadata)
+                                .values({
+                                    csvobjId: csvObjId,
+                                    csvKey: key,
+                                    dbKey: `planting.${key}`
+                                });
+                        }
+                    }
+                }
+            }
+            
+            return {
+                project,
+                land: landResults,
+                crops: cropResults,
+                plantings: plantingResults
+            };
+        });
+        
+        return json({ 
+            message: 'Data successfully submitted to database',
+            csvObjId,
+            result
+        });
+        
+    } catch (error) {
+        console.error('Error submitting data to DB:', error);
+        return json({ 
+            error: 'Failed to submit data to database',
+            details: error.message 
+        }, { status: 500 });
+    }
 }
-
-
