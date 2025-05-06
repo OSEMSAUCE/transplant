@@ -88,9 +88,23 @@
 			return;
 		}
 
+		// Update the database table's reference to the imported column
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
+		
+		// Mark the column as mapped
 		importedData.columns[draggedColumnIndex].isMapped = true;
-		importedData.columns[draggedColumnIndex].mappedTo = `${dbDropTable[targetColumnIndex].name}`;
+		
+		// Set the mappedTo property with the correct table prefix
+		let tablePrefix = '';
+		if (dbDropTable === plantingTable) tablePrefix = 'planting.';
+		if (dbDropTable === landTable) tablePrefix = 'land.';
+		if (dbDropTable === cropTable) tablePrefix = 'crop.';
+		
+		// Set the mapping with the table prefix
+		importedData.columns[draggedColumnIndex].mappedTo = `${tablePrefix}${dbDropTable[targetColumnIndex].name}`;
+		
+		console.log(`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`);
+		
 	}
 
 	function plantingDropHandler(ev: DragEvent) {

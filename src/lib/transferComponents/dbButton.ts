@@ -129,6 +129,15 @@ export async function submitToDB() {
 			}
 		}
 
+		// Debug information
+		console.log('landNames:', Array.from(landNames));
+		console.log('cropNames:', Array.from(cropNames));
+		console.log('landNameColumn:', landNameColumn ? 'exists' : 'undefined');
+		console.log('cropNameColumn:', cropNameColumn ? 'exists' : 'undefined');
+		console.log('landColumns length:', landColumns.length);
+		console.log('cropColumns length:', cropColumns.length);
+		console.log('plantingColumns length:', plantingColumns.length);
+
 		// Create the final data structure
 		const data = {
 			projectName: 'TransPlant Import ' + new Date().toISOString().split('T')[0],
