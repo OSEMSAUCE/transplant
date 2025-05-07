@@ -100,7 +100,6 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-	<p>test</p>
 	<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
 	{/if}
 	{/if}
