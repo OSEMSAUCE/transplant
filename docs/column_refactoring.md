@@ -36,12 +36,6 @@ We're implementing a Column-based architecture to solve several issues in the Tr
    - [x] Created code annotation system for refactoring
    - [x] Documented migration strategy
 
-### Current Implementation Files
-
-- `/src/lib/types/columnTypes.ts`: Core type definitions
-- `/src/lib/types/columnModel.ts`: Implementation classes
-- `/src/lib/utils/columnUtils.ts`: Utility functions
-
 ### Files to Update
 
 The following files will need to be modified to fully implement the Column architecture:
@@ -90,11 +84,6 @@ The following files will need to be modified to fully implement the Column archi
 
 3. **api/schema/+server.ts** [MINOR CHANGES]
    - [ ] Update schema handling to work with Column objects
-
-### Utils
-
-1. **dataTypes/** [MINOR CHANGES]
-   - [ ] Update type parsing functions to work with Column validation
 
 ## Migration Strategy
 
