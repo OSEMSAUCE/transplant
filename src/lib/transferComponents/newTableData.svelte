@@ -35,6 +35,7 @@
 		dragColumnState.headerName = columnName;
 		dragColumnState.currentFormat = importedData.columns[columnIndex].currentFormat;
 		dragColumnState.index = columnIndex;
+		console.log(dragColumnState);
 		// Add class to all cells in this column
 		document
 			.querySelectorAll(`[data-column-index="${columnIndex}"]`)

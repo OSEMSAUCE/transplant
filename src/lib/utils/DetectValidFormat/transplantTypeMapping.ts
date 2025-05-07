@@ -5,8 +5,7 @@
  * Ensures consistency between the two systems by deriving types directly from the database schema
  */
 
-import { land, crop, planting } from '$lib/server/db/schema';
-import type { PgTable } from 'drizzle-orm/pg-core';
+
 
 // Transform data types
 export type TransformDataType = 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude';
@@ -85,12 +84,6 @@ export const typeValidationSpecs: Record<TransformDataType, TypeValidationSpec> 
 	}
 };
 
-// Map schema tables to their PgTable definitions
-const schemaTableMap: Record<TableName, PgTable> = {
-	Land: land,
-	Crop: crop,
-	Planting: planting
-};
 
 // Map Drizzle column types to TransformDataType
 function mapDbColumnTypeToTransformType(columnType: string): TransformDataType {

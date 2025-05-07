@@ -1,5 +1,4 @@
 // import { Species } from './schema';
-import { organizations } from './../server/db/schema';
 import type { ColumnRep, ColumnDef } from './columnModel';
 /**
  * ColumnRep-based architecture for TransPlant
