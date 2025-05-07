@@ -1,7 +1,6 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { transformedDataService } from '$lib/stores/transformStore';
-	import { schemaService } from '$lib/services/schemaService';
 
 	// Props from parent
 	const { draggedColumn = null } = $props<{
@@ -607,4 +606,4 @@
 	.planting-mapped-attribute {
 		opacity: 0.5;
 	}
-</style>
+</style> -->
