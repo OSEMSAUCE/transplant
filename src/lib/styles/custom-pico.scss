@@ -391,6 +391,12 @@ button,
 	transition: var(--button-transition);
 }
 
+.material-symbols-outlined {
+	font-size: var(--button-font-size);
+	margin-top: 0.25rem;
+	margin-bottom: -0.25rem;
+	padding-bottom: -0.25rem;
+}
 /* View toggle buttons */
 button {
 	padding: 0.5rem 1rem;
