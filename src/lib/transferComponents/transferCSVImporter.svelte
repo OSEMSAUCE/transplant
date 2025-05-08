@@ -81,15 +81,15 @@ Components should accept callback props - which means you then pass functions as
 					const columnModel = new BaseColumnModel(header);
 
 					// Add values manually since we're not using StringColumnModel
-					const values = data.map((row) => row[header]);
+					const tempValues = data.map((row) => row[header]);
 
 					// Return the column model as a ColumnRep
 					return {
 						...columnModel,
 						type: 'string', // Default type
-						values,
-						isGreyed: Array(values.length).fill(false),
-						formattedValues: Array(values.length).fill(null)
+						values: tempValues,
+						isGreyed: Array(tempValues.length).fill(false),
+						formattedValues: Array(tempValues.length).fill(null)
 					};
 				});
 			// CHECKS FORMATTING AND GREYED 25 Apr 2025  9:19 AM
