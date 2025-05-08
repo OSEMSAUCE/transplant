@@ -3,6 +3,21 @@ import { prisma } from '$lib/server/prisma';
 
 export async function POST({ request }) {
 	const data = await request.json();
+
+	// Helper function to safely serialize Prisma data
+	const safeSerialize = (data: any) => {
+		return JSON.stringify(data, (key, value) => {
+			// Convert Decimal objects to strings to make them serializable
+			if (typeof value === 'object' && value !== null && typeof value.toString === 'function') {
+				// Check if it's likely a Decimal
+				if ('s' in value && 'd' in value && value.constructor.name === 'Decimal') {
+					return value.toString();
+				}
+			}
+			return value;
+		});
+	};
+
 	try {
 		// Create a new project
 		const project = await prisma.projects.create({
@@ -14,14 +29,17 @@ export async function POST({ request }) {
 
 		// Create land entries
 		for (const landItem of data.land) {
+			// Convert hectares to a string first to ensure it's serializable
+			const hectaresValue = landItem.hectares 
+				? parseFloat(String(landItem.hectares).replace(',', '.')) 
+				: null;
+
 			await prisma.land.create({
 				data: {
 					landName: landItem.landName,
-					hectares: landItem.hectares ? 
-						typeof landItem.hectares === 'string' ? 
-							parseFloat(landItem.hectares.replace(',', '.')) : 
-						landItem.hectares : 
-					null,
+					hectares: hectaresValue,
+					landHolder: landItem.landHolder || null,
+					polygonId: landItem.polygonId || null,
 					projectId: project.projectId
 				}
 			});
@@ -64,7 +82,9 @@ export async function POST({ request }) {
 			}
 		}
 
-		return new Response(JSON.stringify({ 
+
+
+		return new Response(safeSerialize({ 
 			status: 'ok', 
 			message: 'Data successfully saved to database',
 			projectId: project.projectId
@@ -73,7 +93,7 @@ export async function POST({ request }) {
 		});
 	} catch (error) {
 		console.error('Error saving data to database:', error);
-		return new Response(JSON.stringify({ 
+		return new Response(safeSerialize({ 
 			status: 'error', 
 			message: 'Failed to save data to database', 
 			error: error instanceof Error ? error.message : String(error)

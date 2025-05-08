@@ -43,70 +43,97 @@ const fakeFormats = {
 //   })
 
 export async function load() {
-	// const landsDbTable = await db.select().from(land).limit(1);
-	// const plantingDbTable = await db.select().from(planting).limit(1);
-	// const cropDbTable = await db.select().from(crop).limit(1);
-	// // console.log(land.gpsLat.columnType);
+	// A more direct approach to handle Prisma objects
+	function serializeForSvelteKit<T>(data: T): T {
+		// Use JSON.stringify/parse to convert all objects to plain JavaScript objects
+		// This will handle Decimal objects by calling their toString() method
+		return JSON.parse(JSON.stringify(data, (key, value) => {
+			// Special handling for Decimal objects
+			if (value !== null && 
+				typeof value === 'object' && 
+				typeof value.toNumber === 'function' && 
+				typeof value.toString === 'function') {
+				// This is likely a Decimal object
+				return Number(value.toString());
+			}
+			return value;
+		}));
+	}
+
+	// Define database table formats
 	const landDbFormat = {
-			landId:	"string",
-			landName:	"string",
-			projectId:	"string",
-			hectares:	"number",
-			landHolder:	"string",
-			polygonId:	"string",
-			gpsLat:	"number",
-			gpsLon:	"number",
-			landNotes:	"string",
-			createdAt:	"date",
-			lastEditedAt:	"date",
-			editedBy:	"string",
-			deleted:	"string",
-			preparation:	"string",
-			preparationId:	"number",
-			csvobjId:	"string",
-			polygon:	"string",
-			project:	"string",
-			csvobj:	"string",
-			preparationType:	"string",
-			plantings:	"string",
-		}
-				
-		const cropDbFormat = {
-			cropId:	"string",
-			cropName:	"string",
-			speciesId:	"string",
-			seed_info:	"string",
-			cropStock:	"string",
-			createdAt:	"date",
-			lastEditedAt:	"date",
-			editedBy:	"string",
-			deleted:	"string",
-			projectId:	"string"	,
-			organizationId:	"string",
-			cropNotes:	"string",
-			csvobjId:	"string",
-			species:	"string",
-			organization:	"string",
-			project:	"string",
-			csvobj:	"string",
-			plantings:	"string",
-		}
+		landId: "string",
+		landName: "string",
+		projectId: "string",
+		hectares: "number",
+		landHolder: "string",
+		polygonId: "string",
+		gpsLat: "number",
+		gpsLon: "number",
+		landNotes: "string",
+		createdAt: "date",
+		lastEditedAt: "date",
+		editedBy: "string",
+		deleted: "string",
+		preparation: "string",
+		preparationId: "number",
+		csvobjId: "string",
+		polygon: "string",
+		project: "string",
+		csvobj: "string",
+		preparationType: "string",
+		plantings: "string",
+	};
+			
+	const cropDbFormat = {
+		cropId: "string",
+		cropName: "string",
+		speciesId: "string",
+		seed_info: "string",
+		cropStock: "string",
+		createdAt: "date",
+		lastEditedAt: "date",
+		editedBy: "string",
+		deleted: "string",
+		projectId: "string",
+		organizationId: "string",
+		cropNotes: "string",
+		csvobjId: "string",
+		species: "string",
+		organization: "string",
+		project: "string",
+		csvobj: "string",
+		plantings: "string",
+	};
 
-		const plantingDbFormat = {
-			plantingId:	"string",
-			landId:	"string",
-			planted:	"number",
-			plantingDate:	"date",
-			createdAt:	"date",
-			lastEditedAt:	"date",
-			deleted:	"string",
-			cropId:	"string",
-			planting_notes:	"string",
-		}
+	const plantingDbFormat = {
+		plantingId: "string",
+		landId: "string",
+		planted: "number",
+		plantingDate: "date",
+		createdAt: "date",
+		lastEditedAt: "date",
+		deleted: "string",
+		cropId: "string",
+		planting_notes: "string",
+	};
 
-	const landsDbTable = await prisma.land.findMany({ take: 3 });
-	const plantingDbTable = await prisma.planting.findMany({ take: 3 });
-	const cropDbTable = await prisma.crop.findMany({ take: 3 });
+	// Fetch data from Prisma
+	const rawLandsDbTable = await prisma.land.findMany({ take: 3 });
+	const rawPlantingDbTable = await prisma.planting.findMany({ take: 3 });
+	const rawCropDbTable = await prisma.crop.findMany({ take: 3 });
+	
+	// Serialize and filter the data to only include selected attributes
+	const landsDbTable = serializeForSvelteKit(rawLandsDbTable).map(row => ({
+		landId: row.landId,
+		landName: row.landName,
+		projectId: row.projectId,
+		hectares: row.hectares,
+		landHolder: row.landHolder,
+		// Add/remove fields here as you wish!
+	}));
+	const plantingDbTable = serializeForSvelteKit(rawPlantingDbTable); // (Filter if needed)
+	const cropDbTable = serializeForSvelteKit(rawCropDbTable); // (Filter if needed)
 	
 	console.log('dbFormat', landDbFormat);
 
