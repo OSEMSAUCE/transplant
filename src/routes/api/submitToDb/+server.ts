@@ -82,8 +82,6 @@ export async function POST({ request }) {
 			}
 		}
 
-
-
 		return new Response(safeSerialize({ 
 			status: 'ok', 
 			message: 'Data successfully saved to database',

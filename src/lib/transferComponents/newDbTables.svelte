@@ -108,11 +108,11 @@
 	// Helper function to get unique values from a column
 	function getUniqueValues(columnIndex: number) {
 		if (columnIndex === -1) return [];
-		
+
 		const values = importedData.columns[columnIndex].formattedValues;
 		// Create a map to track unique values while preserving their order
 		const uniqueMap = new Map();
-		
+
 		values.forEach((value, index) => {
 			if (value !== null && value !== undefined && value !== '') {
 				// Use the value as the key to ensure uniqueness
@@ -121,7 +121,7 @@
 				}
 			}
 		});
-		
+
 		// Return the indices of unique values in their original order
 		return Array.from(uniqueMap.values());
 	}
@@ -220,8 +220,8 @@
 	}
 </script>
 
-<h3>Planting Table</h3>
-<table>
+<h3 class="table-title">Planting Table</h3>
+<table class="no-table-bottom-margin">
 	<thead>
 		<tr>
 			{#each plantingTable as column, index}
@@ -281,20 +281,34 @@
 	</tbody>
 </table>
 
-<h3>Land Table</h3>
-<table class:view-only-table={!landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1)}>
+<h3 class="table-title">Land Table</h3>
+<table
+	class="no-table-bottom-margin"
+	class:view-only-table={!landTable.some(
+		(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+	)}
+>
 	<thead>
 		<tr>
 			{#each landTable as column, index}
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={column.viewOnly || !landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
-					ondrop={column.viewOnly || !landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) ? null : landDropHandler}
-					class:legal-droptarget={!column.viewOnly && landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+					ondragover={column.viewOnly ||
+					!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+						? null
+						: dragoverHandler}
+					ondrop={column.viewOnly ||
+					!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+						? null
+						: landDropHandler}
+					class:legal-droptarget={!column.viewOnly &&
+						landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
 						dragColumnState.currentFormat === landDbFormat[column.name] &&
 						column.modelRepColumnIndex === -1}
-					class:view-only={column.viewOnly || (!landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) && column.name !== 'landName')}
+					class:view-only={column.viewOnly ||
+						(!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+							column.name !== 'landName')}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -306,7 +320,7 @@
 							isToggled={true}
 						/>
 						{column.name}
-						{#if !column.viewOnly && (landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) || column.name === 'landName')}
+						{#if !column.viewOnly && (landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) || column.name === 'landName')}
 							<span
 								onclick={() => clearDbColumn(landTable, index)}
 								class="material-symbols-outlined">cancel</span
@@ -318,8 +332,8 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#if landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1)}
-			{@const landNameColumn = landTable.find(col => col.name === 'landName')}
+		{#if landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)}
+			{@const landNameColumn = landTable.find((col) => col.name === 'landName')}
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
@@ -327,12 +341,25 @@
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={column.viewOnly || !landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
-							ondrop={column.viewOnly || !landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) ? null : landDropHandler}
-							class:legal-droptarget={!column.viewOnly && landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+							ondragover={column.viewOnly ||
+							!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+								? null
+								: dragoverHandler}
+							ondrop={column.viewOnly ||
+							!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+								? null
+								: landDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								landTable.some(
+									(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+								) &&
 								dragColumnState.currentFormat === landDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
-							class:view-only={column.viewOnly || (!landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1) && column.name !== 'landName')}
+							class:view-only={column.viewOnly ||
+								(!landTable.some(
+									(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+								) &&
+									column.name !== 'landName')}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
@@ -350,9 +377,10 @@
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={(column.viewOnly || column.name !== 'landName') ? null : dragoverHandler}
-							ondrop={(column.viewOnly || column.name !== 'landName') ? null : landDropHandler}
-							class:legal-droptarget={!column.viewOnly && column.name === 'landName' &&
+							ondragover={column.viewOnly || column.name !== 'landName' ? null : dragoverHandler}
+							ondrop={column.viewOnly || column.name !== 'landName' ? null : landDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								column.name === 'landName' &&
 								dragColumnState.currentFormat === landDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
 							class:view-only={column.viewOnly || column.name !== 'landName'}
@@ -370,20 +398,33 @@
 	</tbody>
 </table>
 
-<h3>Crop Table</h3>
-<table class:view-only-table={!cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1)}>
+<h3 class="table-title">Crop Table</h3>
+<table
+	class:view-only-table={!cropTable.some(
+		(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
+	)}
+>
 	<thead>
 		<tr>
 			{#each cropTable as column, index}
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={column.viewOnly || !cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
-					ondrop={column.viewOnly || !cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) ? null : cropDropHandler}
-					class:legal-droptarget={!column.viewOnly && cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
+					ondragover={column.viewOnly ||
+					!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
+						? null
+						: dragoverHandler}
+					ondrop={column.viewOnly ||
+					!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
+						? null
+						: cropDropHandler}
+					class:legal-droptarget={!column.viewOnly &&
+						cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
 						dragColumnState.currentFormat === cropDbFormat[column.name] &&
 						column.modelRepColumnIndex === -1}
-					class:view-only={column.viewOnly || (!cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) && column.name !== 'cropName')}
+					class:view-only={column.viewOnly ||
+						(!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
+							column.name !== 'cropName')}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -395,7 +436,7 @@
 							isToggled={true}
 						/>
 						{column.name}
-						{#if !column.viewOnly && (cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) || column.name === 'cropName')}
+						{#if !column.viewOnly && (cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) || column.name === 'cropName')}
 							<span
 								onclick={() => clearDbColumn(cropTable, index)}
 								class="material-symbols-outlined">cancel</span
@@ -407,8 +448,8 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#if cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1)}
-			{@const cropNameColumn = cropTable.find(col => col.name === 'cropName')}
+		{#if cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)}
+			{@const cropNameColumn = cropTable.find((col) => col.name === 'cropName')}
 			{@const uniqueIndices = getUniqueValues(cropNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
@@ -416,12 +457,25 @@
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={column.viewOnly || !cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
-							ondrop={column.viewOnly || !cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) ? null : cropDropHandler}
-							class:legal-droptarget={!column.viewOnly && cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
+							ondragover={column.viewOnly ||
+							!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
+								? null
+								: dragoverHandler}
+							ondrop={column.viewOnly ||
+							!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
+								? null
+								: cropDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								cropTable.some(
+									(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
+								) &&
 								dragColumnState.currentFormat === cropDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
-							class:view-only={column.viewOnly || (!cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1) && column.name !== 'cropName')}
+							class:view-only={column.viewOnly ||
+								(!cropTable.some(
+									(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
+								) &&
+									column.name !== 'cropName')}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
@@ -439,9 +493,10 @@
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={(column.viewOnly || column.name !== 'cropName') ? null : dragoverHandler}
-							ondrop={(column.viewOnly || column.name !== 'cropName') ? null : cropDropHandler}
-							class:legal-droptarget={!column.viewOnly && column.name === 'cropName' &&
+							ondragover={column.viewOnly || column.name !== 'cropName' ? null : dragoverHandler}
+							ondrop={column.viewOnly || column.name !== 'cropName' ? null : cropDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								column.name === 'cropName' &&
 								dragColumnState.currentFormat === cropDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
 							class:view-only={column.viewOnly || column.name !== 'cropName'}
@@ -460,7 +515,7 @@
 </table>
 
 <!-- Debug Button -->
-<div style="margin: 20px 0;">
+<div style="margin: 1rem 0;">
 	<button
 		onclick={() => {
 			console.log('DEBUG STATE:');
@@ -489,16 +544,22 @@
 	.view-only {
 		background-color: #808080;
 		cursor: not-allowed;
+		/* margin-bottom: -1rem; */
 	}
-	
+
 	.view-only-table {
 		opacity: 0.7;
 		background-color: rgba(128, 128, 128, 0.2);
+		/* margin-bottom: -1rem; */
 	}
-	
+
 	.view-only-table th:not(.legal-droptarget),
 	.view-only-table td:not(.legal-droptarget) {
 		background-color: #808080;
 		cursor: not-allowed;
+	}
+
+	.no-table-bottom-margin {
+		margin-bottom: 0rem;
 	}
 </style>

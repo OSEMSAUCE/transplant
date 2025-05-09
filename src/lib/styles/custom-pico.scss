@@ -67,6 +67,7 @@ table {
 	font-family: 'Roboto Mono', monospace;
 	font-size: 0.5rem;
 	line-height: 1;
+	margin: -2;
 	width: auto;
 	min-width: fit-content;
 	border-collapse: separate;
@@ -132,14 +133,19 @@ div.container {
 	padding: 1rem;
 }
 
+.table-container table {
+	margin-bottom: 0;
+	margin-top: 1rem;
+}
+
 /* Table container styles for horizontal scrolling */
 .table-container {
 	max-width: 100%;
 	overflow-x: auto;
-	margin: 0;
-	padding: 0;
+	margin: 0rem;
+	padding: 0rem;
 	-webkit-overflow-scrolling: touch;
-	padding-bottom: 5px;
+	padding-bottom: 0rem;
 	position: relative;
 }
 
@@ -184,8 +190,9 @@ div.container {
 }
 
 .table-title {
-	/* margin-top: 0.2rem; */
-	margin-bottom: 0.2rem;
+	margin-bottom: 0.01rem;
+	margin-top: 0.4rem;
+	font-size: 1rem;
 }
 
 /* Table section styles */
@@ -193,6 +200,7 @@ div.container {
 	// margin-bottom: 1rem;
 	margin-left: 0;
 	padding-left: 0;
+
 	width: 100%;
 }
 
