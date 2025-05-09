@@ -91,7 +91,6 @@
 							{isTransplant}
 							isToggled={column.isToggled}
 						/>
-						<div style="height: 0.5rem"></div>
 					</div>
 					<div class="header-name" id={column.headerName}>
 						{column.headerName}
