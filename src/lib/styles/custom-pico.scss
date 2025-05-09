@@ -428,13 +428,17 @@ button,
 	transition: var(--button-transition);
 }
 
-.material-symbols-outlined {
-	font-size: var(--button-font-size);
-	vertical-align: bottom;
-	align-items: right;
-	margin-bottom: -0.25rem;
-	margin-top: 0.1rem;
-	// padding-bottom: -0.25rem;
+button.material-symbols-outlined {
+  background: none;
+  border: none ;
+  padding: 0;
+  /* keep your icon style below */
+//   font-size: var(--button-font-size);
+  vertical-align: -0.2rem;
+//   align-items: center;
+  margin-bottom: -0.25rem;
+  margin-top: -0.1rem;
+  // padding-bottom: -0.25rem;
 }
 /* View toggle buttons */
 button {
