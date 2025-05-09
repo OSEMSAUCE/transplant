@@ -92,7 +92,7 @@ Components should accept callback props - which means you then pass functions as
 						formattedValues: Array(tempValues.length).fill(null)
 					};
 				});
-			// CHECKS FORMATTING AND GREYED 25 Apr 2025  9:19 AM
+				// CHECKS FORMATTING AND GREYED 25 Apr 2025  9:19 AM
 				for (let i = 0; i < columnData.length; ++i) {
 					const detectedFormat = detectFormat(columnData[i].values, columnData[i].headerName);
 					formatGreyedStatus(columnData, i, detectedFormat);

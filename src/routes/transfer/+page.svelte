@@ -67,24 +67,29 @@
 	}
 </script>
 
-<div
-	style="display: flex; justify-content: space-between; align-items: center; gap: 0.1rem; margin-bottom: 1rem"
->
-	<TransferCSVImporter onprocessed={handleProcessed} />
-
-	{#if pageIs === 'transfer'}
-		<button style="margin-left: auto" onclick={changeView}> Send to TransPlant </button>
-	{:else}
-		<button style="margin-left: auto" onclick={changeView}> Back to Transfer </button>
-	{/if}
+<div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
+	<div>
+		<TransferCSVImporter onprocessed={handleProcessed} />
+	</div>
+	<div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+		{#if pageIs === 'transfer'}
+			<button onclick={changeView}>Send to TransPlant</button>
+		{/if}
+		{#if pageIs === 'transplant'}
+			<button onclick={submitToDB}>Submit to DB</button>
+			<button onclick={changeView}>Back to Transfer</button>
+		{/if}
+	</div>
 </div>
+{#if importedData.fileName}
+	<div style="font-size: 0.9em; color: grey; margin-bottom: 1rem;">{importedData.fileName}</div>
+{/if}
+
 
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
-			{#if pageIs === 'transplant'}
-				<button onclick={submitToDB}>Submit to DB</button>
-			{/if}
+
 			{#if pageIs === 'transfer'}
 				<div class="toggle-row">
 					{#each importedData.columns as column}
