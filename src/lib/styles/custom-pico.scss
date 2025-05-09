@@ -18,6 +18,7 @@
 	--button-color: var(--color-grey);
 	--button-border: solid 0.04rem #343434 --button-padding: 0.75rem 2rem;
 	--button-margin: 0.75rem 2rem;
+	// --button-margin-bottom: 1rem;
 	--button-radius: 0.25rem;
 	--button-font-size: 1rem;
 	--button-transition: all 0.3s ease;
@@ -56,6 +57,7 @@ th {
 button {
 	border: 0.04rem solid var(--color-light-grey);
 	box-sizing: border-box; // Ensures border doesn't affect button dimensions
+	margin-bottom: 0.5rem;
 }
 select {
 	border: 0.04rem solid var(--color-light-grey);
@@ -225,8 +227,8 @@ tbody td.greyed-out * {
 
 thead th.greyed-out,
 thead th.view-only,
-thead th[class*="view-only"],
-thead th[class*="greyed-out"] {
+thead th[class*='view-only'],
+thead th[class*='greyed-out'] {
 	background-color: var(--header-background) !important;
 	color: var(--color-white) !important;
 	opacity: 1 !important;
