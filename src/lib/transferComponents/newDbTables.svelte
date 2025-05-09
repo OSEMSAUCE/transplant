@@ -171,17 +171,8 @@
 
 <style>
   .view-only {
-    background-color: #f0f0f0;
+    background-color: #808080;
     cursor: not-allowed;
-  }
-  
-  .badge {
-    font-size: 0.7rem;
-    background-color: #6c757d;
-    color: white;
-    padding: 0.1rem 0.3rem;
-    border-radius: 0.25rem;
-    margin-left: 0.3rem;
   }
 </style>
 
@@ -196,7 +187,6 @@
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : plantingDropHandler}
 					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === plantingDbFormat[column.name] && column.modelRepColumnIndex === -1}
-					class:view-only={column.viewOnly}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -210,8 +200,6 @@
 						{column.name}
 						{#if !column.viewOnly}
 						<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
-						{:else}
-						<span class="badge">view only</span>
 						{/if}
 					</div>
 				</th>
@@ -253,7 +241,7 @@
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : landDropHandler}
 					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === landDbFormat[column.name] && column.modelRepColumnIndex === -1}
-					class:view-only={column.viewOnly}
+					
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -267,8 +255,6 @@
 						{column.name}
 						{#if !column.viewOnly}
 						<span onclick={() => clearDbColumn(landTable, index)} class="material-symbols-outlined">cancel</span>
-						{:else}
-						<span class="badge">view only</span>
 						{/if}
 					</div>
 				</th>
@@ -310,8 +296,8 @@
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : cropDropHandler}
 					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === cropDbFormat[column.name] && column.modelRepColumnIndex === -1}
-					class:view-only={column.viewOnly}
 				>
+						
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
@@ -324,8 +310,6 @@
 						{column.name}
 						{#if !column.viewOnly}
 						<span onclick={() => clearDbColumn(cropTable, index)} class="material-symbols-outlined">cancel</span>
-						{:else}
-						<span class="badge">view only</span>
 						{/if}
 					</div>
 				</th>
@@ -343,6 +327,7 @@
 						ondrop={cropDropHandler}
 						class:legal-droptarget={dragColumnState.currentFormat === cropDbFormat[column.name] &&
 							column.modelRepColumnIndex === -1}
+						class:view-only={column.viewOnly}
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
