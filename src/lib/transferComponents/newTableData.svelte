@@ -66,7 +66,7 @@
 	}
 </script>
 
-<table>
+<table class="transplant-toggle-table">
 	<thead>
 		<tr>
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}

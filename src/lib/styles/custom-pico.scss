@@ -195,6 +195,11 @@ div.container {
 	font-size: 1rem;
 }
 
+/* Remove margin between ToggleComponent and transplant table */
+.transplant-toggle-table {
+	margin-top: 0 !important;
+}
+
 /* Table section styles */
 .table-section {
 	// margin-bottom: 1rem;

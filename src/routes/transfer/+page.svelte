@@ -82,7 +82,9 @@
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
-			<button onclick={submitToDB}>Submit to DB</button>	
+			{#if pageIs === 'transplant'}
+				<button onclick={submitToDB}>Submit to DB</button>
+			{/if}
 			{#if pageIs === 'transfer'}
 				<div class="toggle-row">
 					{#each importedData.columns as column}
