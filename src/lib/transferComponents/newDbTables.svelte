@@ -105,7 +105,28 @@
 		ev.preventDefault();
 	}
 
-	// 18 Apr 2025 9:02 AM  Get state from top table and update local $state here.
+	// Helper function to get unique values from a column
+	function getUniqueValues(columnIndex: number) {
+		if (columnIndex === -1) return [];
+		
+		const values = importedData.columns[columnIndex].formattedValues;
+		// Create a map to track unique values while preserving their order
+		const uniqueMap = new Map();
+		
+		values.forEach((value, index) => {
+			if (value !== null && value !== undefined && value !== '') {
+				// Use the value as the key to ensure uniqueness
+				if (!uniqueMap.has(value)) {
+					uniqueMap.set(value, index);
+				}
+			}
+		});
+		
+		// Return the indices of unique values in their original order
+		return Array.from(uniqueMap.values());
+	}
+
+	// 18 Apr 2025 9:02 AM  Get state from top table and update local $state here.
 	function dropHandler(
 		ev: DragEvent,
 		dbDropTable: TableColumn[],
@@ -167,11 +188,20 @@
 			if (cropNameIndex !== -1) {
 				cropTable[cropNameIndex].modelRepColumnIndex = draggedColumnIndex;
 			}
+		} else if (targetColumnName === 'landName' && dbDropTable === landTable) {
+			// If mapping directly to Land table, also propagate to Planting table
+			const plantingLandNameIndex = plantingTable.findIndex((col) => col.name === 'landName');
+			if (plantingLandNameIndex !== -1) {
+				plantingTable[plantingLandNameIndex].modelRepColumnIndex = draggedColumnIndex;
+			}
+		} else if (targetColumnName === 'cropName' && dbDropTable === cropTable) {
+			// If mapping directly to Crop table, also propagate to Planting table
+			const plantingCropNameIndex = plantingTable.findIndex((col) => col.name === 'cropName');
+			if (plantingCropNameIndex !== -1) {
+				plantingTable[plantingCropNameIndex].modelRepColumnIndex = draggedColumnIndex;
+			}
 		}
 
-		console.log(
-			`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`
-		);
 		console.log(
 			`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`
 		);
@@ -287,28 +317,55 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-			<tr>
-				{#each landTable as column, index}
-					<td
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={column.viewOnly ? null : dragoverHandler}
-						ondrop={column.viewOnly ? null : landDropHandler}
-						class:legal-droptarget={!column.viewOnly &&
-							dragColumnState.currentFormat === landDbFormat[column.name] &&
-							column.modelRepColumnIndex === -1}
-						class:view-only={column.viewOnly}
-					>
-						{#if column.modelRepColumnIndex !== -1}
-							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
-						{:else}
-							{''}
-						{/if}
-					</td>
-				{/each}
-			</tr>
-		{/each}
+		{#if landTable.some(col => col.name === 'landName' && col.modelRepColumnIndex !== -1)}
+			{@const landNameColumn = landTable.find(col => col.name === 'landName')}
+			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
+			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
+				<tr>
+					{#each landTable as column, index}
+						<td
+							data-header-name={column.name}
+							data-column-index={index}
+							ondragover={column.viewOnly ? null : dragoverHandler}
+							ondrop={column.viewOnly ? null : landDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								dragColumnState.currentFormat === landDbFormat[column.name] &&
+								column.modelRepColumnIndex === -1}
+							class:view-only={column.viewOnly}
+						>
+							{#if column.modelRepColumnIndex !== -1}
+								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
+							{:else}
+								{''}
+							{/if}
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		{:else}
+			{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
+				<tr>
+					{#each landTable as column, index}
+						<td
+							data-header-name={column.name}
+							data-column-index={index}
+							ondragover={column.viewOnly ? null : dragoverHandler}
+							ondrop={column.viewOnly ? null : landDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								dragColumnState.currentFormat === landDbFormat[column.name] &&
+								column.modelRepColumnIndex === -1}
+							class:view-only={column.viewOnly}
+						>
+							{#if column.modelRepColumnIndex !== -1}
+								{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+							{:else}
+								{''}
+							{/if}
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		{/if}
 	</tbody>
 </table>
 
@@ -348,27 +405,55 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-			<tr>
-				{#each cropTable as column, index}
-					<td
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={dragoverHandler}
-						ondrop={cropDropHandler}
-						class:legal-droptarget={dragColumnState.currentFormat === cropDbFormat[column.name] &&
-							column.modelRepColumnIndex === -1}
-						class:view-only={column.viewOnly}
-					>
-						{#if column.modelRepColumnIndex !== -1}
-							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
-						{:else}
-							{''}
-						{/if}
-					</td>
-				{/each}
-			</tr>
-		{/each}
+		{#if cropTable.some(col => col.name === 'cropName' && col.modelRepColumnIndex !== -1)}
+			{@const cropNameColumn = cropTable.find(col => col.name === 'cropName')}
+			{@const uniqueIndices = getUniqueValues(cropNameColumn?.modelRepColumnIndex ?? -1)}
+			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
+				<tr>
+					{#each cropTable as column, index}
+						<td
+							data-header-name={column.name}
+							data-column-index={index}
+							ondragover={column.viewOnly ? null : dragoverHandler}
+							ondrop={column.viewOnly ? null : cropDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								dragColumnState.currentFormat === cropDbFormat[column.name] &&
+								column.modelRepColumnIndex === -1}
+							class:view-only={column.viewOnly}
+						>
+							{#if column.modelRepColumnIndex !== -1}
+								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
+							{:else}
+								{''}
+							{/if}
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		{:else}
+			{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
+				<tr>
+					{#each cropTable as column, index}
+						<td
+							data-header-name={column.name}
+							data-column-index={index}
+							ondragover={column.viewOnly ? null : dragoverHandler}
+							ondrop={column.viewOnly ? null : cropDropHandler}
+							class:legal-droptarget={!column.viewOnly &&
+								dragColumnState.currentFormat === cropDbFormat[column.name] &&
+								column.modelRepColumnIndex === -1}
+							class:view-only={column.viewOnly}
+						>
+							{#if column.modelRepColumnIndex !== -1}
+								{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
+							{:else}
+								{''}
+							{/if}
+						</td>
+					{/each}
+				</tr>
+			{/each}
+		{/if}
 	</tbody>
 </table>
 
