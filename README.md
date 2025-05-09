@@ -10,8 +10,8 @@ Everything you need to build a Svelte project, powered by [`sv`](https://github.
 
 ## ToDo's
 	// 9 May 2025 
+	DONE// Normalize land and crop table when names are dropped.
 	// make landName required for land table. TreeName is require for tree table. 
-	// Normalize land and crop table when names are dropped.
 	// REFUSE AND STYLE: columns that are not unique to land consistent (if land repeats, cant have different values on the same land) then they wont' Highlight.
 	// add org and project name.
 
