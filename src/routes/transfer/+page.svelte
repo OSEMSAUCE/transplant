@@ -81,9 +81,7 @@
 		{/if}
 	</div>
 </div>
-{#if importedData.fileName}
-	<div style="font-size: 0.9em; color: grey; margin-bottom: 1rem;">{importedData.fileName}</div>
-{/if}
+
 
 
 {#if importedData.columns.length > 0}
@@ -107,7 +105,15 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-	<NewDbTables {landUserTable} {plantingUserTable} {cropUserTable} {landDbFormat} {plantingDbFormat} {cropDbFormat} />
+	<NewDbTables
+  {landUserTable}
+  {plantingUserTable}
+  {cropUserTable}
+  {landDbFormat}
+  {plantingDbFormat}
+  {cropDbFormat}
+  
+/>
 	{/if}
 	{/if}
 

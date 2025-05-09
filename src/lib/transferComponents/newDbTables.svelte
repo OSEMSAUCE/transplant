@@ -6,14 +6,12 @@
 	import type { asClassComponent } from 'svelte/legacy';
 
 	const {
-		landUserTable,
+		// landUserTable,
+		// cropUserTable,
 		plantingUserTable,
-		cropUserTable,
 		landDbFormat,
 		plantingDbFormat,
-		cropDbFormat,
-		landsDbTable,
-		cropsDbTable
+		cropDbFormat
 	} = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
@@ -21,16 +19,9 @@
 		landDbFormat: Record<string, string>;
 		plantingDbFormat: Record<string, string>;
 		cropDbFormat: Record<string, string>;
-		landsDbTable: { landId: string; landName: string }[];
-		cropsDbTable: { cropId: string; cropName: string }[];
 	}>();
 
-	function getLandNameById(landId: string) {
-		return landsDbTable.find((l) => l.landId === landId)?.landName || landId;
-	}
-	function getCropNameById(cropId: string) {
-		return cropsDbTable.find((c) => c.cropId === cropId)?.cropName || cropId;
-	}
+	
 
 	const plantingColumns = [
 		'landName', // Show this instead of landId
@@ -245,9 +236,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly}
-							<span
+							<button type="button"
 								onclick={() => clearDbColumn(plantingTable, index)}
-								class="material-symbols-outlined">cancel</span
+								class="material-symbols-outlined"
+								aria-label="Clear column">cancel</button
 							>
 						{/if}
 					</div>
@@ -321,9 +313,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly && (landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) || column.name === 'landName')}
-							<span
+							<button type="button"
 								onclick={() => clearDbColumn(landTable, index)}
-								class="material-symbols-outlined">cancel</span
+								class="material-symbols-outlined"
+								aria-label="Clear column">cancel</button
 							>
 						{/if}
 					</div>
@@ -437,9 +430,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly && (cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) || column.name === 'cropName')}
-							<span
+							<button type="button"
 								onclick={() => clearDbColumn(cropTable, index)}
-								class="material-symbols-outlined">cancel</span
+								class="material-symbols-outlined"
+								aria-label="Clear column">cancel</button
 							>
 						{/if}
 					</div>
