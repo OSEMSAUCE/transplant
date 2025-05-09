@@ -8,6 +8,14 @@ If you're interested to help please let me know if you have any questions. It's 
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
+## ToDo's
+	// 9 May 2025 
+	// make landName required for land table. TreeName is require for tree table. 
+	// Normalize land and crop table when names are dropped.
+	// REFUSE AND STYLE: columns that are not unique to land consistent (if land repeats, cant have different values on the same land) then they wont' Highlight.
+	// add org and project name.
+
+
 ## Gotcha's
 
 GOTCHA: when you run `npm run db:pull` two issues happen:
@@ -17,7 +25,6 @@ GOTCHA: when you run `npm run db:pull` two issues happen:
 Filter DB Attributes:
 - +page.server.ts filters all the attributes from the db.
 - newDbTables.svelte filters all the attributes shown on the front end.
-
 
 
 ## Creating a project

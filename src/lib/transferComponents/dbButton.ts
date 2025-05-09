@@ -23,8 +23,16 @@ export async function submitToDB() {
 		plantingColumns.forEach(col => console.log('  planting col.mappedTo:', col.mappedTo));
 
 		// Find the land_name and crop_name columns
-		const landNameColumn = mappedColumns.find((col) => col.mappedTo === 'land.landName');
-		const cropNameColumn = mappedColumns.find((col) => col.mappedTo === 'crop.cropName');
+		// Look for these columns in both the land/crop tables AND the planting table
+		const landNameColumn = mappedColumns.find((col) => 
+			col.mappedTo === 'land.landName' || col.mappedTo === 'planting.landName'
+		);
+		const cropNameColumn = mappedColumns.find((col) => 
+			col.mappedTo === 'crop.cropName' || col.mappedTo === 'planting.cropName'
+		);
+		
+		console.log('DEBUG: Found landNameColumn:', landNameColumn);
+		console.log('DEBUG: Found cropNameColumn:', cropNameColumn);
 
 		const landNames = new Set();
 		const cropNames = new Set();

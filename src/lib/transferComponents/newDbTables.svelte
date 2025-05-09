@@ -1,11 +1,9 @@
 <script lang="ts">
-	// 29 Apr 2025  To DO 9:04 AM
-	// make drag drop prevent wrog types
-	// go to newTablesData - dragstartHandler - make a dynamic class thing to show user wrong types.
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
+	import type { asClassComponent } from 'svelte/legacy';
 
 	const {
 		landUserTable,
@@ -81,7 +79,7 @@
 	let cropTable = $state<TableColumn[]>(createColumnState(cropColumns, ['cropName']));
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
-		return columns.map(col => ({
+		return columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
 			modelRepColumnIndex: -1,
@@ -108,19 +106,23 @@
 	}
 
 	// 18 Apr 2025 9:02 AM  Get state from top table and update local $state here.
-	function dropHandler(ev: DragEvent, dbDropTable: TableColumn[], dropFormat: Record<string, string>) {
+	function dropHandler(
+		ev: DragEvent,
+		dbDropTable: TableColumn[],
+		dropFormat: Record<string, string>
+	) {
 		if (!ev.dataTransfer || !ev.target) return;
 		ev.preventDefault();
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
 		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
 		const targetColumnName = dbDropTable[targetColumnIndex].name;
-		
+
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
 			console.log('Cannot map to view-only field');
 			return;
 		}
-		
+
 		const draggedColumnFormat = importedData.columns[draggedColumnIndex].currentFormat;
 		const targetColumnFormat = dropFormat[targetColumnName];
 		if (draggedColumnFormat !== targetColumnFormat) {
@@ -133,24 +135,43 @@
 		}
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
-		importedData.columns[draggedColumnIndex].mappedTo = targetColumnName;
-		
+
+		// Add the appropriate table prefix to mappedTo
+		let tablePrefix = '';
+		if (dbDropTable === plantingTable) tablePrefix = 'planting.';
+		if (dbDropTable === landTable) tablePrefix = 'land.';
+		if (dbDropTable === cropTable) tablePrefix = 'crop.';
+
+		importedData.columns[draggedColumnIndex].mappedTo = tablePrefix + targetColumnName;
+
+		// DEBUG: Log the mapping details
+		console.log('DEBUG MAPPING:', {
+			table: tablePrefix.replace('.', ''),
+			columnName: targetColumnName,
+			mappedTo: importedData.columns[draggedColumnIndex].mappedTo,
+			isPlantingTable: dbDropTable === plantingTable,
+			isLandTable: dbDropTable === landTable,
+			isCropTable: dbDropTable === cropTable
+		});
+
 		// Propagate landName and cropName between tables
 		if (targetColumnName === 'landName' && dbDropTable === plantingTable) {
 			// Find landName in landTable and update it
-			const landNameIndex = landTable.findIndex(col => col.name === 'landName');
+			const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
 			if (landNameIndex !== -1) {
 				landTable[landNameIndex].modelRepColumnIndex = draggedColumnIndex;
 			}
 		} else if (targetColumnName === 'cropName' && dbDropTable === plantingTable) {
 			// Find cropName in cropTable and update it
-			const cropNameIndex = cropTable.findIndex(col => col.name === 'cropName');
+			const cropNameIndex = cropTable.findIndex((col) => col.name === 'cropName');
 			if (cropNameIndex !== -1) {
 				cropTable[cropNameIndex].modelRepColumnIndex = draggedColumnIndex;
 			}
 		}
-		
-		console.log(`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`);
+
+		console.log(
+			`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`
+		);
 		console.log(
 			`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`
 		);
@@ -169,13 +190,6 @@
 	}
 </script>
 
-<style>
-  .view-only {
-    background-color: #808080;
-    cursor: not-allowed;
-  }
-</style>
-
 <h3>Planting Table</h3>
 <table>
 	<thead>
@@ -186,7 +200,9 @@
 					data-column-index={index}
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : plantingDropHandler}
-					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === plantingDbFormat[column.name] && column.modelRepColumnIndex === -1}
+					class:legal-droptarget={!column.viewOnly &&
+						dragColumnState.currentFormat === plantingDbFormat[column.name] &&
+						column.modelRepColumnIndex === -1}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -199,7 +215,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly}
-						<span onclick={() => clearDbColumn(plantingTable, index)} class="material-symbols-outlined">cancel</span>
+							<span
+								onclick={() => clearDbColumn(plantingTable, index)}
+								class="material-symbols-outlined">cancel</span
+							>
 						{/if}
 					</div>
 				</th>
@@ -215,7 +234,9 @@
 						data-column-index={index}
 						ondragover={column.viewOnly ? null : dragoverHandler}
 						ondrop={column.viewOnly ? null : plantingDropHandler}
-						class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === plantingDbFormat[column.name] && column.modelRepColumnIndex === -1}
+						class:legal-droptarget={!column.viewOnly &&
+							dragColumnState.currentFormat === plantingDbFormat[column.name] &&
+							column.modelRepColumnIndex === -1}
 						class:view-only={column.viewOnly}
 					>
 						{#if column.modelRepColumnIndex !== -1}
@@ -240,8 +261,9 @@
 					data-column-index={index}
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : landDropHandler}
-					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === landDbFormat[column.name] && column.modelRepColumnIndex === -1}
-					
+					class:legal-droptarget={!column.viewOnly &&
+						dragColumnState.currentFormat === landDbFormat[column.name] &&
+						column.modelRepColumnIndex === -1}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -254,7 +276,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly}
-						<span onclick={() => clearDbColumn(landTable, index)} class="material-symbols-outlined">cancel</span>
+							<span
+								onclick={() => clearDbColumn(landTable, index)}
+								class="material-symbols-outlined">cancel</span
+							>
 						{/if}
 					</div>
 				</th>
@@ -270,7 +295,9 @@
 						data-column-index={index}
 						ondragover={column.viewOnly ? null : dragoverHandler}
 						ondrop={column.viewOnly ? null : landDropHandler}
-						class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === landDbFormat[column.name] && column.modelRepColumnIndex === -1}
+						class:legal-droptarget={!column.viewOnly &&
+							dragColumnState.currentFormat === landDbFormat[column.name] &&
+							column.modelRepColumnIndex === -1}
 						class:view-only={column.viewOnly}
 					>
 						{#if column.modelRepColumnIndex !== -1}
@@ -295,9 +322,10 @@
 					data-column-index={index}
 					ondragover={column.viewOnly ? null : dragoverHandler}
 					ondrop={column.viewOnly ? null : cropDropHandler}
-					class:legal-droptarget={!column.viewOnly && dragColumnState.currentFormat === cropDbFormat[column.name] && column.modelRepColumnIndex === -1}
+					class:legal-droptarget={!column.viewOnly &&
+						dragColumnState.currentFormat === cropDbFormat[column.name] &&
+						column.modelRepColumnIndex === -1}
 				>
-						
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={[]}
@@ -309,7 +337,10 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly}
-						<span onclick={() => clearDbColumn(cropTable, index)} class="material-symbols-outlined">cancel</span>
+							<span
+								onclick={() => clearDbColumn(cropTable, index)}
+								class="material-symbols-outlined">cancel</span
+							>
 						{/if}
 					</div>
 				</th>
@@ -340,3 +371,36 @@
 		{/each}
 	</tbody>
 </table>
+
+<!-- Debug Button -->
+<div style="margin: 20px 0;">
+	<button
+		onclick={() => {
+			console.log('DEBUG STATE:');
+			console.log('Planting Table:', plantingTable);
+			console.log('Land Table:', landTable);
+			console.log('Crop Table:', cropTable);
+			console.log('Imported Data:', importedData);
+
+			// Check which columns are mapped
+			const mappedColumns = importedData.columns.filter((col) => col.isMapped && col.mappedTo);
+			console.log('Mapped Columns:', mappedColumns);
+
+			// Check what would be filtered in dbButton.ts
+			const landColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('land.'));
+			const cropColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('crop.'));
+			const plantingColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('planting.'));
+
+			console.log('Land Columns:', landColumns);
+			console.log('Crop Columns:', cropColumns);
+			console.log('Planting Columns:', plantingColumns);
+		}}>Debug Tables</button
+	>
+</div>
+
+<style>
+	.view-only {
+		background-color: #808080;
+		cursor: not-allowed;
+	}
+</style>
