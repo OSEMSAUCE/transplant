@@ -42,7 +42,7 @@
 	}
 	// TRANSPLANT 🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️🌲️🌲️🌳️🌳️🌴️
 
-	// Make selectors disappear , make new psuedo selectors- appear. Or statement in HTML
+	// Make selectors disappear , make new pseudo selectors- appear. Or statement in HTML
 	// make toggles disappear
 	// make table dragable
 	// load db tables.

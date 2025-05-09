@@ -30,7 +30,7 @@ export async function submitToDB() {
 		const cropNames = new Set();
 
 		if (landNameColumn) {
-			landNameColumn.values.forEach((value) => {
+			landNameColumn.values.forEach((value) => {	
 				if (value) landNames.add(value);
 			});
 		}

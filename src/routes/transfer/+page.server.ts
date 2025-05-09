@@ -107,14 +107,14 @@ export async function load() {
 	};
 
 	const plantingDbFormat = {
-		plantingId: "string",
-		landId: "string",
+		landName: "string",
+		cropName: "string",
+		// cropId: "string",
 		planted: "number",
 		plantingDate: "date",
 		createdAt: "date",
 		lastEditedAt: "date",
 		deleted: "string",
-		cropId: "string",
 		planting_notes: "string",
 	};
 
@@ -125,7 +125,6 @@ export async function load() {
 	
 	// Serialize and filter the data to only include selected attributes
 	const landsDbTable = serializeForSvelteKit(rawLandsDbTable).map(row => ({
-		landId: row.landId,
 		landName: row.landName,
 		projectId: row.projectId,
 		hectares: row.hectares,
@@ -179,22 +178,6 @@ const plantingDbFormat = {
 	// ...etc
 };
 
-// interface ColumnDescription {
-// 	columnType:
-// 		| 'PgNumeric'
-// 		| 'PgDateString'
-// 		| 'PgUUID'
-// 		| 'PgText'
-// 		| 'PgTimestampString'
-// 		| 'PgBoolean'
-// 		| 'PgEnumColumn'
-// 		| 'PgBigInt53'
-// 		| 'PgInteger';
-// 	dataType: 'number' | 'string' | 'boolean' | 'date' | 'gps';
-// 	// Add other properties if they exist
-// }
-
-// new FormatSelector match method 7 May 2025 
 
 // // 🌲️🌲️🌲️🌲️🌲️🌲️🌲️🌲️ Selector Types for db table 🌲️🌲️🌲️🌲️
 function dbFormatSelector(table: any) {

@@ -13,7 +13,9 @@
 		cropUserTable,
 		landDbFormat,
 		plantingDbFormat,
-		cropDbFormat
+		cropDbFormat,
+		landsDbTable,
+		cropsDbTable
 	} = $props<{
 		landUserTable: any[];
 		plantingUserTable: any[];
@@ -21,10 +23,25 @@
 		landDbFormat: Record<string, string>;
 		plantingDbFormat: Record<string, string>;
 		cropDbFormat: Record<string, string>;
+		landsDbTable: { landId: string, landName: string }[];
+		cropsDbTable: { cropId: string, cropName: string }[];
 	}>();
 
+	function getLandNameById(landId: string) {
+		return landsDbTable.find(l => l.landId === landId)?.landName || landId;
+	}
+	function getCropNameById(cropId: string) {
+		return cropsDbTable.find(c => c.cropId === cropId)?.cropName || cropId;
+	}
+
 	const landColumns = Object.keys(landUserTable[0] || {});
-	const plantingColumns = Object.keys(plantingUserTable[0] || {});
+	const plantingColumns = [
+			"landName",   // Show this instead of landId
+			"cropName",   // Show this instead of cropId
+			"planted",
+			"plantingDate",
+			// ...any other fields you want
+		];
 	const cropColumns = Object.keys(cropUserTable[0] || {});
 
 	function clearDbColumn(dbTable: TableColumn[], index: number) {
