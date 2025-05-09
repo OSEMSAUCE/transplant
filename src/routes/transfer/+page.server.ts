@@ -124,15 +124,9 @@ export async function load() {
 	const rawCropDbTable = await prisma.crop.findMany({ take: 3 });
 	
 	// Serialize and filter the data to only include selected attributes
-	const landsDbTable = serializeForSvelteKit(rawLandsDbTable).map(row => ({
-		landName: row.landName,
-		projectId: row.projectId,
-		hectares: row.hectares,
-		landHolder: row.landHolder,
-		// Add/remove fields here as you wish!
-	}));
-	const plantingDbTable = serializeForSvelteKit(rawPlantingDbTable); // (Filter if needed)
-	const cropDbTable = serializeForSvelteKit(rawCropDbTable); // (Filter if needed)
+	const landsDbTable = serializeForSvelteKit(rawLandsDbTable)
+	const plantingDbTable = serializeForSvelteKit(rawPlantingDbTable); 
+	const cropDbTable = serializeForSvelteKit(rawCropDbTable); 
 	
 	console.log('dbFormat', landDbFormat);
 

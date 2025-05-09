@@ -9,10 +9,14 @@ If you're interested to help please let me know if you have any questions. It's 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
 ## Gotcha's
-GOTCHA: when you run `npm run db:pull` two issues happen:
 
+GOTCHA: when you run `npm run db:pull` two issues happen:
 1. it errors on the `export const land: any` you have to add `: any`
 2. search `""` and replace with `"` (remove the extra quotes)
+
+Filter DB Attributes:
+- +page.server.ts filters all the attributes from the db.
+- newDbTables.svelte filters all the attributes shown on the front end.
 
 
 
