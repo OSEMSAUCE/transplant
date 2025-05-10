@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
@@ -20,8 +21,6 @@
 		plantingDbFormat: Record<string, string>;
 		cropDbFormat: Record<string, string>;
 	}>();
-
-	
 
 	const plantingColumns = [
 		'landName', // Show this instead of landId
@@ -78,21 +77,10 @@
 		}));
 	}
 
-	// 🌲️🌲️🌳️🌳️🌴️ DRAG DROP THING 🌲️🌲️🌳️🌳️🌴️
-	// DONEwrite a function to say when a user clicks a cell, figure out what column it's in.
-	// DONEwe need columns to be one unit that's draggable
-	// DONEchange the visual representation of the column
-	// DONEuser drags column data to a db table.
-	// DONEwhen they drop data on the db table it needs to:
-	// DONEin state it populate on that attribute on the db table.
-	// in the view it must also populate on that attribute on the db table.
-	// we need stat to update on "mapping" property
-	// It also need to be normalized trees and land dont repeat
-	// 	for planting table it needs to keep the relationship between land and tree(crop)
-
 	$inspect(plantingTable);
 
 	function dragoverHandler(ev: DragEvent) {
+		// Always prevent default to allow drop
 		ev.preventDefault();
 	}
 
@@ -123,6 +111,53 @@
 		dbDropTable: TableColumn[],
 		dropFormat: Record<string, string>
 	) {
+		// Block drop for Land table if column is not normalized
+		if (dbDropTable === landTable) {
+			const draggedColumnIndex = Number(ev.dataTransfer?.getData('text') || '-1');
+			if (draggedColumnIndex >= 0) {
+				const draggedCol = importedData.columns[draggedColumnIndex];
+
+				// Always allow the land column itself to be mapped to landName
+				const targetColumn = (ev.target as HTMLElement).closest('th');
+				if (targetColumn && targetColumn.dataset.headerName === 'landName') {
+					console.log(`Allowing drop of ${draggedCol.headerName} to landName`);
+				} else {
+					// For other columns in the Land table, check normalization
+					const landColIndex =
+						landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+
+					// If landName isn't mapped yet, don't allow drops to other columns
+					if (landColIndex === -1) {
+						console.log(`Blocked drop: landName not mapped yet`);
+						return;
+					}
+
+					const landCol = importedData.columns[landColIndex];
+					if (!landCol) {
+						console.log(`Blocked drop: landCol not found`);
+						return;
+					}
+
+					// Skip normalization check if dragging the land column itself
+					if (draggedCol.headerName === landCol.headerName) {
+						console.log(`Allowing drop of land column ${draggedCol.headerName}`);
+					} else {
+						// Check normalization
+						const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
+						console.log(
+							`Drop check: Column ${draggedCol.headerName} normalized by ${landCol.headerName}: ${isNormalized}`
+						);
+
+						if (!isNormalized) {
+							console.log(
+								`Blocked drop of ${draggedCol.headerName}: not normalized by ${landCol.headerName}`
+							);
+							return;
+						}
+					}
+				}
+			}
+		}
 		if (!ev.dataTransfer || !ev.target) return;
 		ev.preventDefault();
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
@@ -236,7 +271,8 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly}
-							<button type="button"
+							<button
+								type="button"
 								onclick={() => clearDbColumn(plantingTable, index)}
 								class="material-symbols-outlined"
 								aria-label="Clear column">cancel</button
@@ -275,8 +311,8 @@
 
 <h3 class="table-title">Land Table</h3>
 <table
-	class="no-table-bottom-margin"
-	class:view-only-table={!landTable.some(
+	class="no-table-bottom-margin land-table"
+	class:greyed-out={!landTable.some(
 		(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
 	)}
 >
@@ -286,18 +322,57 @@
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={column.viewOnly ||
-					!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
-						? null
-						: dragoverHandler}
-					ondrop={column.viewOnly ||
-					!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
-						? null
-						: landDropHandler}
-					class:legal-droptarget={!column.viewOnly &&
-						landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
-						dragColumnState.currentFormat === landDbFormat[column.name] &&
-						column.modelRepColumnIndex === -1}
+					ondragover={dragoverHandler}
+					ondrop={(() => {
+						// Don't allow drop for view-only columns
+						if (column.viewOnly) return null;
+
+						// Land table requires landName to be mapped first (except for landName itself)
+						if (
+							column.name !== 'landName' &&
+							!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+						) {
+							return null;
+						}
+
+						// Use the standard drop handler - normalization is checked inside dropHandler
+						return landDropHandler;
+					})()}
+					class:legal-droptarget={column.name === 'landName'
+						? // For landName column, just check basic conditions
+							!column.viewOnly &&
+							column.modelRepColumnIndex === -1 &&
+							dragColumnState.currentFormat === landDbFormat[column.name]
+						: // For other columns, check normalization too
+							!column.viewOnly &&
+							landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+							dragColumnState.currentFormat === landDbFormat[column.name] &&
+							column.modelRepColumnIndex === -1 &&
+							(() => {
+								// If no column is being dragged, not droppable
+								if (dragColumnState.index == null) return false;
+
+								// Get the dragged column
+								const draggedCol = importedData.columns[dragColumnState.index];
+
+								// For other columns, check normalization
+								const landColIndex =
+									landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+								if (landColIndex === -1) return false;
+
+								const landCol = importedData.columns[landColIndex];
+								if (!landCol) return false;
+
+								// Always allow the land column itself
+								if (draggedCol.headerName === landCol.headerName) return true;
+
+								// Check normalization for all other columns
+								const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
+								console.log(
+									`Drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
+								);
+								return isNormalized;
+							})()}
 					class:view-only={column.viewOnly ||
 						(!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
 							column.name !== 'landName')}
@@ -313,7 +388,8 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly && (landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) || column.name === 'landName')}
-							<button type="button"
+							<button
+								type="button"
 								onclick={() => clearDbColumn(landTable, index)}
 								class="material-symbols-outlined"
 								aria-label="Clear column">cancel</button
@@ -342,12 +418,46 @@
 							!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
 								? null
 								: landDropHandler}
-							class:legal-droptarget={!column.viewOnly &&
-								landTable.some(
-									(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
-								) &&
-								dragColumnState.currentFormat === landDbFormat[column.name] &&
-								column.modelRepColumnIndex === -1}
+							class:legal-droptarget={column.name === 'landName'
+								? // For landName column, just check basic conditions
+									!column.viewOnly &&
+									column.modelRepColumnIndex === -1 &&
+									dragColumnState.currentFormat === landDbFormat[column.name]
+								: // For other columns, check normalization too
+									!column.viewOnly &&
+									landTable.some(
+										(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+									) &&
+									dragColumnState.currentFormat === landDbFormat[column.name] &&
+									column.modelRepColumnIndex === -1 &&
+									(() => {
+										// If no column is being dragged, not droppable
+										if (dragColumnState.index == null) return false;
+
+										// Get the dragged column
+										const draggedCol = importedData.columns[dragColumnState.index];
+
+										// For other columns, check normalization
+										const landColIndex =
+											landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+										if (landColIndex === -1) return false;
+
+										const landCol = importedData.columns[landColIndex];
+										if (!landCol) return false;
+
+										// Always allow the land column itself
+										if (draggedCol.headerName === landCol.headerName) return true;
+
+										// Check normalization for all other columns
+										const isNormalized = isColumnNormalizedByLand(
+											landCol.values,
+											draggedCol.values
+										);
+										console.log(
+											`Cell drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
+										);
+										return isNormalized;
+									})()}
 							class:view-only={column.viewOnly ||
 								(!landTable.some(
 									(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
@@ -430,7 +540,8 @@
 						/>
 						{column.name}
 						{#if !column.viewOnly && (cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) || column.name === 'cropName')}
-							<button type="button"
+							<button
+								type="button"
 								onclick={() => clearDbColumn(cropTable, index)}
 								class="material-symbols-outlined"
 								aria-label="Clear column">cancel</button

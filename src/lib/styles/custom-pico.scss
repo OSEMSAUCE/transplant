@@ -429,16 +429,16 @@ button,
 }
 
 button.material-symbols-outlined {
-  background: none;
-  border: none ;
-  padding: 0;
-  /* keep your icon style below */
-//   font-size: var(--button-font-size);
-  vertical-align: -0.2rem;
-//   align-items: center;
-  margin-bottom: -0.25rem;
-  margin-top: -0.1rem;
-  // padding-bottom: -0.25rem;
+	background: none;
+	border: none;
+	padding: 0;
+	/* keep your icon style below */
+	//   font-size: var(--button-font-size);
+	vertical-align: -0.2rem;
+	//   align-items: center;
+	margin-bottom: -0.25rem;
+	margin-top: -0.1rem;
+	// padding-bottom: -0.25rem;
 }
 /* View toggle buttons */
 button {
@@ -511,6 +511,19 @@ button {
 .drag-over {
 	border: 2px solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
+	cursor: pointer !important;
+}
+
+/* Override for Land table */
+.land-table th.legal-droptarget {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Default style for legal-droptarget */
+th.legal-droptarget {
+	border: 2px solid #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer !important;
 }
 
