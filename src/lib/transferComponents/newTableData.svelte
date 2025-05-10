@@ -97,8 +97,9 @@
 				    !column.headerName.toLowerCase().includes('ownership') && 
 				    isColumnNormalizedByLand(landCol.values, column.values) : false}
 				{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
-				    // Don't show compatibility for date columns or parcelOwnership
+				    // Don't show compatibility for date columns, number columns, or parcelOwnership
 				    column.currentFormat !== 'date' && 
+				    column.currentFormat !== 'number' && 
 				    !column.headerName.toLowerCase().includes('ownership') && 
 				    isColumnNormalizedByLand(cropCol.values, column.values) : false}
 				{#if !column.isMapped}
@@ -110,7 +111,7 @@
 					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
-					style="position: relative;"
+					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 				>
 				{#if isLandCompatible}
 					<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
@@ -154,8 +155,9 @@
 					    !column.headerName.toLowerCase().includes('ownership') && 
 					    isColumnNormalizedByLand(landCol.values, column.values) : false}
 					{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
-					    // Don't show compatibility for date columns or parcelOwnership
+					    // Don't show compatibility for date columns, number columns, or parcelOwnership
 					    column.currentFormat !== 'date' && 
+					    column.currentFormat !== 'number' && 
 					    !column.headerName.toLowerCase().includes('ownership') && 
 					    isColumnNormalizedByLand(cropCol.values, column.values) : false}
 					{#if !column.isMapped && rowIndex === 0}
@@ -170,7 +172,7 @@
 						draggable={!column.isMapped}
 						ondragstart={dragstartHandler}
 						ondragend={dragEndHandler}
-						style="position: relative;"
+						style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 					>
 						{#if isLandCompatible}
 							<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
