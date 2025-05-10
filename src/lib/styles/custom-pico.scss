@@ -514,17 +514,23 @@ button {
 	cursor: pointer !important;
 }
 
+/* Default style for legal-droptarget */
+th.legal-droptarget {
+	border: 2px solid #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer !important;
+}
+
 /* Override for Land table */
 .land-table th.legal-droptarget {
 	border: 2px solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
 }
 
-/* Default style for legal-droptarget */
-th.legal-droptarget {
-	border: 2px solid #4caf50;
-	background-color: rgba(76, 175, 80, 0.1);
-	cursor: pointer !important;
+/* Override for Crop table - EXACTLY the same as Land table */
+.crop-table th.legal-droptarget {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.2) !important;
 }
 
 /* Required field styling that works with the actual HTML structure */

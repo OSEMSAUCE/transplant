@@ -118,7 +118,7 @@
 				const draggedCol = importedData.columns[draggedColumnIndex];
 
 				// Always allow the land column itself to be mapped to landName
-				const targetColumn = (ev.target as HTMLElement).closest('th');
+				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
 				if (targetColumn && targetColumn.dataset.headerName === 'landName') {
 					console.log(`Allowing drop of ${draggedCol.headerName} to landName`);
 				} else {
@@ -151,6 +151,54 @@
 						if (!isNormalized) {
 							console.log(
 								`Blocked drop of ${draggedCol.headerName}: not normalized by ${landCol.headerName}`
+							);
+							return;
+						}
+					}
+				}
+			}
+		}
+		
+		// Block drop for Crop table if column is not normalized
+		if (dbDropTable === cropTable) {
+			const draggedColumnIndex = Number(ev.dataTransfer?.getData('text') || '-1');
+			if (draggedColumnIndex >= 0) {
+				const draggedCol = importedData.columns[draggedColumnIndex];
+
+				// Always allow the crop column itself to be mapped to cropName
+				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
+				if (targetColumn && targetColumn.dataset.headerName === 'cropName') {
+					console.log(`Allowing drop of ${draggedCol.headerName} to cropName`);
+				} else {
+					// For other columns in the Crop table, check normalization
+					const cropColIndex =
+						cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
+
+					// If cropName isn't mapped yet, don't allow drops to other columns
+					if (cropColIndex === -1) {
+						console.log(`Blocked drop: cropName not mapped yet`);
+						return;
+					}
+
+					const cropCol = importedData.columns[cropColIndex];
+					if (!cropCol) {
+						console.log(`Blocked drop: cropCol not found`);
+						return;
+					}
+
+					// Skip normalization check if dragging the crop column itself
+					if (draggedCol.headerName === cropCol.headerName) {
+						console.log(`Allowing drop of crop column ${draggedCol.headerName}`);
+					} else {
+						// Check normalization
+						const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
+						console.log(
+							`Crop drop check: Column ${draggedCol.headerName} normalized by ${cropCol.headerName}: ${isNormalized}`
+						);
+
+						if (!isNormalized) {
+							console.log(
+								`Blocked drop of ${draggedCol.headerName}: not normalized by ${cropCol.headerName}`
 							);
 							return;
 						}
@@ -503,7 +551,8 @@
 
 <h3 class="table-title">Crop Table</h3>
 <table
-	class:view-only-table={!cropTable.some(
+	class="no-table-bottom-margin crop-table"
+	class:greyed-out={!cropTable.some(
 		(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
 	)}
 >
@@ -513,18 +562,57 @@
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={column.viewOnly ||
-					!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
-						? null
-						: dragoverHandler}
-					ondrop={column.viewOnly ||
-					!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
-						? null
-						: cropDropHandler}
-					class:legal-droptarget={!column.viewOnly &&
-						cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
-						dragColumnState.currentFormat === cropDbFormat[column.name] &&
-						column.modelRepColumnIndex === -1}
+					ondragover={dragoverHandler}
+					ondrop={(() => {
+						// Don't allow drop for view-only columns
+						if (column.viewOnly) return null;
+
+						// Crop table requires cropName to be mapped first (except for cropName itself)
+						if (
+							column.name !== 'cropName' &&
+							!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
+						) {
+							return null;
+						}
+
+						// Use the standard drop handler - normalization is checked inside dropHandler
+						return cropDropHandler;
+					})()}
+					class:legal-droptarget={column.name === 'cropName'
+						? // For cropName column, just check basic conditions
+							!column.viewOnly &&
+							column.modelRepColumnIndex === -1 &&
+							dragColumnState.currentFormat === cropDbFormat[column.name]
+						: // For other columns, check normalization too
+							!column.viewOnly &&
+							cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
+							dragColumnState.currentFormat === cropDbFormat[column.name] &&
+							column.modelRepColumnIndex === -1 &&
+							(() => {
+								// If no column is being dragged, not droppable
+								if (dragColumnState.index == null) return false;
+
+								// Get the dragged column
+								const draggedCol = importedData.columns[dragColumnState.index];
+
+								// For other columns, check normalization
+								const cropColIndex =
+									cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
+								if (cropColIndex === -1) return false;
+
+								const cropCol = importedData.columns[cropColIndex];
+								if (!cropCol) return false;
+
+								// Always allow the crop column itself
+								if (draggedCol.headerName === cropCol.headerName) return true;
+
+								// Check normalization for all other columns
+								const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
+								console.log(
+									`Drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
+								);
+								return isNormalized;
+							})()}
 					class:view-only={column.viewOnly ||
 						(!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
 							column.name !== 'cropName')}
@@ -570,12 +658,46 @@
 							!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1)
 								? null
 								: cropDropHandler}
-							class:legal-droptarget={!column.viewOnly &&
-								cropTable.some(
-									(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
-								) &&
-								dragColumnState.currentFormat === cropDbFormat[column.name] &&
-								column.modelRepColumnIndex === -1}
+							class:legal-droptarget={column.name === 'cropName'
+								? // For cropName column, just check basic conditions
+									!column.viewOnly &&
+									column.modelRepColumnIndex === -1 &&
+									dragColumnState.currentFormat === cropDbFormat[column.name]
+								: // For other columns, check normalization too
+									!column.viewOnly &&
+									cropTable.some(
+										(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
+									) &&
+									dragColumnState.currentFormat === cropDbFormat[column.name] &&
+									column.modelRepColumnIndex === -1 &&
+									(() => {
+										// If no column is being dragged, not droppable
+										if (dragColumnState.index == null) return false;
+
+										// Get the dragged column
+										const draggedCol = importedData.columns[dragColumnState.index];
+
+										// For other columns, check normalization
+										const cropColIndex =
+											cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
+										if (cropColIndex === -1) return false;
+
+										const cropCol = importedData.columns[cropColIndex];
+										if (!cropCol) return false;
+
+										// Always allow the crop column itself
+										if (draggedCol.headerName === cropCol.headerName) return true;
+
+										// Check normalization for all other columns
+										const isNormalized = isColumnNormalizedByLand(
+											cropCol.values,
+											draggedCol.values
+										);
+										console.log(
+											`Cell drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
+										);
+										return isNormalized;
+									})()}
 							class:view-only={column.viewOnly ||
 								(!cropTable.some(
 									(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
@@ -600,8 +722,8 @@
 							data-column-index={index}
 							ondragover={column.viewOnly || column.name !== 'cropName' ? null : dragoverHandler}
 							ondrop={column.viewOnly || column.name !== 'cropName' ? null : cropDropHandler}
-							class:legal-droptarget={!column.viewOnly &&
-								column.name === 'cropName' &&
+							class:legal-droptarget={column.name === 'cropName' && 
+								!column.viewOnly &&
 								dragColumnState.currentFormat === cropDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
 							class:view-only={column.viewOnly || column.name !== 'cropName'}
@@ -647,20 +769,20 @@
 
 <style>
 	.view-only {
-		background-color: #808080;
+		background-color: var(--color-light-grey);
 		cursor: not-allowed;
 		/* margin-bottom: -1rem; */
 	}
 
-	.view-only-table {
+	.greyed-out {
 		opacity: 0.7;
 		background-color: rgba(128, 128, 128, 0.2);
 		/* margin-bottom: -1rem; */
 	}
 
-	.view-only-table th:not(.legal-droptarget),
-	.view-only-table td:not(.legal-droptarget) {
-		background-color: #808080;
+	.greyed-out th:not(.legal-droptarget),
+	.greyed-out td:not(.legal-droptarget) {
+		background-color: var(--color-light-grey);
 		cursor: not-allowed;
 	}
 
