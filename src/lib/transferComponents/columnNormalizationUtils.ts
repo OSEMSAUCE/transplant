@@ -67,7 +67,7 @@ export function isColumnNormalizedByLand(
   // Check if any land has more than one unique attribute value
   for (const [land, attrSet] of landToAttr.entries()) {
     if (attrSet.size > 1) {
-      console.log(`Land ${land} has multiple values: ${Array.from(attrSet).join(', ')}`);
+      // Removed console.log for cleaner code
       return false;
     }
   }
