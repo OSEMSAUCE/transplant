@@ -87,85 +87,37 @@
 	<thead>
 		<tr>
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
+				{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
+				{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
+				{@const isPrimaryColumn = ((landCol && column.headerName === landCol.headerName) ||
+				    (cropCol && column.headerName === cropCol.headerName))}
+				{@const isLandCompatible = !column.isMapped && !isPrimaryColumn && landCol ? 
+				    // Don't show compatibility for date columns or parcelOwnership
+				    column.currentFormat !== 'date' && 
+				    !column.headerName.toLowerCase().includes('ownership') && 
+				    isColumnNormalizedByLand(landCol.values, column.values) : false}
+				{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
+				    // Don't show compatibility for date columns or parcelOwnership
+				    column.currentFormat !== 'date' && 
+				    !column.headerName.toLowerCase().includes('ownership') && 
+				    isColumnNormalizedByLand(cropCol.values, column.values) : false}
+				{#if !column.isMapped}
+					{@const debug = console.log(`Column ${column.headerName}: landCol=${!!landCol}, cropCol=${!!cropCol}, isPrimary=${isPrimaryColumn}, isLandCompatible=${isLandCompatible}, isCropCompatible=${isCropCompatible}`)}
+				{/if}
 				<th
 					data-header-name={column.headerName}
 					data-column-index={index}
 					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
-					style={(() => {
-						// Skip for already mapped columns
-						if (column.isMapped) {
-							console.log(`Column ${column.headerName} is already mapped, skipping style`);
-							return '';
-						}
-						
-						// Check if landName is mapped
-						const landMapped = importedData.columns.some((c) => c.mappedTo?.includes('land.landName'));
-						console.log(`landName is mapped: ${landMapped}`);
-						
-						// Check if cropName is mapped
-						const cropMapped = importedData.columns.some((c) => c.mappedTo?.includes('crop.cropName'));
-						console.log(`cropName is mapped: ${cropMapped}`);
-						
-						// Don't show any borders if neither landName nor cropName has been mapped
-						if (!landMapped && !cropMapped) {
-							console.log('Neither landName nor cropName is mapped, skipping style');
-							return '';
-						}
-						
-						// Get column indices
-						const landColIndex = landMapped ? 
-							importedData.columns.findIndex((c) => c.mappedTo?.includes('land.landName')) : -1;
-						console.log(`landColIndex: ${landColIndex}`);
-						
-						const cropColIndex = cropMapped ? 
-							importedData.columns.findIndex((c) => c.mappedTo?.includes('crop.cropName')) : -1;
-						console.log(`cropColIndex: ${cropColIndex}`);
-						
-						// Skip for the primary columns themselves
-						if ((landMapped && landColIndex !== -1 && column.headerName === importedData.columns[landColIndex].headerName) ||
-						    (cropMapped && cropColIndex !== -1 && column.headerName === importedData.columns[cropColIndex].headerName)) {
-							console.log(`Column ${column.headerName} is a primary column, skipping style`);
-							return '';
-						}
-						
-						// Check Land compatibility
-						let isLandCompatible = false;
-						if (landMapped && landColIndex !== -1) {
-							const landCol = importedData.columns[landColIndex];
-							isLandCompatible = isColumnNormalizedByLand(landCol.values, column.values);
-							console.log(`Column ${column.headerName} land compatibility: ${isLandCompatible}`);
-						}
-						
-						// Check Crop compatibility
-						let isCropCompatible = false;
-						if (cropMapped && cropColIndex !== -1) {
-							const cropCol = importedData.columns[cropColIndex];
-							isCropCompatible = isColumnNormalizedByLand(cropCol.values, column.values);
-							console.log(`Column ${column.headerName} crop compatibility: ${isCropCompatible}`);
-						}
-						
-						// Apply appropriate styling based on compatibility
-						if (isLandCompatible && isCropCompatible) {
-							// Both compatible - use a combined style
-							console.log(`Column ${column.headerName} is compatible with both tables, applying combined style`);
-							return 'border: 5px solid #2196f3 !important; border-bottom: 5px solid #4caf50 !important; background-color: rgba(33, 150, 243, 0.2) !important;';
-						} else if (isLandCompatible) {
-							// Land compatible - blue outline
-							console.log(`Column ${column.headerName} is compatible with Land table, applying blue style`);
-							return 'border: 5px solid #2196f3 !important; background-color: rgba(33, 150, 243, 0.2) !important;';
-						} else if (isCropCompatible) {
-							// Crop compatible - green outline
-							console.log(`Column ${column.headerName} is compatible with Crop table, applying green style`);
-							return 'border: 5px solid #4caf50 !important; background-color: rgba(76, 175, 80, 0.2) !important;';
-						}
-						
-						// Default - no special styling
-						console.log(`Column ${column.headerName} is not compatible with any table, no style applied`);
-						return '';
-					})()}
+					style="position: relative;"
 				>
+				{#if isLandCompatible}
+					<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
+				{/if}
+				{#if isCropCompatible}
+					<div style="position: absolute; top: 2px; right: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🌳️</div>
+				{/if}
 					<div class="column-header">
 						<FormatSelectorComponent
 							columnData={column.values}
@@ -192,6 +144,23 @@
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
+					{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
+					{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
+					{@const isPrimaryColumn = ((landCol && column.headerName === landCol.headerName) ||
+					    (cropCol && column.headerName === cropCol.headerName))}
+					{@const isLandCompatible = !column.isMapped && !isPrimaryColumn && landCol ? 
+					    // Don't show compatibility for date columns or parcelOwnership
+					    column.currentFormat !== 'date' && 
+					    !column.headerName.toLowerCase().includes('ownership') && 
+					    isColumnNormalizedByLand(landCol.values, column.values) : false}
+					{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
+					    // Don't show compatibility for date columns or parcelOwnership
+					    column.currentFormat !== 'date' && 
+					    !column.headerName.toLowerCase().includes('ownership') && 
+					    isColumnNormalizedByLand(cropCol.values, column.values) : false}
+					{#if !column.isMapped && rowIndex === 0}
+						{@const debug = console.log(`Cell ${column.headerName}: landCol=${!!landCol}, cropCol=${!!cropCol}, isPrimary=${isPrimaryColumn}, isLandCompatible=${isLandCompatible}, isCropCompatible=${isCropCompatible}`)}
+					{/if}
 					<td
 						class:greyed-out={isTransplant
 							? column.isMapped
@@ -201,62 +170,14 @@
 						draggable={!column.isMapped}
 						ondragstart={dragstartHandler}
 						ondragend={dragEndHandler}
-						style={(() => {
-							// Skip for already mapped columns
-							if (column.isMapped) return '';
-							
-							// Check if landName is mapped
-							const landMapped = importedData.columns.some((c) => c.mappedTo?.includes('land.landName'));
-							
-							// Check if cropName is mapped
-							const cropMapped = importedData.columns.some((c) => c.mappedTo?.includes('crop.cropName'));
-							
-							// Don't show any borders if neither landName nor cropName has been mapped
-							if (!landMapped && !cropMapped) return '';
-							
-							// Get column indices
-							const landColIndex = landMapped ? 
-								importedData.columns.findIndex((c) => c.mappedTo?.includes('land.landName')) : -1;
-							
-							const cropColIndex = cropMapped ? 
-								importedData.columns.findIndex((c) => c.mappedTo?.includes('crop.cropName')) : -1;
-							
-							// Skip for the primary columns themselves
-							if ((landMapped && landColIndex !== -1 && column.headerName === importedData.columns[landColIndex].headerName) ||
-							    (cropMapped && cropColIndex !== -1 && column.headerName === importedData.columns[cropColIndex].headerName)) {
-								return '';
-							}
-							
-							// Check Land compatibility
-							let isLandCompatible = false;
-							if (landMapped && landColIndex !== -1) {
-								const landCol = importedData.columns[landColIndex];
-								isLandCompatible = isColumnNormalizedByLand(landCol.values, column.values);
-							}
-							
-							// Check Crop compatibility
-							let isCropCompatible = false;
-							if (cropMapped && cropColIndex !== -1) {
-								const cropCol = importedData.columns[cropColIndex];
-								isCropCompatible = isColumnNormalizedByLand(cropCol.values, column.values);
-							}
-							
-							// Apply appropriate styling based on compatibility
-							if (isLandCompatible && isCropCompatible) {
-								// Both compatible - use a combined style
-								return 'border: 3px solid #2196f3 !important; border-bottom: 3px solid #4caf50 !important;';
-							} else if (isLandCompatible) {
-								// Land compatible - blue outline
-								return 'border: 3px solid #2196f3 !important;';
-							} else if (isCropCompatible) {
-								// Crop compatible - green outline
-								return 'border: 3px solid #4caf50 !important;';
-							}
-							
-							// Default - no special styling
-							return '';
-						})()}
+						style="position: relative;"
 					>
+						{#if isLandCompatible}
+							<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
+						{/if}
+						{#if isCropCompatible}
+							<div style="position: absolute; top: 2px; right: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🌳️</div>
+						{/if}
 						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
 						{:else}
@@ -271,40 +192,4 @@
 	</tbody>
 </table>
 
-<button style="margin-top: 10px; padding: 5px; background-color: #333; color: white;" onclick={() => {
-	console.log('Debug button clicked');
-	console.log('All columns:', importedData.columns);
-	
-	// Find all columns with headerName containing 'website'
-	const websiteColumns = importedData.columns.filter(c => 
-		c.headerName.toLowerCase().includes('website') || 
-		c.headerName.toLowerCase().includes('organisation'));
-	console.log('Website columns:', websiteColumns);
-	
-	// Find all headers and apply blue border
-	const headers = document.querySelectorAll('th');
-	console.log(`Found ${headers.length} headers`);
-	
-	headers.forEach((header) => {
-		const headerName = (header as HTMLElement).dataset.headerName;
-		if (headerName && headerName.toLowerCase().includes('website')) {
-			console.log(`Applying blue style to ${headerName}`);
-			(header as HTMLElement).style.border = '3px solid #2196f3';
-			(header as HTMLElement).style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-		}
-	});
-	
-	// Also style all cells for website columns
-	const cells = document.querySelectorAll('td');
-	console.log(`Found ${cells.length} cells`);
-	
-	cells.forEach((cell) => {
-		const headerName = (cell as HTMLElement).dataset.headerName;
-		if (headerName && headerName.toLowerCase().includes('website')) {
-			console.log(`Applying blue style to cell for ${headerName}`);
-			(cell as HTMLElement).style.border = '3px solid #2196f3';
-			(cell as HTMLElement).style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-		}
-	});
-}}>Apply Blue Border to Website Columns</button>
-
+<!-- Visual cues now integrated into the main styling logic -->
