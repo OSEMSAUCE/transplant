@@ -50,11 +50,60 @@
 	];
 
 	function clearDbColumn(dbTable: TableColumn[], index: number) {
+		// Get the column name and the column index that was mapped
+		const columnName = dbTable[index].name;
+		const modelRepColumnIndex = dbTable[index].modelRepColumnIndex;
+		
+		// Clear the current column
 		dbTable[index].values = ['', '', ''];
-		importedData.columns[dbTable[index].modelRepColumnIndex].isMapped = false;
-		importedData.columns[dbTable[index].modelRepColumnIndex].mappedTo = undefined;
-		dbTable[index].modelRepColumnIndex = -1;
-		console.log('clicked');
+		
+		if (modelRepColumnIndex !== -1) {
+			// Unmap the column in the imported data
+			importedData.columns[modelRepColumnIndex].isMapped = false;
+			importedData.columns[modelRepColumnIndex].mappedTo = undefined;
+			
+			// Clear the current column's mapping
+			dbTable[index].modelRepColumnIndex = -1;
+			
+			// If this is landName or cropName, also clear it in other tables
+			if (columnName === 'landName') {
+				// Clear landName in the other table
+				if (dbTable === landTable) {
+					// Clear in planting table
+					const plantingLandNameIndex = plantingTable.findIndex(col => col.name === 'landName');
+					if (plantingLandNameIndex !== -1) {
+						plantingTable[plantingLandNameIndex].values = ['', '', ''];
+						plantingTable[plantingLandNameIndex].modelRepColumnIndex = -1;
+					}
+				} else if (dbTable === plantingTable) {
+					// Clear in land table
+					const landNameIndex = landTable.findIndex(col => col.name === 'landName');
+					if (landNameIndex !== -1) {
+						landTable[landNameIndex].values = ['', '', ''];
+						landTable[landNameIndex].modelRepColumnIndex = -1;
+					}
+				}
+			} else if (columnName === 'cropName') {
+				// Clear cropName in the other table
+				if (dbTable === cropTable) {
+					// Clear in planting table
+					const plantingCropNameIndex = plantingTable.findIndex(col => col.name === 'cropName');
+					if (plantingCropNameIndex !== -1) {
+						plantingTable[plantingCropNameIndex].values = ['', '', ''];
+						plantingTable[plantingCropNameIndex].modelRepColumnIndex = -1;
+					}
+				} else if (dbTable === plantingTable) {
+					// Clear in crop table
+					const cropNameIndex = cropTable.findIndex(col => col.name === 'cropName');
+					if (cropNameIndex !== -1) {
+						cropTable[cropNameIndex].values = ['', '', ''];
+						cropTable[cropNameIndex].modelRepColumnIndex = -1;
+					}
+				}
+			}
+		}
+		
+		// Cleared column and related columns
 	}
 
 	interface TableColumn {
@@ -120,7 +169,7 @@
 				// Always allow the land column itself to be mapped to landName
 				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
 				if (targetColumn && targetColumn.dataset.headerName === 'landName') {
-					console.log(`Allowing drop of ${draggedCol.headerName} to landName`);
+					// Allowing drop to landName
 				} else {
 					// For other columns in the Land table, check normalization
 					const landColIndex =
@@ -128,30 +177,25 @@
 
 					// If landName isn't mapped yet, don't allow drops to other columns
 					if (landColIndex === -1) {
-						console.log(`Blocked drop: landName not mapped yet`);
+						// Blocked drop: landName not mapped yet
 						return;
 					}
 
 					const landCol = importedData.columns[landColIndex];
 					if (!landCol) {
-						console.log(`Blocked drop: landCol not found`);
+						// Blocked drop: landCol not found
 						return;
 					}
 
 					// Skip normalization check if dragging the land column itself
 					if (draggedCol.headerName === landCol.headerName) {
-						console.log(`Allowing drop of land column ${draggedCol.headerName}`);
+						// Allowing drop of land column
 					} else {
 						// Check normalization
 						const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
-						console.log(
-							`Drop check: Column ${draggedCol.headerName} normalized by ${landCol.headerName}: ${isNormalized}`
-						);
 
 						if (!isNormalized) {
-							console.log(
-								`Blocked drop of ${draggedCol.headerName}: not normalized by ${landCol.headerName}`
-							);
+							// Blocked drop: not normalized by land
 							return;
 						}
 					}
@@ -168,7 +212,7 @@
 				// Always allow the crop column itself to be mapped to cropName
 				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
 				if (targetColumn && targetColumn.dataset.headerName === 'cropName') {
-					console.log(`Allowing drop of ${draggedCol.headerName} to cropName`);
+					// Allowing drop to cropName
 				} else {
 					// For other columns in the Crop table, check normalization
 					const cropColIndex =
@@ -176,30 +220,25 @@
 
 					// If cropName isn't mapped yet, don't allow drops to other columns
 					if (cropColIndex === -1) {
-						console.log(`Blocked drop: cropName not mapped yet`);
+						// Blocked drop: cropName not mapped yet
 						return;
 					}
 
 					const cropCol = importedData.columns[cropColIndex];
 					if (!cropCol) {
-						console.log(`Blocked drop: cropCol not found`);
+						// Blocked drop: cropCol not found
 						return;
 					}
 
 					// Skip normalization check if dragging the crop column itself
 					if (draggedCol.headerName === cropCol.headerName) {
-						console.log(`Allowing drop of crop column ${draggedCol.headerName}`);
+						// Allowing drop of crop column
 					} else {
 						// Check normalization
 						const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
-						console.log(
-							`Crop drop check: Column ${draggedCol.headerName} normalized by ${cropCol.headerName}: ${isNormalized}`
-						);
 
 						if (!isNormalized) {
-							console.log(
-								`Blocked drop of ${draggedCol.headerName}: not normalized by ${cropCol.headerName}`
-							);
+							// Blocked drop: not normalized by crop
 							return;
 						}
 					}
@@ -214,14 +253,14 @@
 
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
-			console.log('Cannot map to view-only field');
+			// Cannot map to view-only field
 			return;
 		}
 
 		const draggedColumnFormat = importedData.columns[draggedColumnIndex].currentFormat;
 		const targetColumnFormat = dropFormat[targetColumnName];
 		if (draggedColumnFormat !== targetColumnFormat) {
-			console.log('Formats do not match');
+			// Formats do not match
 			return;
 		}
 		if (dbDropTable[targetColumnIndex].modelRepColumnIndex !== -1) {
@@ -238,16 +277,6 @@
 		if (dbDropTable === cropTable) tablePrefix = 'crop.';
 
 		importedData.columns[draggedColumnIndex].mappedTo = tablePrefix + targetColumnName;
-
-		// DEBUG: Log the mapping details
-		console.log('DEBUG MAPPING:', {
-			table: tablePrefix.replace('.', ''),
-			columnName: targetColumnName,
-			mappedTo: importedData.columns[draggedColumnIndex].mappedTo,
-			isPlantingTable: dbDropTable === plantingTable,
-			isLandTable: dbDropTable === landTable,
-			isCropTable: dbDropTable === cropTable
-		});
 
 		// Propagate landName and cropName between tables
 		if (targetColumnName === 'landName' && dbDropTable === plantingTable) {
@@ -276,9 +305,7 @@
 			}
 		}
 
-		console.log(
-			`Mapped column ${importedData.columns[draggedColumnIndex].headerName} to ${importedData.columns[draggedColumnIndex].mappedTo}`
-		);
+		// Column mapping completed
 	}
 
 	function plantingDropHandler(ev: DragEvent) {
@@ -416,9 +443,6 @@
 
 								// Check normalization for all other columns
 								const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
-								console.log(
-									`Drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
-								);
 								return isNormalized;
 							})()}
 					class:view-only={column.viewOnly ||
@@ -473,9 +497,7 @@
 									dragColumnState.currentFormat === landDbFormat[column.name]
 								: // For other columns, check normalization too
 									!column.viewOnly &&
-									landTable.some(
-										(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
-									) &&
+									landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
 									dragColumnState.currentFormat === landDbFormat[column.name] &&
 									column.modelRepColumnIndex === -1 &&
 									(() => {
@@ -497,13 +519,7 @@
 										if (draggedCol.headerName === landCol.headerName) return true;
 
 										// Check normalization for all other columns
-										const isNormalized = isColumnNormalizedByLand(
-											landCol.values,
-											draggedCol.values
-										);
-										console.log(
-											`Cell drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
-										);
+										const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
 										return isNormalized;
 									})()}
 							class:view-only={column.viewOnly ||
@@ -608,9 +624,6 @@
 
 								// Check normalization for all other columns
 								const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
-								console.log(
-									`Drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
-								);
 								return isNormalized;
 							})()}
 					class:view-only={column.viewOnly ||
@@ -693,9 +706,6 @@
 											cropCol.values,
 											draggedCol.values
 										);
-										console.log(
-											`Cell drop target check: Column ${draggedCol.headerName} to ${column.name} - normalized: ${isNormalized}`
-										);
 										return isNormalized;
 									})()}
 							class:view-only={column.viewOnly ||
@@ -740,32 +750,6 @@
 		{/if}
 	</tbody>
 </table>
-
-<!-- Debug Button -->
-<div style="margin: 1rem 0;">
-	<button
-		onclick={() => {
-			console.log('DEBUG STATE:');
-			console.log('Planting Table:', plantingTable);
-			console.log('Land Table:', landTable);
-			console.log('Crop Table:', cropTable);
-			console.log('Imported Data:', importedData);
-
-			// Check which columns are mapped
-			const mappedColumns = importedData.columns.filter((col) => col.isMapped && col.mappedTo);
-			console.log('Mapped Columns:', mappedColumns);
-
-			// Check what would be filtered in dbButton.ts
-			const landColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('land.'));
-			const cropColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('crop.'));
-			const plantingColumns = mappedColumns.filter((col) => col.mappedTo?.startsWith('planting.'));
-
-			console.log('Land Columns:', landColumns);
-			console.log('Crop Columns:', cropColumns);
-			console.log('Planting Columns:', plantingColumns);
-		}}>Debug Tables</button
-	>
-</div>
 
 <style>
 	.view-only {
