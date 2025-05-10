@@ -789,4 +789,13 @@
 	.no-table-bottom-margin {
 		margin-bottom: 0rem;
 	}
+	
+	/* Add colored borders to tables */
+	.land-table {
+		border: 1px solid #2196f3; /* Blue border for Land Table */
+	}
+	
+	.crop-table {
+		border: 1px solid #4caf50; /* Green border for Crop Table */
+	}
 </style>
