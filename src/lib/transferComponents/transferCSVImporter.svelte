@@ -1,6 +1,6 @@
 
 <script lang="ts">
-	import { detectFormat} from './newFormatDetection';
+	import { detectFormat} from './FormatDetection';
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';

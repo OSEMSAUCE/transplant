@@ -1,5 +1,5 @@
 import type { ColumnRep, ColumnFormat } from '$lib/types/columnModel';
-import { formatValue } from './newFormatDetection';
+import { formatValue } from './FormatDetection';
 
 // This is the main program state.
 export let importedData = $state<{ columns: ColumnRep[] }>({ columns: [] });
