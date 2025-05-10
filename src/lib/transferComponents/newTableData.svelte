@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { getColumnCompatibility, findLandColumn, isColumnNormalizedByLand } from './columnNormalizationUtils';
+	import {
+		getColumnCompatibility,
+		findLandColumn,
+		isColumnNormalizedByLand
+	} from './columnNormalizationUtils';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
@@ -36,15 +40,17 @@
 		dragColumnState.headerName = columnName;
 		dragColumnState.currentFormat = importedData.columns[columnIndex].currentFormat;
 		dragColumnState.index = columnIndex;
-		
+
 		// Log compatibility info for debugging
 		const landCol = findLandColumn(importedData.columns);
 		if (landCol) {
 			const draggedCol = importedData.columns[columnIndex];
 			const compat = getColumnCompatibility(landCol.values, draggedCol.values);
-			console.log(`Dragging column ${columnName} - compatibility with ${landCol.headerName}: ${compat}`);
+			console.log(
+				`Dragging column ${columnName} - compatibility with ${landCol.headerName}: ${compat}`
+			);
 		}
-		
+
 		console.log(dragColumnState);
 		// Add class to all cells in this column
 		document
@@ -88,30 +94,76 @@
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
 					style={(() => {
-						// Only show compatibility borders after landName is mapped
-						const landMapped = importedData.columns.some(c => c.mappedTo?.includes('land.landName'));
-						
-						// Don't show borders if land column isn't mapped yet
-						if (!landMapped) return '';
-						
-						// Find the mapped land column
-						const landColIndex = importedData.columns.findIndex(c => c.mappedTo?.includes('land.landName'));
-						if (landColIndex === -1) return '';
-						const landCol = importedData.columns[landColIndex];
-						
-						// Skip for the land column itself
-						if (column.headerName === landCol.headerName) return '';
-						
 						// Skip for already mapped columns
-						if (column.isMapped) return '';
+						if (column.isMapped) {
+							console.log(`Column ${column.headerName} is already mapped, skipping style`);
+							return '';
+						}
 						
-						// Check compatibility
-						const isNormalized = isColumnNormalizedByLand(landCol.values, column.values);
-						console.log(`Column ${column.headerName} normalized by ${landCol.headerName}: ${isNormalized}`);
+						// Check if landName is mapped
+						const landMapped = importedData.columns.some((c) => c.mappedTo?.includes('land.landName'));
+						console.log(`landName is mapped: ${landMapped}`);
 						
-						// Blue for Land-compatible, Green for Planted-only
-						if (isNormalized) return 'border: 2px solid #2196f3'; // blue for Land
-						return 'border: 2px solid #43a047'; // green for Planted
+						// Check if cropName is mapped
+						const cropMapped = importedData.columns.some((c) => c.mappedTo?.includes('crop.cropName'));
+						console.log(`cropName is mapped: ${cropMapped}`);
+						
+						// Don't show any borders if neither landName nor cropName has been mapped
+						if (!landMapped && !cropMapped) {
+							console.log('Neither landName nor cropName is mapped, skipping style');
+							return '';
+						}
+						
+						// Get column indices
+						const landColIndex = landMapped ? 
+							importedData.columns.findIndex((c) => c.mappedTo?.includes('land.landName')) : -1;
+						console.log(`landColIndex: ${landColIndex}`);
+						
+						const cropColIndex = cropMapped ? 
+							importedData.columns.findIndex((c) => c.mappedTo?.includes('crop.cropName')) : -1;
+						console.log(`cropColIndex: ${cropColIndex}`);
+						
+						// Skip for the primary columns themselves
+						if ((landMapped && landColIndex !== -1 && column.headerName === importedData.columns[landColIndex].headerName) ||
+						    (cropMapped && cropColIndex !== -1 && column.headerName === importedData.columns[cropColIndex].headerName)) {
+							console.log(`Column ${column.headerName} is a primary column, skipping style`);
+							return '';
+						}
+						
+						// Check Land compatibility
+						let isLandCompatible = false;
+						if (landMapped && landColIndex !== -1) {
+							const landCol = importedData.columns[landColIndex];
+							isLandCompatible = isColumnNormalizedByLand(landCol.values, column.values);
+							console.log(`Column ${column.headerName} land compatibility: ${isLandCompatible}`);
+						}
+						
+						// Check Crop compatibility
+						let isCropCompatible = false;
+						if (cropMapped && cropColIndex !== -1) {
+							const cropCol = importedData.columns[cropColIndex];
+							isCropCompatible = isColumnNormalizedByLand(cropCol.values, column.values);
+							console.log(`Column ${column.headerName} crop compatibility: ${isCropCompatible}`);
+						}
+						
+						// Apply appropriate styling based on compatibility
+						if (isLandCompatible && isCropCompatible) {
+							// Both compatible - use a combined style
+							console.log(`Column ${column.headerName} is compatible with both tables, applying combined style`);
+							return 'border: 5px solid #2196f3 !important; border-bottom: 5px solid #4caf50 !important; background-color: rgba(33, 150, 243, 0.2) !important;';
+						} else if (isLandCompatible) {
+							// Land compatible - blue outline
+							console.log(`Column ${column.headerName} is compatible with Land table, applying blue style`);
+							return 'border: 5px solid #2196f3 !important; background-color: rgba(33, 150, 243, 0.2) !important;';
+						} else if (isCropCompatible) {
+							// Crop compatible - green outline
+							console.log(`Column ${column.headerName} is compatible with Crop table, applying green style`);
+							return 'border: 5px solid #4caf50 !important; background-color: rgba(76, 175, 80, 0.2) !important;';
+						}
+						
+						// Default - no special styling
+						console.log(`Column ${column.headerName} is not compatible with any table, no style applied`);
+						return '';
 					})()}
 				>
 					<div class="column-header">
@@ -149,6 +201,61 @@
 						draggable={!column.isMapped}
 						ondragstart={dragstartHandler}
 						ondragend={dragEndHandler}
+						style={(() => {
+							// Skip for already mapped columns
+							if (column.isMapped) return '';
+							
+							// Check if landName is mapped
+							const landMapped = importedData.columns.some((c) => c.mappedTo?.includes('land.landName'));
+							
+							// Check if cropName is mapped
+							const cropMapped = importedData.columns.some((c) => c.mappedTo?.includes('crop.cropName'));
+							
+							// Don't show any borders if neither landName nor cropName has been mapped
+							if (!landMapped && !cropMapped) return '';
+							
+							// Get column indices
+							const landColIndex = landMapped ? 
+								importedData.columns.findIndex((c) => c.mappedTo?.includes('land.landName')) : -1;
+							
+							const cropColIndex = cropMapped ? 
+								importedData.columns.findIndex((c) => c.mappedTo?.includes('crop.cropName')) : -1;
+							
+							// Skip for the primary columns themselves
+							if ((landMapped && landColIndex !== -1 && column.headerName === importedData.columns[landColIndex].headerName) ||
+							    (cropMapped && cropColIndex !== -1 && column.headerName === importedData.columns[cropColIndex].headerName)) {
+								return '';
+							}
+							
+							// Check Land compatibility
+							let isLandCompatible = false;
+							if (landMapped && landColIndex !== -1) {
+								const landCol = importedData.columns[landColIndex];
+								isLandCompatible = isColumnNormalizedByLand(landCol.values, column.values);
+							}
+							
+							// Check Crop compatibility
+							let isCropCompatible = false;
+							if (cropMapped && cropColIndex !== -1) {
+								const cropCol = importedData.columns[cropColIndex];
+								isCropCompatible = isColumnNormalizedByLand(cropCol.values, column.values);
+							}
+							
+							// Apply appropriate styling based on compatibility
+							if (isLandCompatible && isCropCompatible) {
+								// Both compatible - use a combined style
+								return 'border: 3px solid #2196f3 !important; border-bottom: 3px solid #4caf50 !important;';
+							} else if (isLandCompatible) {
+								// Land compatible - blue outline
+								return 'border: 3px solid #2196f3 !important;';
+							} else if (isCropCompatible) {
+								// Crop compatible - green outline
+								return 'border: 3px solid #4caf50 !important;';
+							}
+							
+							// Default - no special styling
+							return '';
+						})()}
 					>
 						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
@@ -163,3 +270,41 @@
 		{/each}
 	</tbody>
 </table>
+
+<button style="margin-top: 10px; padding: 5px; background-color: #333; color: white;" onclick={() => {
+	console.log('Debug button clicked');
+	console.log('All columns:', importedData.columns);
+	
+	// Find all columns with headerName containing 'website'
+	const websiteColumns = importedData.columns.filter(c => 
+		c.headerName.toLowerCase().includes('website') || 
+		c.headerName.toLowerCase().includes('organisation'));
+	console.log('Website columns:', websiteColumns);
+	
+	// Find all headers and apply blue border
+	const headers = document.querySelectorAll('th');
+	console.log(`Found ${headers.length} headers`);
+	
+	headers.forEach((header) => {
+		const headerName = (header as HTMLElement).dataset.headerName;
+		if (headerName && headerName.toLowerCase().includes('website')) {
+			console.log(`Applying blue style to ${headerName}`);
+			(header as HTMLElement).style.border = '3px solid #2196f3';
+			(header as HTMLElement).style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
+		}
+	});
+	
+	// Also style all cells for website columns
+	const cells = document.querySelectorAll('td');
+	console.log(`Found ${cells.length} cells`);
+	
+	cells.forEach((cell) => {
+		const headerName = (cell as HTMLElement).dataset.headerName;
+		if (headerName && headerName.toLowerCase().includes('website')) {
+			console.log(`Applying blue style to cell for ${headerName}`);
+			(cell as HTMLElement).style.border = '3px solid #2196f3';
+			(cell as HTMLElement).style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
+		}
+	});
+}}>Apply Blue Border to Website Columns</button>
+
