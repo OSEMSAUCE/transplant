@@ -4,10 +4,8 @@
 		findLandColumn,
 		isColumnNormalizedByLand
 	} from './columnNormalizationUtils';
-	import type { ColumnRep } from '$lib/types/columnModel';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	import { formatValue, matchesFormat } from './newFormatDetection';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	// Add this constant
 	const max_transplant_rows = 3;

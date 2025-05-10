@@ -4,7 +4,7 @@
 Components should accept callback props - which means you then pass functions as properties to these components
   -->
 <script lang="ts">
-	import { detectFormat, formatValue } from './newFormatDetection';
+	import { detectFormat} from './newFormatDetection';
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
