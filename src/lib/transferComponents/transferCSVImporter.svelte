@@ -1,8 +1,4 @@
-<!-- 
-  Svelte 5 $dispatch documentation reference:
-  https://svelte.dev/docs/svelte/v5-migration-guide#Event-changes-Component-events
-Components should accept callback props - which means you then pass functions as properties to these components
-  -->
+
 <script lang="ts">
 	import { detectFormat} from './newFormatDetection';
 	import Papa from 'papaparse';

@@ -150,3 +150,40 @@ function formatNumber(value: any): string {
 function formatString(value: any): string {
 	return value;
 }
+// --- UNIFIED TEST HARNESS FOR FORMAT DETECTION ---
+// Run this file with: node src/lib/transferComponents/newFormatDetection.ts
+
+if (require.main === module) {
+    const readline = require('readline');
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    function prompt() {
+        rl.question('\nEnter comma-separated values to test (or "exit" to quit): ', (input: string) => {
+            if (input.trim().toLowerCase() === 'exit') {
+                rl.close();
+                return;
+            }
+            // Split by comma, trim whitespace
+            const values = input.split(',').map(v => v.trim());
+            console.log('\nPer-value detection:');
+            values.forEach((val, idx) => {
+                console.log(`  [${idx}] "${val}": isDate=${isDate(val)}, isNumber=${isNumber(val)}, isGps=${isGps(val)}`);
+            });
+            // Detect format for the column as a whole
+            try {
+                const format = detectFormat(values, "TestColumn");
+                console.log(`\nColumn detectFormat: ${format}`);
+            } catch (e) {
+                console.log(`\nError running detectFormat: ${e}`);
+            }
+            prompt();
+        });
+    }
+
+    console.log('Format Detection Test Harness');
+    console.log('Type comma-separated values (e.g. 2022-01-01, 123, foo, 48.1, -122.3) and press Enter.');
+    prompt();
+}
