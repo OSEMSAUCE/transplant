@@ -48,6 +48,7 @@ model Land {
   plantings                       Planting[]
   Polygons_Polygons_land_idToLand Polygons[]        @relation("Polygons_land_idToLand")
 
+  @@unique([projectId, landName], map: "unique_land_name_per_project")
   @@index([projectId], map: "idx_land_project_id")
   @@map("Land")
 }
@@ -72,13 +73,14 @@ model Crop {
   csvobj         Csvobj?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "fk_crop_csvobj")
   plantings      Planting[]
 
+  @@unique([projectId, cropName], map: "unique_crop_name_per_project")
   @@index([organizationId], map: "idx_crop_organization_id")
   @@index([projectId], map: "idx_crop_project_id")
   @@map("Crop")
 }
 
 model Planting {
-  plantingId     String    @id @default(dbgenerated("uuid_generate_v4()")) @map("planting_id") @db.Uuid
+  plantingId     String    @id @default(dbgenerated("gen_random_uuid()")) @map("planting_id") @db.Uuid
   landId         String?   @map("land_id") @db.Uuid
   planted        Int?
   plantingDate   DateTime? @map("planting_date") @db.Date
@@ -162,7 +164,7 @@ model PreparationTypes {
 }
 
 model Stakeholders {
-  stakeholderId      String            @id @default(dbgenerated("uuid_generate_v4()")) @map("stakeholder_id") @db.Uuid
+  stakeholderId      String            @id @default(dbgenerated("gen_random_uuid()")) @map("stakeholder_id") @db.Uuid
   projectId          String?           @map("project_id") @db.Uuid
   organizationId     String?           @map("organization_id") @db.Uuid
   stakeholderTypeId  String?           @map("stakeholder_type_id") @db.Uuid
