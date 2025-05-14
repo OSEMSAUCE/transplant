@@ -1,0 +1,17 @@
+{
+  "land": {
+    "failCount": 0,
+    "duplicateCount": 1,
+    "reason": "Some land entries already exist in the database"
+  },
+  "project": {
+    "failCount": 0,
+    "duplicateCount": 2,
+    "reason": "Some project entries already exist in the database"
+  },
+  "organization": {
+    "failCount": 0,
+    "duplicateCount": 1,
+    "reason": "Some organization entries already exist in the database"
+  }
+}
