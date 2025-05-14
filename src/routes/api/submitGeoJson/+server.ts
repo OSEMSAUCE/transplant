@@ -162,18 +162,32 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
             return { type, attribute, count, examples };
         });
 
-        // Write error summary and issues to a file for user review
-        const errorFilePath = path.join(process.cwd(), 'src/routes/api/submitGeoJson/lastGeoJsonErrors.json');
-        const errorFileContent = JSON.stringify({
-            timestamp: new Date().toISOString(),
-            successCount,
-            errorSummary,
-            issues
-        }, null, 2);
+        // Write only the condensed error summary for quick review
+        const condensedErrors: Array<{ attribute: string, value: any, reason: string }> = [];
+        for (const err of errorSummary) {
+            for (const ex of err.examples) {
+                let shortReason = ex.error;
+                if (typeof shortReason === 'string') {
+                    if (shortReason.includes('Unique constraint failed')) {
+                        shortReason = 'Unique constraint failed on ' + err.attribute;
+                    } else if (shortReason.includes('not defined')) {
+                        shortReason = shortReason.split('\n').pop() || shortReason;
+                    } else if (shortReason.length > 100) {
+                        shortReason = shortReason.slice(0, 100) + '...';
+                    }
+                }
+                condensedErrors.push({
+                    attribute: err.attribute,
+                    value: ex.value,
+                    reason: shortReason
+                });
+            }
+        }
+        const condensedFilePath = path.join(process.cwd(), 'src/routes/api/submitGeoJson/lastGeoJsonErrors-condensed.json');
         try {
-            fs.writeFileSync(errorFilePath, errorFileContent, 'utf8');
+            fs.writeFileSync(condensedFilePath, JSON.stringify(condensedErrors, null, 2), 'utf8');
         } catch (fileErr) {
-            console.error('Failed to write error summary file:', fileErr);
+            console.error('Failed to write condensed error summary file:', fileErr);
         }
         
         return {

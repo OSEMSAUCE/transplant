@@ -1,0 +1,32 @@
+[
+  {
+    "attribute": "land_name",
+    "value": "Latur Site 1",
+    "reason": "Unique constraint failed on land_name"
+  },
+  {
+    "attribute": "land_name",
+    "value": "Latur Site 2",
+    "reason": "Unique constraint failed on land_name"
+  },
+  {
+    "attribute": "land_name",
+    "value": "Sunnymount Main",
+    "reason": "Unique constraint failed on land_name"
+  },
+  {
+    "attribute": "polygon_id",
+    "value": "cdb5d242-cc34-4292-8be0-27a8ff9b2c26",
+    "reason": "land is not defined"
+  },
+  {
+    "attribute": "polygon_id",
+    "value": "4a45adb7-6fbc-4211-9d6c-009b56c627aa",
+    "reason": "land is not defined"
+  },
+  {
+    "attribute": "polygon_id",
+    "value": "c442d368-2bd8-444c-b114-9b28c57862f3",
+    "reason": "land is not defined"
+  }
+]
