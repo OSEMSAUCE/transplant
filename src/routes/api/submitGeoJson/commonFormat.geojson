@@ -1,23 +1,23 @@
 {
 	"organizations": [
 		{
-			"organization_name": "Restor Organization",
-			"contact_name": "John Smith",
-			"contact_email": "john@restor.org",
+			"organizationName": "Restor Organization",
+			"contactName": "John Smith",
+			"contactEmail": "john@restor.org",
 			"website": "https://restor.eco",
-			"organization_notes": "Global restoration platform",
+			"organizationNotes": "Global restoration platform",
 			"projects": [
 				{
-					"project_name": "Latur (Maharashtra)",
-					"project_notes": "Restoration project in Maharashtra",
+					"projectName": "Latur (Maharashtra)",
+					"projectNotes": "Restoration project in Maharashtra",
 					"lands": [
 						{
-							"land_name": "Latur Site 1",
+							"landName": "Latur Site 1",
 							"hectares": 0.5,
 							"landHolder": null,
 							"gpsLat": 18.08082383,
 							"gpsLon": 76.59145856,
-							"land_notes": "Sustainable Land Management | No description available",
+							"landNotes": "Sustainable Land Management | No description available",
 							"geojson": [
 								[
 									[
@@ -33,12 +33,12 @@
 							]
 						},
 						{
-							"land_name": "Latur Site 2",
+							"landName": "Latur Site 2",
 							"hectares": 1.2,
 							"landHolder": "Placeholder Owner",
 							"gpsLat": 18.08123456,
 							"gpsLon": 76.59234567,
-							"land_notes": "Agroforestry site | Placeholder notes",
+							"landNotes": "Agroforestry site | Placeholder notes",
 							"geojson": [
 								[
 									[
@@ -56,16 +56,16 @@
 					]
 				},
 				{
-					"project_name": "Sunnymount",
-					"project_notes": "UK restoration project",
+					"projectName": "Sunnymount",
+					"projectNotes": "UK restoration project",
 					"lands": [
 						{
-							"land_name": "Sunnymount Main",
+							"landName": "Sunnymount Main",
 							"hectares": 0.022,
 							"landHolder": null,
 							"gpsLat": 51.46057554,
 							"gpsLon": -1.26661139,
-							"land_notes": "Restoration | No description available",
+							"landNotes": "Restoration | No description available",
 							"geojson": [
 								[
 									[
