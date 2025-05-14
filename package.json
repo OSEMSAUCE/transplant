@@ -4,7 +4,14 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
+
+		"db:generate:dev": "prisma generate",
+		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
+		"db:pull:dev": "prisma db pull",
+		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
+		
 		"dev": "vite dev",
+		"dev:prod_db": "dotenv -e .env.production -- vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
