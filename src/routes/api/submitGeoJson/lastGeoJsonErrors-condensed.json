@@ -1,17 +1,7 @@
 [
-  {
-    "attribute": "land_name",
-    "value": "Latur Site 1",
-    "reason": "\nInvalid `prisma.land.create()` invocation:\n\n{\n  data: {\n    land_name: \"Latur Site 1\",\n    hectares..."
-  },
-  {
-    "attribute": "land_name",
-    "value": "Latur Site 2",
-    "reason": "\nInvalid `prisma.land.create()` invocation:\n\n{\n  data: {\n    land_name: \"Latur Site 2\",\n    hectares..."
-  },
-  {
-    "attribute": "land_name",
-    "value": "Sunnymount Main",
-    "reason": "\nInvalid `prisma.land.create()` invocation:\n\n{\n  data: {\n    land_name: \"Sunnymount Main\",\n    hecta..."
-  }
+	{
+		"attribute": "land_name",
+		"failCount": 3,
+		"reason": "\nInvalid `prisma.land.create()` invocation:\n\n{\n  data: {\n    land_name: \"Latur Site 1\",\n    hectares..."
+	}
 ]

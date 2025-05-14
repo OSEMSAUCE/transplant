@@ -104,32 +104,90 @@ async function importGeoJson(filePath) {
     }
   }
 
-  // Build condensed error summary
-  const errorSummary = Object.entries(errorMap).map(([key, { examples }]) => {
-    const [, attribute] = key.split(':');
-    return { attribute, examples };
-  });
-
-  const condensedErrors = [];
-  for (const err of errorSummary) {
-    for (const ex of err.examples) {
-      let shortReason = ex.error;
-      if (typeof shortReason === 'string') {
-        if (shortReason.includes('Unique constraint failed')) {
-          shortReason = 'Unique constraint failed on ' + err.attribute;
-        } else if (shortReason.includes('not defined')) {
-          shortReason = shortReason.split('\n').pop() || shortReason;
-        } else if (shortReason.length > 100) {
-          shortReason = shortReason.slice(0, 100) + '...';
+  // Build nested error summary matching the structure of the input
+  function getLandStatus(landName) {
+    // Find land_name error for this land
+    const landErr = Object.entries(errorMap).find(([key, val]) => key.endsWith(':land_name') && val.examples.some(e => e.value === landName));
+    if (landErr) {
+      let reason = landErr[1].examples.find(e => e.value === landName)?.error || 'Failed';
+      if (typeof reason === 'string') {
+        if (reason.includes('Unique constraint failed')) {
+          reason = 'Unique constraint failed on land_name';
+        } else if (reason.length > 100) {
+          reason = reason.slice(0, 100) + '...';
         }
       }
-      condensedErrors.push({
-        attribute: err.attribute,
-        value: ex.value,
-        reason: shortReason
-      });
+      return { status: 'fail', reason };
     }
+    return { status: 'ok', reason: null };
   }
+
+  function getProjectStatus(projectName, lands) {
+    // If any land failed, project is partial fail
+    const anyFail = lands.some(l => l.status === 'fail');
+    return { status: anyFail ? 'fail' : 'ok', reason: anyFail ? 'One or more lands failed' : null };
+  }
+
+  function getOrgStatus(orgName, projects) {
+    const anyFail = projects.some(p => p.status === 'fail');
+    return { status: anyFail ? 'fail' : 'ok', reason: anyFail ? 'One or more projects failed' : null };
+  }
+
+  const nestedSummary = geoJsonData.organizations.map(org => {
+    const projects = org.projects.map(proj => {
+      const lands = proj.lands.map(land => {
+        const { status, reason } = getLandStatus(land.land_name);
+        return {
+          land_name: land.land_name,
+          status,
+          reason
+        };
+      });
+      const { status, reason } = getProjectStatus(proj.project_name, lands);
+      return {
+        project_name: proj.project_name,
+        status,
+        reason,
+        lands
+      };
+    });
+    const { status, reason } = getOrgStatus(org.organization_name, projects);
+    return {
+      organization_name: org.organization_name,
+      status,
+      reason,
+      projects
+    };
+  });
+
+  const nestedFilePath = path.join(process.cwd(), 'src/routes/api/submitGeoJson/lastGeoJsonErrors-nested.json');
+  try {
+    fs.writeFileSync(nestedFilePath, JSON.stringify(nestedSummary, null, 2), 'utf8');
+    console.log(`Nested error summary written to ${nestedFilePath}`);
+  } catch (e) {
+    console.error('Failed to write nested error summary file:', e);
+  }
+
+  // ... (existing condensed summary code below remains unchanged)
+  const condensedErrors = Object.entries(errorMap).map(([key, { count, examples }]) => {
+    const [, attribute] = key.split(':');
+    let shortReason = examples[0]?.error || 'Unknown error';
+    if (typeof shortReason === 'string') {
+      if (shortReason.includes('Unique constraint failed')) {
+        shortReason = 'Unique constraint failed on ' + attribute;
+      } else if (shortReason.includes('not defined')) {
+        shortReason = shortReason.split('\n').pop() || shortReason;
+      } else if (shortReason.length > 100) {
+        shortReason = shortReason.slice(0, 100) + '...';
+      }
+    }
+    return {
+      attribute,
+      failCount: count,
+      reason: shortReason
+    };
+  });
+
   const condensedFilePath = path.join(process.cwd(), 'src/routes/api/submitGeoJson/lastGeoJsonErrors-condensed.json');
   try {
     fs.writeFileSync(condensedFilePath, JSON.stringify(condensedErrors, null, 2), 'utf8');
@@ -144,7 +202,7 @@ async function importGeoJson(filePath) {
   } else {
     console.log(`GeoJSON import complete! Success count: ${successCount}. Errors:`);
     for (const err of condensedErrors) {
-      console.log(`- [${err.attribute}] ${err.value}: ${err.reason}`);
+      console.log(`- [${err.attribute}] (${err.failCount}): ${err.reason}`);
     }
   }
   await prisma.$disconnect();
