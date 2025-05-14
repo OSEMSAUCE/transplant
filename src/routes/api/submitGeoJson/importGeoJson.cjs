@@ -132,30 +132,33 @@ async function importGeoJson() {
                 
                 if (projectOk) {
                   try {
-                    // Check if land exists first
-                    landObj = await prisma.land.findFirst({
-                      where: { landName: landItem.land_name }
+                    // TEMPORARILY SKIP duplicate check to show actual errors
+                    console.log(`Attempting to create land: ${landItem.land_name}`);
+                    
+                    // Try to create the land record directly (will show actual errors)
+                    landObj = await prisma.land.create({
+                      data: {
+                        land_name: landItem.land_name,
+                        hectares: landItem.hectares,
+                        landHolder: landItem.landHolder,
+                        gpsLat: landItem.gpsLat,
+                        gpsLon: landItem.gpsLon,
+                        land_notes: landItem.land_notes
+                      }
                     });
                     
-                    if (!landObj) {
-                      landObj = await prisma.land.create({
-                        data: {
-                          land_name: landItem.land_name,
-                          hectares: landItem.hectares,
-                          landHolder: landItem.landHolder,
-                          gpsLat: landItem.gpsLat,
-                          gpsLon: landItem.gpsLon,
-                          land_notes: landItem.land_notes
-                        }
-                      });
-                    } else {
-                      // Land already exists - count as duplicate but don't fail
-                      landDuplicate++;
-                    }
+                    console.log(`Successfully created land: ${landItem.land_name}`);
                   } catch (e) {
                     landFail++;
                     landReason = getPrismaErrorDetails(e);
                     landOk = false;
+                    
+                    // Log the actual error to the console
+                    console.error(`\n\nERROR CREATING LAND: ${landItem.land_name}`);
+                    console.error(`ERROR TYPE: ${e.code || 'Unknown'}`);
+                    console.error(`ERROR MESSAGE: ${e.message}`);
+                    console.error('FULL ERROR:', e);
+                    console.error('\n');
                   }
                 } else {
                   landFail++;
@@ -192,11 +195,26 @@ async function importGeoJson() {
               
               // Add land summary if there were failures or duplicates
               if (landFail > 0 || landDuplicate > 0) {
-                entitySummary['land'] = { 
-                  failCount: landFail,
-                  duplicateCount: landDuplicate,
-                  reason: landReason || (landDuplicate > 0 ? 'Some land entries already exist in the database' : '')
-                };
+                // Track specific errors for lands
+                if (!entitySummary['land']) {
+                  entitySummary['land'] = { 
+                    failCount: landFail,
+                    duplicateCount: landDuplicate,
+                    reason: landReason || (landDuplicate > 0 ? 'Some land entries already exist in the database' : ''),
+                    errors: [] // Array to store specific errors
+                  };
+                }
+                
+                // Add specific error details if there were failures
+                if (landFail > 0 && landReason) {
+                  // Only add the error if it's not already in the list
+                  const errorExists = entitySummary['land'].errors.some(e => e.error === landReason);
+                  if (!errorExists) {
+                    entitySummary['land'].errors.push({
+                      error: landReason
+                    });
+                  }
+                }
                 
                 // If all lands failed, add polygon skipped info
                 if (landFail === landCount) {
@@ -211,11 +229,29 @@ async function importGeoJson() {
           
           // Add project summary if there were failures or duplicates
           if (projectFail > 0 || projectDuplicate > 0) {
-            entitySummary['project'] = { 
-              failCount: projectFail,
-              duplicateCount: projectDuplicate,
-              reason: projectReason || (projectDuplicate > 0 ? 'Some project entries already exist in the database' : '')
-            };
+            if (!entitySummary['project']) {
+              entitySummary['project'] = { 
+                failCount: projectFail,
+                duplicateCount: projectDuplicate,
+                reason: projectReason || (projectDuplicate > 0 ? 'Some project entries already exist in the database' : ''),
+                errors: [] // Array to store specific errors
+              };
+            } else {
+              // Update counts
+              entitySummary['project'].failCount += projectFail;
+              entitySummary['project'].duplicateCount += projectDuplicate;
+            }
+            
+            // Add specific error details if there were failures
+            if (projectFail > 0 && projectReason) {
+              // Only add the error if it's not already in the list
+              const errorExists = entitySummary['project'].errors.some(e => e.error === projectReason);
+              if (!errorExists) {
+                entitySummary['project'].errors.push({
+                  error: projectReason
+                });
+              }
+            }
           }
         }
       }
@@ -225,8 +261,16 @@ async function importGeoJson() {
         entitySummary['organization'] = { 
           failCount: orgFail,
           duplicateCount: orgDuplicate,
-          reason: orgReason || (orgDuplicate > 0 ? 'Some organization entries already exist in the database' : '')
+          reason: orgReason || (orgDuplicate > 0 ? 'Some organization entries already exist in the database' : ''),
+          errors: [] // Array to store specific errors
         };
+        
+        // Add specific error details if there were failures
+        if (orgFail > 0 && orgReason) {
+          entitySummary['organization'].errors.push({
+            error: orgReason
+          });
+        }
       }
     } else {
       throw new Error('Invalid GeoJSON format: missing organizations array');
