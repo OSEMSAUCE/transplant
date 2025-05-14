@@ -30,8 +30,8 @@ export async function POST({ request }) {
 		// Create land entries
 		for (const landItem of data.land) {
 			// Convert hectares to a string first to ensure it's serializable
-			const hectaresValue = landItem.hectares 
-				? parseFloat(String(landItem.hectares).replace(',', '.')) 
+			const hectaresValue = landItem.hectares
+				? parseFloat(String(landItem.hectares).replace(',', '.'))
 				: null;
 
 			await prisma.land.create({
@@ -82,22 +82,28 @@ export async function POST({ request }) {
 			}
 		}
 
-		return new Response(safeSerialize({ 
-			status: 'ok', 
-			message: 'Data successfully saved to database',
-			projectId: project.projectId
-		}), {
-			headers: { 'Content-Type': 'application/json' }
-		});
+		return new Response(
+			safeSerialize({
+				status: 'ok',
+				message: 'Data successfully saved to database',
+				projectId: project.projectId
+			}),
+			{
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
 	} catch (error) {
 		console.error('Error saving data to database:', error);
-		return new Response(safeSerialize({ 
-			status: 'error', 
-			message: 'Failed to save data to database', 
-			error: error instanceof Error ? error.message : String(error)
-		}), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' }
-		});
+		return new Response(
+			safeSerialize({
+				status: 'error',
+				message: 'Failed to save data to database',
+				error: error instanceof Error ? error.message : String(error)
+			}),
+			{
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		);
 	}
 }
