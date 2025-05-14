@@ -20,7 +20,9 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
         const issues = [];
         const polygonsCreated = [];
         const landsCreated = [];
-        
+        const errorMap: Record<string, { count: number; examples: any[] }> = {};
+        let successCount = 0;
+
         // Process each organization
         for (const org of geoJsonData.organizations) {
             // Create or find the organization
@@ -77,37 +79,42 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
                         });
                     
                         // Create the land entry
-                        const land = await prisma.land.create({
-                            data: {
-                                landName: landItem.land_name,
-                                hectares: landItem.hectares ? parseFloat(String(landItem.hectares)) : null,
-                                landHolder: landItem.landHolder,
-                                polygonId: polygon.polygonId,
-                                projectId: project.projectId,
-                                gpsLat: landItem.gpsLat ? parseFloat(String(landItem.gpsLat)) : null,
-                                gpsLon: landItem.gpsLon ? parseFloat(String(landItem.gpsLon)) : null,
-                                landNotes: landItem.land_notes
-                            }
-                        });
-                        
-                        landsCreated.push({
-                            landId: land.landId,
-                            landName: land.landName,
-                            polygonId: polygon.polygonId
-                        });
+                        try {
+                            const land = await prisma.land.create({
+                                data: {
+                                    landName: landItem.land_name,
+                                    hectares: landItem.hectares ? parseFloat(String(landItem.hectares)) : null,
+                                    landHolder: landItem.landHolder,
+                                    polygonId: polygon.polygonId,
+                                    projectId: project.projectId,
+                                    gpsLat: landItem.gpsLat ? parseFloat(String(landItem.gpsLat)) : null,
+                                    gpsLon: landItem.gpsLon ? parseFloat(String(landItem.gpsLon)) : null,
+                                    landNotes: landItem.land_notes
+                                }
+                            });
+                            
+                            landsCreated.push({
+                                landId: land.landId,
+                                landName: land.landName,
+                                polygonId: polygon.polygonId
+                            });
+                            
+                            successCount++;
+                        } catch (e: any) {
+                            logError(errorMap, 'db_error', 'land_name', landItem.land_name, e.message || String(e));
+                        }
                     
                         // Update the polygon with the land reference
-                        await prisma.polygons.update({
-                            where: { polygonId: polygon.polygonId },
-                            data: { land_id: land.landId }
-                        });
+                        try {
+                            await prisma.polygons.update({
+                                where: { polygonId: polygon.polygonId },
+                                data: { land_id: land.landId }
+                            });
+                        } catch (e: any) {
+                            logError(errorMap, 'db_error', 'polygon_id', polygon.polygonId, e.message || String(e));
+                        }
                     } catch (error) {
-                        issues.push({
-                            type: 'polygon_creation_failed',
-                            landName: landItem.land_name,
-                            projectName: proj.project_name,
-                            error: error instanceof Error ? error.message : String(error)
-                        });
+                        logError(errorMap, 'polygon_creation_failed', 'land_name', landItem.land_name, error instanceof Error ? error.message : String(error));
                     }
                 }
                 
@@ -132,11 +139,7 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
                     landName: polygon.landName
                 });
             } catch (error) {
-                issues.push({
-                    type: 'verification_failed',
-                    polygonId: polygon.polygonId,
-                    error: error instanceof Error ? error.message : String(error)
-                });
+                logError(errorMap, 'verification_failed', 'polygon_id', polygon.polygonId, error instanceof Error ? error.message : String(error));
             }
         }
         
@@ -153,17 +156,39 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
             }
         }
         
+        // Build error summary for response
+        const errorSummary = Object.entries(errorMap).map(([key, { count, examples }]) => {
+            const [type, attribute] = key.split(':');
+            return { type, attribute, count, examples };
+        });
+
+        // Write error summary and issues to a file for user review
+        const errorFilePath = path.join(process.cwd(), 'src/routes/api/submitGeoJson/lastGeoJsonErrors.json');
+        const errorFileContent = JSON.stringify({
+            timestamp: new Date().toISOString(),
+            successCount,
+            errorSummary,
+            issues
+        }, null, 2);
+        try {
+            fs.writeFileSync(errorFilePath, errorFileContent, 'utf8');
+        } catch (fileErr) {
+            console.error('Failed to write error summary file:', fileErr);
+        }
+        
         return {
-            status: issues.length > 0 ? 'partial' : 'ok',
-            message: issues.length > 0 
-                ? `GeoJSON data imported with ${issues.length} issues` 
+            status: issues.length > 0 || Object.keys(errorMap).length > 0 ? 'partial' : 'ok',
+            message: issues.length > 0 || Object.keys(errorMap).length > 0 
+                ? `GeoJSON data imported with ${issues.length + Object.keys(errorMap).length} issues` 
                 : 'GeoJSON data successfully imported',
             results,
             details: {
                 polygonsCreated,
                 landsCreated,
                 verificationResults,
-                issues
+                issues,
+                errorSummary,
+                successCount
             }
         };
     } catch (error) {
@@ -189,6 +214,17 @@ const safeSerialize = (data: any) => {
         return value;
     });
 };
+
+// Helper for smart error aggregation
+const MAX_ERROR_EXAMPLES = 10;
+function logError(errorMap: Record<string, { count: number; examples: any[] }>, type: string, attribute: string, value: any, error: string) {
+  const key = `${type}:${attribute}`;
+  if (!errorMap[key]) errorMap[key] = { count: 0, examples: [] };
+  errorMap[key].count++;
+  if (errorMap[key].examples.length < MAX_ERROR_EXAMPLES) {
+    errorMap[key].examples.push({ value, error });
+  }
+}
 
 export async function POST({ request }) {
     try {

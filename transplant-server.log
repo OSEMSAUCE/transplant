@@ -1,0 +1,11 @@
+
+> transplant@0.0.1 dev
+> vite dev
+
+Port 5173 is in use, trying another one...
+
+  VITE v6.2.0  ready in 553 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
