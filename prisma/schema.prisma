@@ -128,19 +128,22 @@ model Species {
   @@map("Species")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model StakeholderTypes {
-  stakeholderType String    @id
-  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt    DateTime? @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  deleted         Boolean?  @default(false)
+  stakeholderType   String
+  createdAt         DateTime? @default(now()) @db.Timestamptz(6)
+  lastEditedAt      DateTime? @default(now()) @db.Timestamptz(6)
+  deleted           Boolean?  @default(false)
+  stakeholderTypeId String?
 
   @@map("StakeholderTypes")
+  @@ignore
 }
 
 model Csvobj {
-  csvobjId  String     @id @default(dbgenerated("gen_random_uuid()")) @map("csvobj_id") @db.Uuid
-  jsonData  Json       @map("json_data")
-  createdAt DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  csvobjId  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jsonData  Json
+  createdAt DateTime?  @default(now()) @db.Timestamp(6)
   Crop      Crop[]
   Land      Land[]
   Projects  Projects[]
@@ -150,11 +153,11 @@ model Csvobj {
 }
 
 model Metadata {
-  metadataId String    @id @default(dbgenerated("gen_random_uuid()")) @map("metadata_id") @db.Uuid
-  csvobjId   String    @map("csvobj_id") @db.Uuid
-  csvKey     String    @map("csv_key")
-  dbKey      String    @map("db_key")
-  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  metadataId String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  csvobjId   String    @db.Uuid
+  csvKey     String
+  dbKey      String
+  createdAt  DateTime? @default(now()) @db.Timestamp(6)
   csvobj     Csvobj    @relation(fields: [csvobjId], references: [csvobjId], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("metadata")
