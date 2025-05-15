@@ -18,8 +18,9 @@
 							"gpsLat": 18.08082383,
 							"gpsLon": 76.59145856,
 							"landNotes": "Sustainable Land Management | No description available",
-							"geojson": [
-								[
+							"polygon": {
+								"type": "Polygon",
+								"coordinates": [
 									[
 										[76.59145856, 18.08082383],
 										[76.59143297, 18.08004135],
@@ -30,7 +31,7 @@
 										[76.59145856, 18.08082383]
 									]
 								]
-							]
+							}
 						},
 						{
 							"landName": "Latur Site 2",
@@ -39,8 +40,9 @@
 							"gpsLat": 18.08123456,
 							"gpsLon": 76.59234567,
 							"landNotes": "Agroforestry site | Placeholder notes",
-							"geojson": [
-								[
+							"polygon": {
+								"type": "Polygon",
+								"coordinates": [
 									[
 										[76.59234567, 18.08123456],
 										[76.59256789, 18.08104567],
@@ -51,7 +53,7 @@
 										[76.59234567, 18.08123456]
 									]
 								]
-							]
+							}
 						}
 					]
 				},
@@ -66,8 +68,9 @@
 							"gpsLat": 51.46057554,
 							"gpsLon": -1.26661139,
 							"landNotes": "Restoration | No description available",
-							"geojson": [
-								[
+							"polygon": {
+								"type": "Polygon",
+								"coordinates": [
 									[
 										[-1.26661139, 51.46057554],
 										[-1.2666257, 51.46042848],
@@ -76,7 +79,7 @@
 										[-1.26661139, 51.46057554]
 									]
 								]
-							]
+							}
 						}
 					]
 				}

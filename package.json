@@ -4,14 +4,16 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-
 		"db:generate:dev": "prisma generate",
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
-		"db:pull:dev": "prisma db pull",
+		"db:pull:dev": "dotenv -e .env.dev -- prisma db pull",
 		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
-		
 		"dev": "vite dev",
 		"dev:prod_db": "dotenv -e .env.production -- vite dev",
+		"import:dev": "dotenv -e .env.dev -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
+		"import:prod": "dotenv -e .env.production -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
+		"migrate:dev": "dotenv -e .env.dev -- prisma migrate dev",
+		
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -27,6 +29,7 @@
 		"@sveltejs/kit": "^2.17.2",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0-next.0",
 		"@types/papaparse": "^5.3.15",
+		"dotenv-cli": "^8.0.0",
 		"esbuild": "^0.25.0",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",

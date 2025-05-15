@@ -28,7 +28,10 @@ export default [
 				HTMLElement: true,
 				HTMLInputElement: true,
 				File: true,
-				sessionStorage: true
+				sessionStorage: true,
+				console: true,
+				process: true
+
 			}
 		},
 
