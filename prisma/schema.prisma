@@ -8,43 +8,40 @@ datasource db {
 }
 
 model Projects {
-  projectId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   projectName  String?
   projectNotes String?
-  createdAt    DateTime?      @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt DateTime?      @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  editedBy     String?        @map("edited_by") @db.Uuid
-  deleted      Boolean?       @default(false)
-  csvobjId     String?        @db.Uuid
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  lastEditedAt DateTime? @default(now()) @db.Timestamptz(6)
+  editedBy     String?   @db.Uuid
+  deleted      Boolean?  @default(false)
+  csvobjId     String?   @db.Uuid
   Crop         Crop[]
   Land         Land[]
-  csvobj       Csvobj?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
-  stakeholders Stakeholders[]
+  csvobj       Csvobj?   @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
 
   @@map("Projects")
 }
 
 model Land {
-  landId           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landName         String            @unique(map: "unique_land_name")
-  projectId        String?           @db.Uuid
-  hectares         Decimal?          @db.Decimal
-  landHolder       String?
-  gpsLat           Decimal?          @db.Decimal
-  gpsLon           Decimal?          @db.Decimal
-  landNotes        String?
-  createdAt        DateTime?         @default(now()) @db.Timestamptz(6)
-  lastEditedAt     DateTime?         @default(now()) @db.Timestamptz(6)
-  editedBy         String?           @db.Uuid
-  deleted          Boolean?          @default(false)
-  preparation      Preparation?
-  preparationId    BigInt?
-  csvobjId         String?           @db.Uuid
-  polygon          Json?
-  csvobj           Csvobj?           @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
-  PreparationTypes PreparationTypes? @relation(fields: [preparationId], references: [preparationId], onDelete: NoAction, onUpdate: NoAction)
-  Projects         Projects?         @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
-  Planting         Planting[]
+  landId       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landName     String       @unique(map: "unique_land_name")
+  projectId    String?      @db.Uuid
+  hectares     Decimal?     @db.Decimal
+  landHolder   String?
+  gpsLat       Decimal?     @db.Decimal
+  gpsLon       Decimal?     @db.Decimal
+  landNotes    String?
+  createdAt    DateTime?    @default(now()) @db.Timestamptz(6)
+  lastEditedAt DateTime?    @default(now()) @db.Timestamptz(6)
+  editedBy     String?      @db.Uuid
+  deleted      Boolean?     @default(false)
+  preparation  Preparation?
+  csvobjId     String?      @db.Uuid
+  polygon      Json?
+  csvobj       Csvobj?      @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
+  Projects     Projects?    @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
+  Planting     Planting[]
 
   @@unique([projectId, landName], map: "unique_land_name_per_project")
   @@index([projectId], map: "idx_land_project_id")
@@ -58,8 +55,8 @@ model Crop {
   seedInfo       String?
   cropStock      String?
   createdAt      DateTime?      @default(now()) @db.Timestamptz(6)
-  lastEditedAt   DateTime?      @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  editedBy       String?        @map("edited_by") @db.Uuid
+  lastEditedAt   DateTime?      @default(now()) @db.Timestamptz(6)
+  editedBy       String?        @db.Uuid
   deleted        Boolean?       @default(false)
   projectId      String?        @db.Uuid
   organizationId String?        @db.Uuid
@@ -96,78 +93,46 @@ model Planting {
 }
 
 model Organizations {
-  organizationId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationName  String         @unique(map: "unique_organization_name")
+  organizationId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationName  String    @unique(map: "unique_organization_name")
   contactName       String?
   contactEmail      String?
-  contactPhone      String?        @map("contact_phone")
+  contactPhone      String?
   address           String?
   website           String?
   organizationNotes String?
-  createdAt         DateTime?      @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt      DateTime?      @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  editedBy          String?        @map("edited_by") @db.Uuid
-  deleted           Boolean?       @default(false)
-  isNursery         Boolean?       @default(false) @map("is_nursery")
+  createdAt         DateTime? @default(now()) @db.Timestamptz(6)
+  lastEditedAt      DateTime? @default(now()) @db.Timestamptz(6)
+  editedBy          String?   @db.Uuid
+  deleted           Boolean?  @default(false)
   gpsLat            Float?
   gpsLon            Float?
   Crop              Crop[]
-  stakeholders      Stakeholders[]
 
   @@map("Organizations")
 }
 
 model Species {
-  speciesId      String    @id @default(uuid()) @map("species_id") @db.Uuid
-  commonName     String    @unique(map: "unique_common_name") @map("common_name")
-  scientificName String?   @map("scientific_name")
+  speciesId      String    @id @db.Uuid
+  commonName     String    @unique(map: "unique_common_name")
+  scientificName String?
   type           String?
   family         String?
   reference      String?
-  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt   DateTime? @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  editedBy       String?   @map("edited_by") @db.Uuid
+  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
+  lastEditedAt   DateTime? @default(now()) @db.Timestamptz(6)
+  editedBy       String?   @db.Uuid
   deleted        Boolean?  @default(false)
   Crop           Crop[]
 
   @@map("Species")
 }
 
-model PreparationTypes {
-  notes         String?
-  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt  DateTime? @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  deleted       Boolean?  @default(false)
-  preparationId BigInt    @id @default(autoincrement()) @map("preparation_id")
-  Land          Land[]
-
-  @@map("PreparationTypes")
-}
-
-model Stakeholders {
-  stakeholderId      String            @id @default(dbgenerated("gen_random_uuid()")) @map("stakeholder_id") @db.Uuid
-  projectId          String?           @map("project_id") @db.Uuid
-  organizationId     String?           @map("organization_id") @db.Uuid
-  stakeholderTypeId  String?           @map("stakeholder_type_id") @db.Uuid
-  contributionAmount Decimal?          @map("contribution_amount") @db.Decimal
-  stakeNotes         String?           @map("stake_notes")
-  createdAt          DateTime?         @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt       DateTime?         @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  deleted            Boolean?          @default(false)
-  organization       Organizations?    @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction)
-  project            Projects?         @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
-  stakeholderType    StakeholderTypes? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: NoAction, onUpdate: NoAction)
-
-  @@map("Stakeholders")
-}
-
 model StakeholderTypes {
-  stakeholderTypeId   String         @id @default(uuid()) @map("stakeholder_type_id") @db.Uuid
-  stakeholderTypeName String?        @map("stakeholder_type_name")
-  createdAt           DateTime?      @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastEditedAt        DateTime?      @default(now()) @map("last_edited_at") @db.Timestamptz(6)
-  deleted             Boolean?       @default(false)
-  stakeholders        Stakeholders[]
+  stakeholderType String    @id
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastEditedAt    DateTime? @default(now()) @map("last_edited_at") @db.Timestamptz(6)
+  deleted         Boolean?  @default(false)
 
   @@map("StakeholderTypes")
 }
@@ -202,17 +167,4 @@ enum Preparation {
   burned
   grass_seed @map("grass seed")
   landscaped
-}
-
-enum StakeholderTypeName {
-	planting_contractor
-	federal_gov_nursery
-	project_developer
-	sponsor
-	state_prov_gov
-	auditor
-	local_gov
-	marketplace
-	land_holder
-	other_contractor
 }
