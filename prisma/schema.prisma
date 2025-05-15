@@ -203,3 +203,16 @@ enum Preparation {
   grass_seed @map("grass seed")
   landscaped
 }
+
+enum StakeholderTypeName {
+	planting_contractor
+	federal_gov_nursery
+	project_developer
+	sponsor
+	state_prov_gov
+	auditor
+	local_gov
+	marketplace
+	land_holder
+	other_contractor
+}
