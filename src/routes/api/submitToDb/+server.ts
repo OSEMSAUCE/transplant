@@ -20,9 +20,13 @@ export async function POST({ request }) {
 
 	try {
 		// Create a new project
-		const project = await prisma.projects.create({
-			data: {
+		const project = await prisma.projects.upsert({
+			where: { projectName: data.projectName },
+			create: {
 				projectName: data.projectName,
+				projectNotes: data.projectNotes
+			},
+			update: {
 				projectNotes: data.projectNotes
 			}
 		});

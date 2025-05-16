@@ -9,7 +9,7 @@ datasource db {
 
 model Projects {
   projectId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectName  String?
+  projectName  String         @unique(map: "unique_project_name")
   projectNotes String?
   createdAt    DateTime?      @default(now()) @db.Timestamptz(6)
   lastEditedAt DateTime?      @default(now()) @db.Timestamptz(6)
