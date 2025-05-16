@@ -89,7 +89,7 @@ model Planting {
   Crop          Crop?     @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction)
   Land          Land?     @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction)
 
-  @@unique([landId, cropId], map: "planting_land_crop_unique")
+  @@unique([landId, cropId], map: "unique_land_crop")
   @@index([cropId], map: "idx_planting_crop_id")
   @@map("Planting")
 }

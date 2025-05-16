@@ -1,3 +1,4 @@
+// import { Planting } from './../../../../node_modules/.prisma/client/index.d';
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 
@@ -38,23 +39,46 @@ export async function POST({ request }) {
 				? parseFloat(String(landItem.hectares).replace(',', '.'))
 				: null;
 
-			await prisma.land.create({
-				data: {
+			await prisma.land.upsert({
+				where: { landName: landItem.landName, projectId: project.projectId },
+				create: {
+					landName: landItem.landName,
+					hectares: hectaresValue || null,
+					landHolder: landItem.landHolder || null,
+					gpsLat: landItem.gpsLat || null,
+					gpsLon: landItem.gpsLon || null,
+					// polygon: landItem.polygonId || null,
+					landNotes: landItem.landNotes || null
+				},
+				update: {
 					landName: landItem.landName,
 					hectares: hectaresValue,
-					landHolder: landItem.landHolder || null,
-					polygon: landItem.polygonId || null,
-					projectId: project.projectId
+					landHolder: landItem.landHolder,
+					// polygon: landItem.polygonId,
+					gpsLat: landItem.gpsLat,
+					gpsLon: landItem.gpsLon,
+					landNotes: landItem.landNotes
 				}
 			});
 		}
 
 		// Create crop entries
 		for (const cropItem of data.crops) {
-			await prisma.crop.create({
-				data: {
+			await prisma.crop.upsert({
+				where: { cropName: cropItem.cropName, projectId: project.projectId },
+				create: {
 					cropName: cropItem.cropName,
-					projectId: project.projectId
+					speciesId: cropItem.speciesId,
+					seedInfo: cropItem.seed_info,
+					cropStock: cropItem.cropStock,
+					cropNotes: cropItem.cropNotes
+				},
+				update: {
+					cropName: cropItem.cropName,
+					speciesId: cropItem.speciesId,
+					seedInfo: cropItem.seed_info,
+					cropStock: cropItem.cropStock,
+					cropNotes: cropItem.cropNotes
 				}
 			});
 		}
