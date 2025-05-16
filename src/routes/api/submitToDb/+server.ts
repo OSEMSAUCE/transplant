@@ -39,7 +39,7 @@ export async function POST({ request }) {
 					landName: landItem.landName,
 					hectares: hectaresValue,
 					landHolder: landItem.landHolder || null,
-					polygonId: landItem.polygonId || null,
+					polygon: landItem.polygonId || null,
 					projectId: project.projectId
 				}
 			});
