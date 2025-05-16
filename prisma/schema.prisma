@@ -140,7 +140,6 @@ model StakeholderTypes {
   Stakeholders      Stakeholders[]
 
   @@map("StakeholderTypes")
-  @@ignore
 }
 
 model Csvobj {
@@ -174,10 +173,12 @@ model Stakeholders {
   projectId           String           @db.Uuid
   organizationName    String?
   stakeholderTypeName String?
+  projectName         String?
   Organizations       Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction)
   Projects            Projects         @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: NoAction)
   StakeholderTypes    StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction)
 
+  @@unique([organizationId, stakeholderTypeId, projectId], map: "unique_org_type_project")
   @@index([organizationId], map: "idx_organizationid")
   @@index([projectId], map: "idx_projectid")
   @@index([stakeholderTypeId], map: "idx_stakeholdertypeid")
