@@ -8,17 +8,18 @@ datasource db {
 }
 
 model Projects {
-  projectId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   projectName  String?
   projectNotes String?
-  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
-  lastEditedAt DateTime? @default(now()) @db.Timestamptz(6)
-  editedBy     String?   @db.Uuid
-  deleted      Boolean?  @default(false)
-  csvobjId     String?   @db.Uuid
+  createdAt    DateTime?      @default(now()) @db.Timestamptz(6)
+  lastEditedAt DateTime?      @default(now()) @db.Timestamptz(6)
+  editedBy     String?        @db.Uuid
+  deleted      Boolean?       @default(false)
+  csvobjId     String?        @db.Uuid
   Crop         Crop[]
   Land         Land[]
-  csvobj       Csvobj?   @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
+  csvobj       Csvobj?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
+  Stakeholders Stakeholders[]
 
   @@map("Projects")
 }
@@ -93,21 +94,22 @@ model Planting {
 }
 
 model Organizations {
-  organizationId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationName  String    @unique(map: "unique_organization_name")
+  organizationId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationName  String         @unique(map: "unique_organization_name")
   contactName       String?
   contactEmail      String?
   contactPhone      String?
   address           String?
   website           String?
   organizationNotes String?
-  createdAt         DateTime? @default(now()) @db.Timestamptz(6)
-  lastEditedAt      DateTime? @default(now()) @db.Timestamptz(6)
-  editedBy          String?   @db.Uuid
-  deleted           Boolean?  @default(false)
+  createdAt         DateTime?      @default(now()) @db.Timestamptz(6)
+  lastEditedAt      DateTime?      @default(now()) @db.Timestamptz(6)
+  editedBy          String?        @db.Uuid
+  deleted           Boolean?       @default(false)
   gpsLat            Float?
   gpsLon            Float?
   Crop              Crop[]
+  Stakeholders      Stakeholders[]
 
   @@map("Organizations")
 }
@@ -131,10 +133,11 @@ model Species {
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model StakeholderTypes {
   stakeholderType   String
-  createdAt         DateTime? @default(now()) @db.Timestamptz(6)
-  lastEditedAt      DateTime? @default(now()) @db.Timestamptz(6)
-  deleted           Boolean?  @default(false)
-  stakeholderTypeId String?
+  createdAt         DateTime?      @default(now()) @db.Timestamptz(6)
+  lastEditedAt      DateTime?      @default(now()) @db.Timestamptz(6)
+  deleted           Boolean?       @default(false)
+  stakeholderTypeId String         @id
+  Stakeholders      Stakeholders[]
 
   @@map("StakeholderTypes")
   @@ignore
@@ -161,6 +164,23 @@ model Metadata {
   csvobj     Csvobj    @relation(fields: [csvobjId], references: [csvobjId], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("metadata")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Stakeholders {
+  stakeholderId       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String           @db.Uuid
+  stakeholderTypeId   String
+  projectId           String           @db.Uuid
+  organizationName    String?
+  stakeholderTypeName String?
+  Organizations       Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction)
+  Projects            Projects         @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: NoAction)
+  StakeholderTypes    StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([organizationId], map: "idx_organizationid")
+  @@index([projectId], map: "idx_projectid")
+  @@index([stakeholderTypeId], map: "idx_stakeholdertypeid")
 }
 
 enum Preparation {
