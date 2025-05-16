@@ -1,4 +1,3 @@
-// import { Planting } from './../../../../node_modules/.prisma/client/index.d';
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 
@@ -101,10 +100,27 @@ export async function POST({ request }) {
 			});
 
 			if (land && crop) {
-				await prisma.planting.create({
-					data: {
+				await prisma.planting.upsert({
+					where: {
+						landId_cropId: {
+							landId: land.landId,
+							cropId: crop.cropId
+						},
+						plantingDate: plantingItem.plantingDate
+					},
+					create: {
 						landId: land.landId,
-						cropId: crop.cropId
+						cropId: crop.cropId,
+						plantingDate: plantingItem.plantingDate,
+						planted: plantingItem.planted,
+						plantingNotes: plantingItem.plantingNotes
+					},
+					update: {
+						landId: land.landId,
+						cropId: crop.cropId,
+						plantingDate: plantingItem.plantingDate,
+						planted: plantingItem.planted,
+						plantingNotes: plantingItem.plantingNotes
 					}
 				});
 			}
