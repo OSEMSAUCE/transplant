@@ -16,6 +16,7 @@ model Projects {
   editedBy     String?        @db.Uuid
   deleted      Boolean?       @default(false)
   csvobjId     String?        @db.Uuid
+  source       String?
   Crop         Crop[]
   Land         Land[]
   csvobj       Csvobj?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
@@ -182,6 +183,19 @@ model Stakeholders {
   @@index([organizationId], map: "idx_organizationid")
   @@index([projectId], map: "idx_projectid")
   @@index([stakeholderTypeId], map: "idx_stakeholdertypeid")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Nursery {
+  nurseryId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gpsLat       Float
+  gpsLon       Float
+  capacity     Int
+  nurseryNotes String?
+  tradeName    String
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  createdBy    String    @db.Uuid
+  lastEditedAt DateTime? @default(now()) @db.Timestamptz(6)
 }
 
 enum Preparation {

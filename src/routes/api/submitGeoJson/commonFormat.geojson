@@ -1,89 +1,61 @@
 {
 	"organizations": [
-		{
-			"organizationName": "Restor Organization",
-			"contactName": "John Smith",
-			"contactEmail": "john@restor.org",
-			"website": "https://restor.eco",
-			"organizationNotes": "Global restoration platform",
-			"projects": [
-				{
-					"projectName": "Latur (Maharashtra)",
-					"projectNotes": "Restoration project in Maharashtra",
-					"lands": [
-						{
-							"landName": "Latur Site 1",
-							"hectares": 0.5,
-							"landHolder": null,
-							"gpsLat": 18.08082383,
-							"gpsLon": 76.59145856,
-							"landNotes": "Sustainable Land Management | No description available",
-							"polygon": {
-								"type": "Polygon",
-								"coordinates": [
-									[
-										[76.59145856, 18.08082383],
-										[76.59143297, 18.08004135],
-										[76.59216227, 18.08004541],
-										[76.59217933, 18.08019947],
-										[76.59198314, 18.08019542],
-										[76.59200447, 18.0807022],
-										[76.59145856, 18.08082383]
-									]
-								]
-							}
-						},
-						{
-							"landName": "Latur Site 2",
-							"hectares": 1.2,
-							"landHolder": "Placeholder Owner",
-							"gpsLat": 18.08123456,
-							"gpsLon": 76.59234567,
-							"landNotes": "Agroforestry site | Placeholder notes",
-							"polygon": {
-								"type": "Polygon",
-								"coordinates": [
-									[
-										[76.59234567, 18.08123456],
-										[76.59256789, 18.08104567],
-										[76.59301234, 18.08115678],
-										[76.59312345, 18.08134567],
-										[76.59290123, 18.08153456],
-										[76.5926789, 18.08142345],
-										[76.59234567, 18.08123456]
-									]
-								]
-							}
-						}
+	  {
+		"organizationName": "Green Roots Alliance",
+		"contactName": "Alice Brown",
+		"contactEmail": "alice@greenroots.org",
+		"website": "https://greenroots.org",
+		"organizationNotes": "Non-profit focused on biodiversity and climate resilience through reforestation.",
+		"projects": [
+		  {
+			"projectName": "Mekong Delta Restoration",
+			"projectNotes": "Wetland and mangrove restoration in southern Vietnam.",
+			"source": "https://greenroots.org/projects/mekong",
+			"lands": [
+			  {
+				"landName": "Delta Zone A",
+				"hectares": 3.5,
+				"landHolder": "Mr. Tran Van Hai",
+				"gpsLat": 9.803421,
+				"gpsLon": 105.602841,
+				"landNotes": "Mangrove planting area | Subject to seasonal flooding",
+				"polygon": {
+				  "type": "Polygon",
+				  "coordinates": [
+					[
+					  [105.602841, 9.803421],
+					  [105.603111, 9.802891],
+					  [105.603689, 9.803102],
+					  [105.603421, 9.803689],
+					  [105.602991, 9.803551],
+					  [105.602841, 9.803421]
 					]
-				},
-				{
-					"projectName": "Sunnymount",
-					"projectNotes": "UK restoration project",
-					"lands": [
-						{
-							"landName": "Sunnymount Main",
-							"hectares": 0.022,
-							"landHolder": null,
-							"gpsLat": 51.46057554,
-							"gpsLon": -1.26661139,
-							"landNotes": "Restoration | No description available",
-							"polygon": {
-								"type": "Polygon",
-								"coordinates": [
-									[
-										[-1.26661139, 51.46057554],
-										[-1.2666257, 51.46042848],
-										[-1.2664147, 51.46041511],
-										[-1.26640575, 51.46053432],
-										[-1.26661139, 51.46057554]
-									]
-								]
-							}
-						}
-					]
+				  ]
 				}
+			  },
+			  {
+				"landName": "Delta Zone B",
+				"hectares": 2.1,
+				"landHolder": null,
+				"gpsLat": 9.804721,
+				"gpsLon": 105.601231,
+				"landNotes": "Community co-managed zone | Trialing native species",
+				"polygon": {
+				  "type": "Polygon",
+				  "coordinates": [
+					[
+					  [105.601231, 9.804721],
+					  [105.601899, 9.804233],
+					  [105.602012, 9.804812],
+					  [105.601455, 9.805001],
+					  [105.601231, 9.804721]
+					]
+				  ]
+				}
+			  }
 			]
-		}
+		  }
+		]
+	  }
 	]
 }

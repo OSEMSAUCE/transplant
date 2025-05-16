@@ -1,7 +1,21 @@
 {
+  "land": {
+    "failCount": 2,
+    "duplicateCount": 0,
+    "reason": "Duplicate entry: landName",
+    "errors": [
+      {
+        "error": "Duplicate entry: landName"
+      }
+    ]
+  },
+  "polygon": {
+    "skippedCount": 2,
+    "reason": "Not attempted because land creation failed"
+  },
   "project": {
     "failCount": 0,
-    "duplicateCount": 2,
+    "duplicateCount": 1,
     "reason": "Some project entries already exist in the database",
     "errors": []
   },
