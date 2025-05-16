@@ -8,7 +8,7 @@
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
 		"db:pull:dev": "dotenv -e .env.dev -- prisma db pull",
 		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
-		"dev": "vite dev",
+		"dev": "dotenv -e .env.dev -- vite dev",
 		"dev:prod_db": "dotenv -e .env.production -- vite dev",
 		"import:dev": "dotenv -e .env.dev -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
 		"import:prod": "dotenv -e .env.production -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
