@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import prisma from '$lib/server/prisma';
 import fs from 'fs';
 import path from 'path';
 

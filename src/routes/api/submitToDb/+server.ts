@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { prisma } from '$lib/server/prisma';
+import prisma from '$lib/server/prisma';
 
 export async function POST({ request }) {
 	const data = await request.json();
