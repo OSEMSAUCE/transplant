@@ -131,6 +131,10 @@
 	function dragoverHandler(ev: DragEvent) {
 		// Always prevent default to allow drop
 		ev.preventDefault();
+		// Set dropEffect to 'copy' to show a copy cursor
+		if (ev.dataTransfer) {
+			ev.dataTransfer.dropEffect = 'copy';
+		}
 	}
 
 	// Helper function to get unique values from a column
@@ -160,44 +164,71 @@
 		dbDropTable: TableColumn[],
 		dropFormat: Record<string, string>
 	) {
+		// Always prevent default to allow drop
+		ev.preventDefault();
+		
+		if (!ev.dataTransfer) return;
+		
+		// Get the dragged column index from dataTransfer
+		const draggedColumnIndex = Number(ev.dataTransfer.getData('text') || '-1');
+		if (draggedColumnIndex < 0) return; // Invalid dragged column
+		
+		// Find the drop target element (th or td) with column index
+		// Use currentTarget (the element with the event listener) instead of target (which could be a child element)
+		const dropElement = ev.currentTarget as HTMLElement;
+		if (!dropElement) return;
+		
+		// Get the column index from the drop target
+		const targetColumnIndexAttr = dropElement.dataset.columnIndex;
+		if (targetColumnIndexAttr === undefined) return; // No column index found
+		
+		const targetColumnIndex = Number(targetColumnIndexAttr);
+		if (isNaN(targetColumnIndex)) return; // Invalid column index
+		
+		// Get the target column name
+		const targetColumnName = dbDropTable[targetColumnIndex].name;
+		
+		// Don't allow dropping on view-only fields
+		if (dbDropTable[targetColumnIndex].viewOnly) {
+			// Cannot map to view-only field
+			return;
+		}
+		
+		// Get the dragged column data
+		const draggedCol = importedData.columns[draggedColumnIndex];
+		
 		// Block drop for Land table if column is not normalized
 		if (dbDropTable === landTable) {
-			const draggedColumnIndex = Number(ev.dataTransfer?.getData('text') || '-1');
-			if (draggedColumnIndex >= 0) {
-				const draggedCol = importedData.columns[draggedColumnIndex];
+			// Always allow the land column itself to be mapped to landName
+			if (targetColumnName === 'landName') {
+				// Allowing drop to landName
+			} else {
+				// For other columns in the Land table, check normalization
+				const landColIndex =
+					landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
 
-				// Always allow the land column itself to be mapped to landName
-				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
-				if (targetColumn && targetColumn.dataset.headerName === 'landName') {
-					// Allowing drop to landName
+				// If landName isn't mapped yet, don't allow drops to other columns
+				if (landColIndex === -1) {
+					// Blocked drop: landName not mapped yet
+					return;
+				}
+
+				const landCol = importedData.columns[landColIndex];
+				if (!landCol) {
+					// Blocked drop: landCol not found
+					return;
+				}
+
+				// Skip normalization check if dragging the land column itself
+				if (draggedCol.headerName === landCol.headerName) {
+					// Allowing drop of land column
 				} else {
-					// For other columns in the Land table, check normalization
-					const landColIndex =
-						landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+					// Check normalization
+					const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
 
-					// If landName isn't mapped yet, don't allow drops to other columns
-					if (landColIndex === -1) {
-						// Blocked drop: landName not mapped yet
+					if (!isNormalized) {
+						// Blocked drop: not normalized by land
 						return;
-					}
-
-					const landCol = importedData.columns[landColIndex];
-					if (!landCol) {
-						// Blocked drop: landCol not found
-						return;
-					}
-
-					// Skip normalization check if dragging the land column itself
-					if (draggedCol.headerName === landCol.headerName) {
-						// Allowing drop of land column
-					} else {
-						// Check normalization
-						const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
-
-						if (!isNormalized) {
-							// Blocked drop: not normalized by land
-							return;
-						}
 					}
 				}
 			}
@@ -205,60 +236,50 @@
 		
 		// Block drop for Crop table if column is not normalized
 		if (dbDropTable === cropTable) {
-			const draggedColumnIndex = Number(ev.dataTransfer?.getData('text') || '-1');
-			if (draggedColumnIndex >= 0) {
-				const draggedCol = importedData.columns[draggedColumnIndex];
+			// Always allow the crop column itself to be mapped to cropName
+			if (targetColumnName === 'cropName') {
+				// Allowing drop to cropName
+			} else {
+				// For other columns in the Crop table, check normalization
+				const cropColIndex =
+					cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
 
-				// Always allow the crop column itself to be mapped to cropName
-				const targetColumn = (ev.target as HTMLElement).closest('th') || (ev.target as HTMLElement).closest('td');
-				if (targetColumn && targetColumn.dataset.headerName === 'cropName') {
-					// Allowing drop to cropName
+				// If cropName isn't mapped yet, don't allow drops to other columns
+				if (cropColIndex === -1) {
+					// Blocked drop: cropName not mapped yet
+					return;
+				}
+
+				const cropCol = importedData.columns[cropColIndex];
+				if (!cropCol) {
+					// Blocked drop: cropCol not found
+					return;
+				}
+
+				// Skip normalization check if dragging the crop column itself
+				if (draggedCol.headerName === cropCol.headerName) {
+					// Allowing drop of crop column
 				} else {
-					// For other columns in the Crop table, check normalization
-					const cropColIndex =
-						cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
+					// Check normalization
+					const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
 
-					// If cropName isn't mapped yet, don't allow drops to other columns
-					if (cropColIndex === -1) {
-						// Blocked drop: cropName not mapped yet
+					if (!isNormalized) {
+						// Blocked drop: not normalized by crop
 						return;
-					}
-
-					const cropCol = importedData.columns[cropColIndex];
-					if (!cropCol) {
-						// Blocked drop: cropCol not found
-						return;
-					}
-
-					// Skip normalization check if dragging the crop column itself
-					if (draggedCol.headerName === cropCol.headerName) {
-						// Allowing drop of crop column
-					} else {
-						// Check normalization
-						const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
-
-						if (!isNormalized) {
-							// Blocked drop: not normalized by crop
-							return;
-						}
 					}
 				}
 			}
 		}
-		if (!ev.dataTransfer || !ev.target) return;
-		ev.preventDefault();
-		const draggedColumnIndex = Number(ev.dataTransfer.getData('text'));
-		const targetColumnIndex = Number((ev.target as HTMLElement).dataset.columnIndex);
-		const targetColumnName = dbDropTable[targetColumnIndex].name;
+		
+		// Check format compatibility
+		const draggedColumnFormat = draggedCol.currentFormat;
+		const targetColumnFormat = dropFormat[targetColumnName];
 
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
 			// Cannot map to view-only field
 			return;
 		}
-
-		const draggedColumnFormat = importedData.columns[draggedColumnIndex].currentFormat;
-		const targetColumnFormat = dropFormat[targetColumnName];
 		if (draggedColumnFormat !== targetColumnFormat) {
 			// Formats do not match
 			return;
