@@ -64,7 +64,12 @@ export async function POST({ request }) {
 		// Create crop entries
 		for (const cropItem of data.crops) {
 			await prisma.crop.upsert({
-				where: { cropName: cropItem.cropName, projectId: project.projectId },
+				where: { 
+					projectId_cropName: {
+						cropName: cropItem.cropName, 
+						projectId: project.projectId
+					}
+				},
 				create: {
 					cropName: cropItem.cropName,
 					speciesId: cropItem.speciesId,

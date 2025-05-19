@@ -6,6 +6,8 @@
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
 	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
 	import { submitToDB } from '$lib/transferComponents/dbButton';
+	let isSubmitting = $state(false);
+	let submitResponse = $state<{ success: boolean; error?: string; result?: any } | null>(null);
 	
 
 	const { data } = $props();
@@ -76,8 +78,26 @@
 			<button onclick={changeView}>Send to TransPlant</button>
 		{/if}
 		{#if pageIs === 'transplant'}
-			<button onclick={submitToDB}>Submit to DB</button>
+			<button 
+				onclick={async () => {
+					isSubmitting = true;
+					submitResponse = null;
+					submitResponse = await submitToDB();
+					isSubmitting = false;
+				}}
+				disabled={isSubmitting}
+			>
+				{#if isSubmitting}
+					<span class="spinner"></span>
+				{/if}
+				Submit to DB
+			</button>
 			<button onclick={changeView}>Back to Transfer</button>
+			{#if submitResponse}
+				<div class={submitResponse.success ? 'success-message' : 'error-message'}>
+					{submitResponse.success ? 'Success!' : submitResponse.error}
+				</div>
+			{/if}
 		{/if}
 	</div>
 </div>
@@ -140,3 +160,36 @@
 		)}
 	  </pre>
 {/if}
+
+<style>
+	.spinner {
+		display: inline-block;
+		width: 1rem;
+		height: 1rem;
+		margin-right: 0.5rem;
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		border-radius: 50%;
+		border-top-color: #fff;
+		animation: spin 1s ease-in-out infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+
+	.success-message {
+		background-color: #d4edda;
+		color: #155724;
+		padding: 0.5rem;
+		border-radius: 0.25rem;
+		margin-left: 0.5rem;
+	}
+
+	.error-message {
+		background-color: #f8d7da;
+		color: #721c24;
+		padding: 0.5rem;
+		border-radius: 0.25rem;
+		margin-left: 0.5rem;
+	}
+</style>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { formatGreyedStatus, importedData } from '$lib/transferComponents/modelState.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
-
+// 17 May 2025 11:21 AM
 	const {
 		columnData = [],
 		currentFormat = 'string',

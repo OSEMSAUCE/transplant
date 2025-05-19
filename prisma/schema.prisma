@@ -27,7 +27,7 @@ model Projects {
 
 model Land {
   landId       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landName     String       @unique(map: "unique_land_name")
+  landName     String
   projectId    String?      @db.Uuid
   hectares     Decimal?     @db.Decimal
   landHolder   String?
@@ -45,14 +45,14 @@ model Land {
   Projects     Projects?    @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
   Planting     Planting[]
 
-  @@unique([projectId, landName], map: "unique_land_name_per_project")
+  @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
   @@index([projectId], map: "idx_land_project_id")
   @@map("Land")
 }
 
 model Crop {
   cropId         String         @id(map: "Trees_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cropName       String         @unique(map: "unique_crop_name")
+  cropName       String
   speciesId      String?        @db.Uuid
   seedInfo       String?
   cropStock      String?
