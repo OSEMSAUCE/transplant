@@ -78,7 +78,11 @@
 		dragColumnState.headerName = null;
 		dragColumnState.currentFormat = null;
 		dragColumnState.index = null;
-	}	
+	}
+
+	function pullFirstGpsSelected() {
+		// loop through the types in teh datamodel to find the first gps type. If it's a full gps return that. if it's a lat or lon find the corresponding lat or lon and concatenate the gps.
+	}
 </script>
 
 <table class="transplant-toggle-table">
@@ -86,23 +90,27 @@
 		<tr>
 			<!-- Two new empty header columns for alignment -->
 			<th style="position: relative;">GPS</th>
-			<th style="position: relative;"></th>
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-				{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
-				{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
-				{@const isPrimaryColumn = ((landCol && column.headerName === landCol.headerName) ||
-				    (cropCol && column.headerName === cropCol.headerName))}
-				{@const isLandCompatible = !column.isMapped && !isPrimaryColumn && landCol ? 
-				    // Don't show compatibility for date columns or parcelOwnership
-				    column.currentFormat !== 'date' && 
-				    !column.headerName.toLowerCase().includes('ownership') && 
-				    isColumnNormalizedByLand(landCol.values, column.values) : false}
-				{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
-				    // Don't show compatibility for date columns, number columns, or parcelOwnership
-				    column.currentFormat !== 'date' && 
-				    column.currentFormat !== 'number' && 
-				    !column.headerName.toLowerCase().includes('ownership') && 
-				    isColumnNormalizedByLand(cropCol.values, column.values) : false}
+				{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
+				{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
+				{@const isPrimaryColumn =
+					(landCol && column.headerName === landCol.headerName) ||
+					(cropCol && column.headerName === cropCol.headerName)}
+				{@const isLandCompatible =
+					!column.isMapped && !isPrimaryColumn && landCol
+						? // Don't show compatibility for date columns or parcelOwnership
+							column.currentFormat !== 'date' &&
+							!column.headerName.toLowerCase().includes('ownership') &&
+							isColumnNormalizedByLand(landCol.values, column.values)
+						: false}
+				{@const isCropCompatible =
+					!column.isMapped && !isPrimaryColumn && cropCol
+						? // Don't show compatibility for date columns, number columns, or parcelOwnership
+							column.currentFormat !== 'date' &&
+							column.currentFormat !== 'number' &&
+							!column.headerName.toLowerCase().includes('ownership') &&
+							isColumnNormalizedByLand(cropCol.values, column.values)
+						: false}
 				<!-- Debugging logs removed -->
 				<th
 					data-header-name={column.headerName}
@@ -112,7 +120,7 @@
 					ondragend={dragEndHandler}
 					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 				>
-				<!-- Icons commented out for now, can be re-enabled for debugging
+					<!-- Icons commented out for now, can be re-enabled for debugging
 				{#if isLandCompatible}
 					<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
 				{/if}
@@ -145,25 +153,29 @@
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
+				<td style="position: relative;" {pullFirstGpsSelected}></td>
 				<!-- Two new empty data columns for alignment -->
-				<td style="position: relative;"></td>
-				<td style="position: relative;"></td>
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-					{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
-					{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
-					{@const isPrimaryColumn = ((landCol && column.headerName === landCol.headerName) ||
-					    (cropCol && column.headerName === cropCol.headerName))}
-					{@const isLandCompatible = !column.isMapped && !isPrimaryColumn && landCol ? 
-					    // Don't show compatibility for date columns or parcelOwnership
-					    column.currentFormat !== 'date' && 
-					    !column.headerName.toLowerCase().includes('ownership') && 
-					    isColumnNormalizedByLand(landCol.values, column.values) : false}
-					{@const isCropCompatible = !column.isMapped && !isPrimaryColumn && cropCol ? 
-					    // Don't show compatibility for date columns, number columns, or parcelOwnership
-					    column.currentFormat !== 'date' && 
-					    column.currentFormat !== 'number' && 
-					    !column.headerName.toLowerCase().includes('ownership') && 
-					    isColumnNormalizedByLand(cropCol.values, column.values) : false}
+					{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
+					{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
+					{@const isPrimaryColumn =
+						(landCol && column.headerName === landCol.headerName) ||
+						(cropCol && column.headerName === cropCol.headerName)}
+					{@const isLandCompatible =
+						!column.isMapped && !isPrimaryColumn && landCol
+							? // Don't show compatibility for date columns or parcelOwnership
+								column.currentFormat !== 'date' &&
+								!column.headerName.toLowerCase().includes('ownership') &&
+								isColumnNormalizedByLand(landCol.values, column.values)
+							: false}
+					{@const isCropCompatible =
+						!column.isMapped && !isPrimaryColumn && cropCol
+							? // Don't show compatibility for date columns, number columns, or parcelOwnership
+								column.currentFormat !== 'date' &&
+								column.currentFormat !== 'number' &&
+								!column.headerName.toLowerCase().includes('ownership') &&
+								isColumnNormalizedByLand(cropCol.values, column.values)
+							: false}
 					<!-- Debugging logs removed -->
 					<td
 						class:greyed-out={isTransplant

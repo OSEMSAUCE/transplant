@@ -4,7 +4,7 @@
 		onToggle: (columnHeader: string, isActive: boolean) => void;
 	}>();
 
-	// const x:string = 
+	// const x:string =
 	let isActive = $state(true);
 
 	function handleToggle() {
@@ -15,5 +15,4 @@
 
 <div class="column-toggle">
 	<input type="checkbox" checked={isActive} onchange={handleToggle} />
-
 </div>

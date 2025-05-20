@@ -110,6 +110,8 @@
 
 			{#if pageIs === 'transfer'}
 				<div class="toggle-row">
+					<!-- Empty placeholder for GPS column alignment -->
+					<div class="column-toggle" style="visibility: hidden;"></div>
 					{#each importedData.columns as column}
 						<ToggleComponent
 							columnHeader={column.headerName}
