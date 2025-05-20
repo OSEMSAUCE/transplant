@@ -56,24 +56,156 @@ export function isDate(value: any): boolean {
 	return false;
 }
 
-export function isGps(value: any): boolean {
-	if (typeof value === 'string') {
-		// const parts = value.split(',');
-		// if (parts.length === 2) {
-		// 	const lat = parts[0].trim();
-		// 	const lon = parts[1].trim();
-		// 	return isDMSFormat(lat) && isDMSFormat(lon);
-		// }
-	}
-	return false;
+export function isLatitude(val: string | number): boolean {
+    const num = typeof val === 'number' ? val : Number(val);
+    return !isNaN(num) && num >= -90 && num <= 90;
 }
-//  3 Apr 2025  8:55 AM New function
+
+export function isLongitude(val: string | number): boolean {
+    const num = typeof val === 'number' ? val : Number(val);
+    return !isNaN(num) && num >= -180 && num <= 180;
+}
+
+/**
+ * Detects if a value is a GPS point in decimal degrees (DD) format.
+ * Can detect both combined "lat,lon" strings and individual lat/lon values.
+ */
+export function isGps(value: any): boolean {
+    // Case 1: Individual latitude or longitude value
+    if (typeof value === 'number' || !isNaN(Number(value))) {
+        const num = typeof value === 'number' ? value : Number(value);
+        // We can't determine if it's lat or lon just from the value,
+        // so we check if it's in either range
+        return (num >= -90 && num <= 90) || (num >= -180 && num <= 180);
+    }
+    
+    // Case 2: Combined "lat,lon" string
+    if (typeof value === 'string') {
+        // Basic regex: optional sign, up to 3 digits, optional decimal, must have comma
+        const regex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
+        const match = value.match(regex);
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lon = parseFloat(match[2]);
+            return isLatitude(lat) && isLongitude(lon);
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Determines if a column should be treated as a GPS component (lat or lon)
+ * by checking if most values are valid lat/lon values.
+ */
+export function isGpsColumn(values: Array<string | number | null>): boolean {
+    if (!values || values.length === 0) return false;
+    
+    // Count valid lat/lon values
+    let validCount = 0;
+    let totalNonNull = 0;
+    
+    for (const val of values) {
+        if (val === null || val === undefined || val === '') continue;
+        
+        totalNonNull++;
+        if (typeof val === 'number') {
+            if (isLatitude(val) || isLongitude(val)) validCount++;
+        } else if (typeof val === 'string') {
+            const num = Number(val);
+            if (!isNaN(num) && (isLatitude(num) || isLongitude(num))) validCount++;
+        }
+    }
+    
+    // If at least 70% of non-null values are valid lat/lon values
+    return totalNonNull > 0 && (validCount / totalNonNull) >= 0.7;
+}
+
+//  3 Apr 2025  8:55 AM New function
 export function detectFormat(
 	columnData: Array<string | number | null>,
 	currentColumnHeader: string
 ): ColumnFormat {
 	console.log('Checking column format for:', currentColumnHeader);
 	// Reset detected format for new column
+	
+	// Comprehensive GPS detection - handles both individual lat/lon columns and combined "lat,lon" strings
+	
+	// Case 1: Check for individual lat/lon values
+	let individualGpsCount = 0;
+	let totalNonNull = 0;
+	let isLikelyLatitude = false;
+	let isLikelyLongitude = false;
+	const lowerHeader = currentColumnHeader.toLowerCase();
+	
+	// Use column name as a hint
+	if (lowerHeader.includes('lat')) {
+		isLikelyLatitude = true;
+	} else if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
+		isLikelyLongitude = true;
+	}
+	
+	// Count valid GPS values
+	for (const val of columnData) {
+		if (val === null || val === undefined || val === '') continue;
+		totalNonNull++;
+		
+		// Check for individual lat/lon values
+		if (typeof val === 'number' || !isNaN(Number(val))) {
+			const num = typeof val === 'number' ? val : Number(val);
+			
+			// If column name suggests it's latitude, check latitude range
+			if (isLikelyLatitude && isLatitude(num)) {
+				individualGpsCount++;
+			}
+			// If column name suggests it's longitude, check longitude range
+			else if (isLikelyLongitude && isLongitude(num)) {
+				individualGpsCount++;
+			}
+			// If we don't know which it is, accept either range
+			else if (!isLikelyLatitude && !isLikelyLongitude && (isLatitude(num) || isLongitude(num))) {
+				individualGpsCount++;
+				
+				// Try to determine if this is a latitude or longitude column
+				if (!isLikelyLatitude && !isLikelyLongitude) {
+					// If it's only in latitude range, it's likely latitude
+					if (isLatitude(num) && !isLongitude(num)) {
+						isLikelyLatitude = true;
+					}
+					// If it's only in longitude range but outside latitude range, it's likely longitude
+					else if (!isLatitude(num) && isLongitude(num)) {
+						isLikelyLongitude = true;
+					}
+				}
+			}
+		}
+		
+		// Check for combined "lat,lon" strings
+		if (typeof val === 'string' && val.includes(',')) {
+			const regex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
+			const match = val.match(regex);
+			if (match) {
+				const lat = parseFloat(match[1]);
+				const lon = parseFloat(match[2]);
+				if (isLatitude(lat) && isLongitude(lon)) {
+					individualGpsCount++;
+				}
+			}
+		}
+	}
+	
+	// If at least 70% of non-null values are valid GPS values
+	if (totalNonNull > 0 && (individualGpsCount / totalNonNull) >= 0.7) {
+		// Log helpful debug information
+		if (isLikelyLatitude) {
+			console.log(`Column ${currentColumnHeader} detected as GPS (latitude component)`);
+		} else if (isLikelyLongitude) {
+			console.log(`Column ${currentColumnHeader} detected as GPS (longitude component)`);
+		} else {
+			console.log(`Column ${currentColumnHeader} detected as GPS (combined or undetermined component)`);
+		}
+		return 'gps';
+	}
 	let selectedFormat: ColumnFormat = 'string';
 	const sampleValues = columnData
 		.filter((val: string | number | null) => val !== null && val !== '')

@@ -78,12 +78,15 @@
 		dragColumnState.headerName = null;
 		dragColumnState.currentFormat = null;
 		dragColumnState.index = null;
-	}
+	}	
 </script>
 
 <table class="transplant-toggle-table">
 	<thead>
 		<tr>
+			<!-- Two new empty header columns for alignment -->
+			<th style="position: relative;">GPS</th>
+			<th style="position: relative;"></th>
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 				{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
 				{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
@@ -142,6 +145,9 @@
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			<tr>
+				<!-- Two new empty data columns for alignment -->
+				<td style="position: relative;"></td>
+				<td style="position: relative;"></td>
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 					{@const landCol = importedData.columns.find(col => col.mappedTo?.includes('landName'))}
 					{@const cropCol = importedData.columns.find(col => col.mappedTo?.includes('cropName'))}
