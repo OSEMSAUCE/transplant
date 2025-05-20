@@ -80,8 +80,85 @@
 		dragColumnState.index = null;
 	}
 
-	function pullFirstGpsSelected() {
-		// loop through the types in teh datamodel to find the first gps type. If it's a full gps return that. if it's a lat or lon find the corresponding lat or lon and concatenate the gps.
+	function pullFirstGpsSelected(rowIndex: number) {
+		// Loop through all columns to find GPS data, regardless of toggle state
+		// First try to find a full GPS column
+		for (const column of importedData.columns) {
+			// Check if it's a GPS column and has data for this row
+			if (
+				column.currentFormat === 'gps' &&
+				column.values[rowIndex] !== null &&
+				column.values[rowIndex] !== ''
+			) {
+				return { type: 'full', value: column.values[rowIndex] };
+			}
+		}
+
+		// If no full GPS column, try to find latitude and longitude pair
+		let latValue: string | number | null = null;
+		let lonValue: string | number | null = null;
+		let latColumn = null;
+		let lonColumn = null;
+
+		// First pass: look for columns with lat/lon in the name
+		for (const column of importedData.columns) {
+			const headerLower = column.headerName.toLowerCase();
+			if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
+				// Check for latitude column
+				if (headerLower.includes('lat') && !latValue) {
+					latColumn = column;
+					latValue = column.values[rowIndex];
+				}
+				// Check for longitude column
+				else if ((headerLower.includes('lon') || headerLower.includes('lng')) && !lonValue) {
+					lonColumn = column;
+					lonValue = column.values[rowIndex];
+				}
+			}
+		}
+
+		// If we found both lat and lon values, return them
+		if (latValue !== null && lonValue !== null && latValue !== '' && lonValue !== '') {
+			return { type: 'pair', lat: latValue, lon: lonValue };
+		}
+
+		// Second pass: look for any numeric columns in the right ranges
+		if (!latValue || !lonValue) {
+			for (const column of importedData.columns) {
+				if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
+					const value = column.values[rowIndex];
+					if (value === null || value === '') continue;
+
+					// Try to convert to number
+					const numValue = typeof value === 'number' ? value : Number(value);
+					if (isNaN(numValue)) continue;
+
+					// Check if it's in latitude range (-90 to 90) but not already found
+					if (!latValue && numValue >= -90 && numValue <= 90) {
+						latValue = numValue;
+						latColumn = column;
+					}
+					// Check if it's in longitude range (-180 to 180) but outside latitude range
+					else if (
+						!lonValue &&
+						numValue >= -180 &&
+						numValue <= 180 &&
+						(numValue < -90 || numValue > 90)
+					) {
+						lonValue = numValue;
+						lonColumn = column;
+					}
+				}
+			}
+		}
+
+		// If we found both lat and lon values in the second pass, return them
+		if (latValue !== null && lonValue !== null && latValue !== '' && lonValue !== '') {
+			return { type: 'pair', lat: latValue, lon: lonValue };
+		}
+
+		// If we couldn't find GPS data, return null
+		return null;
 	}
 </script>
 
@@ -152,8 +229,22 @@
 	</thead>
 	<tbody>
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
+			{@const gpsData = pullFirstGpsSelected(rowIndex)}
 			<tr>
-				<td style="position: relative;" {pullFirstGpsSelected}></td>
+				<td style="position: relative;">
+					{#if gpsData}
+						<div class="gps-cell">
+							<span class="gps-icon">📍</span>
+							<span class="gps-coordinates">
+								{#if gpsData.type === 'full'}
+									{gpsData.value}
+								{:else if gpsData.type === 'pair'}
+									{gpsData.lat}, {gpsData.lon}
+								{/if}
+							</span>
+						</div>
+					{/if}
+				</td>
 				<!-- Two new empty data columns for alignment -->
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 					{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
@@ -211,3 +302,87 @@
 </table>
 
 <!-- Visual cues now integrated into the main styling logic -->
+<!-- <style>
+	.transplant-toggle-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 1rem;
+	}
+
+	.transplant-toggle-table th,
+	.transplant-toggle-table td {
+		border: 1px solid #ddd;
+		padding: 0.5rem;
+		text-align: left;
+	}
+
+	.transplant-toggle-table th {
+		background-color: #f2f2f2;
+		position: relative;
+	}
+
+	.column-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.header-name {
+		font-weight: bold;
+		margin-top: 0.5rem;
+	}
+
+	.greyed-out {
+		color: #aaa;
+		background-color: #f9f9f9;
+	}
+
+	.dragging {
+		opacity: 0.5;
+	}
+
+	.drag-preview {
+		position: absolute;
+		background: white;
+		border: 1px solid #ccc;
+		padding: 8px;
+		border-radius: 4px;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		z-index: 1000;
+		pointer-events: none;
+		max-width: 200px;
+		overflow: hidden;
+	}
+
+	.preview-header {
+		font-weight: bold;
+		margin-bottom: 4px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 4px;
+	}
+
+	.preview-row {
+		padding: 2px 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* GPS cell styling */
+	.gps-cell {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.5rem;
+	}
+
+	.gps-icon {
+		color: #e74c3c;
+		font-size: 1.2rem;
+	}
+
+	.gps-coordinates {
+		font-size: 0.85rem;
+		color: #333;
+	}
+</style> -->

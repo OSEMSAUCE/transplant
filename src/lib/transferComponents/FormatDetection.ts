@@ -1,6 +1,6 @@
 import type { ColumnFormat } from '../types/columnModel';
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
 
 // 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
 // Number detection with debug
@@ -57,37 +57,146 @@ export function isDate(value: any): boolean {
 }
 
 export function isLatitude(val: string | number): boolean {
-	const num = typeof val === 'number' ? val : Number(val);
-	return !isNaN(num) && num >= -90 && num <= 90;
+	if (val === null || val === undefined || val === '') return false;
+
+	// Handle numeric values
+	if (typeof val === 'number') {
+		return val >= -90 && val <= 90;
+	}
+
+	// Handle string values that are numeric
+	if (typeof val === 'string') {
+		// Try to parse as decimal degrees
+		const num = Number(val);
+		if (!isNaN(num)) {
+			return num >= -90 && num <= 90;
+		}
+
+		// Try to parse as DMS format
+		if (val.includes('°') || val.includes("'") || val.includes('"') || /[NSns]/.test(val)) {
+			const dd = parseDMS(val);
+			if (dd !== null) {
+				return dd >= -90 && dd <= 90;
+			}
+		}
+	}
+
+	return false;
 }
 
 export function isLongitude(val: string | number): boolean {
-	const num = typeof val === 'number' ? val : Number(val);
-	return !isNaN(num) && num >= -180 && num <= 180;
+	if (val === null || val === undefined || val === '') return false;
+
+	// Handle numeric values
+	if (typeof val === 'number') {
+		return val >= -180 && val <= 180;
+	}
+
+	// Handle string values that are numeric
+	if (typeof val === 'string') {
+		// Try to parse as decimal degrees
+		const num = Number(val);
+		if (!isNaN(num)) {
+			return num >= -180 && num <= 180;
+		}
+
+		// Try to parse as DMS format
+		if (val.includes('°') || val.includes("'") || val.includes('"') || /[EWew]/.test(val)) {
+			const dd = parseDMS(val);
+			if (dd !== null) {
+				return dd >= -180 && dd <= 180;
+			}
+		}
+	}
+
+	return false;
 }
 
 /**
- * Detects if a value is a GPS point in decimal degrees (DD) format.
+ * Parses a DMS (Degrees, Minutes, Seconds) format string into decimal degrees.
+ * Handles formats like: 41°24'12.2"N, 2°10'26.5"E
+ */
+export function parseDMS(dmsStr: string): number | null {
+	// Handle various DMS formats
+	// Format: 41°24'12.2"N or 41° 24' 12.2" N or 41d 24m 12.2s N
+	const dmsRegex = /^\s*(\d+)\s*[°d]\s*(\d+)\s*['m]\s*(\d+(?:\.\d+)?)\s*["s]\s*([NSEWnsew])\s*$/;
+
+	// Format: 41°24'N or 41° 24' N
+	const dmRegex = /^\s*(\d+)\s*[°d]\s*(\d+)\s*['m]\s*([NSEWnsew])\s*$/;
+
+	// Format: 41°N or 41° N
+	const dRegex = /^\s*(\d+)\s*[°d]\s*([NSEWnsew])\s*$/;
+
+	let match = dmsStr.match(dmsRegex);
+	if (match) {
+		const [_, degrees, minutes, seconds, direction] = match;
+		let dd = parseInt(degrees) + parseInt(minutes) / 60 + parseFloat(seconds) / 3600;
+		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
+			dd = -dd;
+		}
+		return dd;
+	}
+
+	match = dmsStr.match(dmRegex);
+	if (match) {
+		const [_, degrees, minutes, direction] = match;
+		let dd = parseInt(degrees) + parseInt(minutes) / 60;
+		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
+			dd = -dd;
+		}
+		return dd;
+	}
+
+	match = dmsStr.match(dRegex);
+	if (match) {
+		const [_, degrees, direction] = match;
+		let dd = parseInt(degrees);
+		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
+			dd = -dd;
+		}
+		return dd;
+	}
+
+	return null;
+}
+
+/**
+ * Detects if a value is a GPS point in decimal degrees (DD) or DMS format.
  * Can detect both combined "lat,lon" strings and individual lat/lon values.
  */
 export function isGps(value: any): boolean {
+	if (value === null || value === undefined || value === '') return false;
+
 	// Case 1: Individual latitude or longitude value
 	if (typeof value === 'number' || !isNaN(Number(value))) {
-		const num = typeof value === 'number' ? value : Number(value);
-		// We can't determine if it's lat or lon just from the value,
-		// so we check if it's in either range
-		return (num >= -90 && num <= 90) || (num >= -180 && num <= 180);
+		return isLatitude(value) || isLongitude(value);
 	}
 
-	// Case 2: Combined "lat,lon" string
+	// Case 2: Combined "lat,lon" string in decimal degrees
 	if (typeof value === 'string') {
-		// Basic regex: optional sign, up to 3 digits, optional decimal, must have comma
-		const regex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
-		const match = value.match(regex);
-		if (match) {
-			const lat = parseFloat(match[1]);
-			const lon = parseFloat(match[2]);
+		// Check for decimal degrees format: "lat,lon"
+		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
+		const ddMatch = value.match(ddRegex);
+		if (ddMatch) {
+			const lat = parseFloat(ddMatch[1]);
+			const lon = parseFloat(ddMatch[2]);
 			return isLatitude(lat) && isLongitude(lon);
+		}
+
+		// Check for DMS format: "lat dms, lon dms"
+		// This regex looks for two DMS-like patterns separated by comma
+		if (
+			(value.includes('°') || value.includes("'") || value.includes('"')) &&
+			value.includes(',')
+		) {
+			const parts = value.split(',').map((part) => part.trim());
+			if (parts.length === 2) {
+				const latDMS = parseDMS(parts[0]);
+				const lonDMS = parseDMS(parts[1]);
+				if (latDMS !== null && lonDMS !== null) {
+					return isLatitude(latDMS) && isLongitude(lonDMS);
+				}
+			}
 		}
 	}
 
@@ -238,7 +347,7 @@ export function matchesFormat(value: string | number | null, format: ColumnForma
 	return false;
 }
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
+// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
 
 function formatDate(value: string): string {
 	return new Date(value).toLocaleDateString('en-US', {
@@ -283,4 +392,97 @@ function formatNumber(value: any): string {
 
 function formatString(value: any): string {
 	return value;
+}
+
+// New GPS format types
+export type GpsFormat = 'gps' | 'latitude' | 'longitude';
+
+/**
+ * Determines the specific GPS type of a column (full GPS, latitude, or longitude)
+ * based on column name and data values.
+ */
+export function detectGpsType(
+	values: Array<string | number | null>,
+	columnHeader: string
+): GpsFormat | null {
+	if (!values || values.length === 0) return null;
+
+	// Check column name for strong indicators
+	const header = columnHeader.toLowerCase();
+	const isLikelyLatitude = /\b(lat|latitude)\b/i.test(header);
+	const isLikelyLongitude = /\b(lon|lng|long|longitude)\b/i.test(header);
+
+	// Count valid values of each type
+	let latCount = 0;
+	let lonCount = 0;
+	let fullGpsCount = 0;
+	let totalNonNull = 0;
+
+	// Analyze sample values (up to 10)
+	const sampleValues = values.filter((v) => v !== null && v !== '').slice(0, 10);
+
+	for (const val of sampleValues) {
+		if (val === null || val === '') continue;
+		totalNonNull++;
+
+		// Check for combined GPS format (lat,lon)
+		if (typeof val === 'string' && val.includes(',')) {
+			// Check decimal degrees format
+			const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
+			const ddMatch = val.match(ddRegex);
+
+			if (ddMatch) {
+				const lat = parseFloat(ddMatch[1]);
+				const lon = parseFloat(ddMatch[2]);
+				if (isLatitude(lat) && isLongitude(lon)) {
+					fullGpsCount++;
+					continue;
+				}
+			}
+
+			// Check DMS format
+			const parts = val.split(',').map((part) => part.trim());
+			if (parts.length === 2) {
+				const latDMS = parseDMS(parts[0]);
+				const lonDMS = parseDMS(parts[1]);
+				if (latDMS !== null && lonDMS !== null && isLatitude(latDMS) && isLongitude(lonDMS)) {
+					fullGpsCount++;
+					continue;
+				}
+			}
+		}
+
+		// Check for individual lat/lon values
+		if (isLatitude(val) && !isLongitude(val)) {
+			latCount++;
+		} else if (!isLatitude(val) && isLongitude(val)) {
+			lonCount++;
+		} else if (isLatitude(val) && isLongitude(val)) {
+			// Value is in both ranges, use column name to disambiguate
+			if (isLikelyLatitude) {
+				latCount++;
+			} else if (isLikelyLongitude) {
+				lonCount++;
+			}
+			// If we can't determine, don't count it
+		}
+	}
+
+	// Determine the most likely type based on counts and column name
+	if (totalNonNull > 0) {
+		const latRatio = latCount / totalNonNull;
+		const lonRatio = lonCount / totalNonNull;
+		const fullGpsRatio = fullGpsCount / totalNonNull;
+
+		// If 70% or more values are of a specific type
+		if (fullGpsRatio >= 0.7) {
+			return 'gps';
+		} else if (latRatio >= 0.7 || isLikelyLatitude) {
+			return 'latitude';
+		} else if (lonRatio >= 0.7 || isLikelyLongitude) {
+			return 'longitude';
+		}
+	}
+
+	return null;
 }
