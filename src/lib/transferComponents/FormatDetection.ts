@@ -2,7 +2,7 @@ import type { ColumnFormat } from '../types/columnModel';
 
 // 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
 
-// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️NUMBERS🌲️🌲️🌲️🌲️🌲️🌲️🌲️
+// 👍️🍅️👍️🍅️👍️🍅️👍️🍅️👍️🍅️NUMBERS🍅️🍅️🍅️🍅️🍅️🍅️🍅️
 // Number detection with debug
 export function isNumber(value: any): boolean {
 	// Check if value is already a number
@@ -26,7 +26,7 @@ export function isNumber(value: any): boolean {
 	return false;
 }
 
-// 🌲️🌲️🌲️🌲️🌲️🌲️🌲️DATES🌲️🌲️🌲️🌲️🌲️🌲️🌲️
+// 🍅️🍅️🍅️🍅️🍅️🍅️🍅️DATES🍅️🍅️🍅️🍅️🍅️🍅️🍅️
 export function isDate(value: any): boolean {
 	if (typeof value === 'number') {
 		// Check if it's a valid year
@@ -63,12 +63,29 @@ export function isDate(value: any): boolean {
 	return false;
 }
 
+
+// 👍️🍅️👍️🍅️👍️🍅️👍️🍅️👍️🍅️ GPS Lat Lon 🍅️🍅️🍅️🍅️🍅️🍅️🍅️
+
+/**
+ * Helper function to check if a number has at least 3 decimal places
+ * This helps distinguish between regular numbers and GPS coordinates
+ */
+function hasEnoughDecimalPlaces(val: number): boolean {
+	// Convert to string and check decimal places
+	const strVal = val.toString();
+	if (strVal.includes('.')) {
+		const decimalPlaces = strVal.split('.')[1].length;
+		return decimalPlaces >= 3;
+	}
+	return false;
+}
+
 export function isLatitude(val: string | number): boolean {
 	if (val === null || val === undefined || val === '') return false;
 
 	// Handle numeric values
 	if (typeof val === 'number') {
-		return val >= -90 && val <= 90;
+		return val >= -90 && val <= 90 && hasEnoughDecimalPlaces(val);
 	}
 
 	// Handle string values that are numeric
@@ -76,7 +93,7 @@ export function isLatitude(val: string | number): boolean {
 		// Try to parse as decimal degrees
 		const num = Number(val);
 		if (!isNaN(num)) {
-			return num >= -90 && num <= 90;
+			return num >= -90 && num <= 90 && hasEnoughDecimalPlaces(num);
 		}
 
 		// Try to parse as DMS format
@@ -96,7 +113,7 @@ export function isLongitude(val: string | number): boolean {
 
 	// Handle numeric values
 	if (typeof val === 'number') {
-		return val >= -180 && val <= 180;
+		return val >= -180 && val <= 180 && hasEnoughDecimalPlaces(val);
 	}
 
 	// Handle string values that are numeric
@@ -104,7 +121,7 @@ export function isLongitude(val: string | number): boolean {
 		// Try to parse as decimal degrees
 		const num = Number(val);
 		if (!isNaN(num)) {
-			return num >= -180 && num <= 180;
+			return num >= -180 && num <= 180 && hasEnoughDecimalPlaces(num);
 		}
 
 		// Try to parse as DMS format
@@ -387,7 +404,7 @@ export function formatValue(format: FormatT, value: any): string | null {
 }
 
 function formatGps(value: any): string {
-	return 'Gps:' + value;
+	return value;
 }
 
 function formatNumber(value: any): string {
