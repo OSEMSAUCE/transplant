@@ -39,7 +39,12 @@ export async function POST({ request }) {
 				: null;
 
 			await prisma.land.upsert({
-				where: { landName: landItem.landName, projectId: project.projectId },
+				where: {
+					projectId_landName: {
+						projectId: project.projectId,
+						landName: landItem.landName
+					}
+				},
 				create: {
 					landName: landItem.landName,
 					hectares: hectaresValue || null,
@@ -64,9 +69,9 @@ export async function POST({ request }) {
 		// Create crop entries
 		for (const cropItem of data.crops) {
 			await prisma.crop.upsert({
-				where: { 
+				where: {
 					projectId_cropName: {
-						cropName: cropItem.cropName, 
+						cropName: cropItem.cropName,
 						projectId: project.projectId
 					}
 				},
