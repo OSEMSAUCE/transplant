@@ -234,7 +234,6 @@
 				<td style="position: relative;">
 					{#if gpsData}
 						<div class="gps-cell">
-							<span class="gps-icon">📍</span>
 							<span class="gps-coordinates">
 								{#if gpsData.type === 'full'}
 									{gpsData.value}

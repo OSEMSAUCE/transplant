@@ -11,10 +11,17 @@ export function isNumber(value: any): boolean {
 	}
 
 	if (typeof value === 'string') {
+		// First check if it looks like a date format (to avoid misclassifying dates as numbers)
+		if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
+			return false; // Looks like ISO date format
+		}
+		
 		// Remove commas, whitespace, and currency symbols
 		const cleaned = value.replace(/[,\s€$£]/g, '').trim();
+		
 		// Check if it's a valid number string (including scientific notation)
-		return /^-?\d+(\.\d+)?(e-?\d+)?$/.test(cleaned);
+		const isValidNumber = /^-?\d+(\.\d+)?(e-?\d+)?$/.test(cleaned);
+		return isValidNumber;
 	}
 	return false;
 }
@@ -322,18 +329,20 @@ export function detectFormat(
 		.filter((val: string | number | null) => val !== null && val !== '')
 		.slice(0, 3); // Get first 3 non-empty values
 	// console.log('Checking sample values:', sampleValues);
-	// Count numbers in sample
-	const numberCount = sampleValues.filter(isNumber).length;
+	// Count dates and numbers in sample
 	const dateCount = sampleValues.filter(isDate).length;
+	const numberCount = sampleValues.filter(val => !isDate(val) && isNumber(val)).length;
 
-	// If majority format
+	// Check for dates FIRST, then numbers
 	if (dateCount >= Math.ceil(sampleValues.length / 2)) {
 		selectedFormat = 'date';
+		console.log(`Column ${currentColumnHeader} detected as date format (${dateCount}/${sampleValues.length} date values)`);
 	} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
 		selectedFormat = 'number';
+		console.log(`Column ${currentColumnHeader} detected as number format (${numberCount}/${sampleValues.length} number values)`);
 	} else {
 		console.log(
-			`No majority format - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
+			`No majority format for ${currentColumnHeader} - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
 		);
 	}
 	return selectedFormat;
@@ -382,12 +391,24 @@ function formatGps(value: any): string {
 }
 
 function formatNumber(value: any): string {
-	// return "Number: " + value;
+	// If the value is a string with commas, first clean it
+	if (typeof value === 'string') {
+		value = value.replace(/[,\s€$£]/g, '');
+	}
+	
+	// Convert to number and format with Intl.NumberFormat
+	const num = Number(value);
+	
+	// Ensure we don't return 'NaN' string
+	if (isNaN(num)) {
+		return value.toString();
+	}
+	
 	return new Intl.NumberFormat('en-US', {
 		style: 'decimal',
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 2
-	}).format(Number(value));
+	}).format(num);
 }
 
 function formatString(value: any): string {
