@@ -90,7 +90,11 @@ export function detectFormat(
 	// =============================================
 	// SILO 1: GPS COORDINATES (MOST SPECIFIC)
 	// =============================================
-	// Check if values look like GPS coordinates (lat,lon pairs) regardless of header name
+	// RULES:
+	// 1. STRICT PATTERN MATCHING ONLY - Use exact regex patterns for validation
+	// 2. NO HEADER DETECTION - GPS detection is based ONLY on value patterns
+	// 3. HIGH PRECISION REQUIRED - Latitude/longitude must have min 3+ decimal places
+	// 4. FORMAT: "Lat, Long" - Must be comma-separated coordinate pair
 	if (
 		isColumnOfType(columnData, (val) => {
 			if (val === null || val === '') return false;
@@ -107,7 +111,10 @@ export function detectFormat(
 	// =============================================
 	// SILO 2: LATITUDE
 	// =============================================
-	// Check if values look like latitude coordinates regardless of header name
+	// RULES:
+	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lat'
+	// 2. STRICT VALIDATION - Values must be in range -90 to 90
+	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
 	const lowerHeader = currentColumnHeader.toLowerCase(); // Define here for header checks
 	if (lowerHeader.includes('lat')) {
 		if (
@@ -123,7 +130,10 @@ export function detectFormat(
 	// =============================================
 	// SILO 3: LONGITUDE
 	// =============================================
-	// Check if values look like longitude coordinates
+	// RULES:
+	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lon' or 'long'
+	// 2. STRICT VALIDATION - Values must be in range -180 to 180
+	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
 	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
 		if (
 			isColumnOfType(columnData, (val) => {
@@ -138,6 +148,10 @@ export function detectFormat(
 	// =============================================
 	// SILO 4: DATE
 	// =============================================
+	// RULES:
+	// 1. NO HEADER DETECTION - Date detection is based ONLY on value patterns
+	// 2. STRICT VALIDATION - Only accept standard date formats like YYYY-MM-DD etc etc
+	// 3. CHECK COMMON FORMATS - see this list in isDate function
 	if (isColumnOfType(columnData, (val) => isDate(val))) {
 		return 'date';
 	}
@@ -145,6 +159,10 @@ export function detectFormat(
 	// =============================================
 	// SILO 5: NUMBER
 	// =============================================
+	// RULES:
+	// 1. NO HEADER DETECTION - Number detection is based ONLY on value patterns
+	// 2. ALLOWS NUMERIC FORMATS - Integers, decimals, scientific notation
+	// 3. HANDLES THOUSANDS SEPARATORS - Commas in numbers are properly handled
 	if (
 		isColumnOfType(columnData, (val) => {
 			if (typeof val === 'number') return true;
@@ -164,7 +182,10 @@ export function detectFormat(
 	// =============================================
 	// SILO 6: STRING (DEFAULT FALLBACK)
 	// =============================================
-	// If no other type matches, default to string
+	// RULES:
+	// 1. DEFAULT FALLBACK - Any values that don't match other patterns default to string
+	// 2. NO HEADER DETECTION - We do not use headers to identify strings (except where noted at top)
+	// 3. ALL VALUES ACCEPTED - Strings can be any non-null value (most permissive type)
 	return 'string';
 }
 
@@ -370,11 +391,14 @@ export function isString(value: any): boolean {
  * Formats a value according to the specified format
  * Returns the formatted value if it matches the format, null otherwise
  */
-export function formatValue(format: ColumnFormat, value: string | number | null): string | number | null {
+export function formatValue(
+	format: ColumnFormat,
+	value: string | number | null
+): string | number | null {
 	if (!matchesFormat(value, format)) {
 		return null;
 	}
-	
+
 	// For now, we just return the original value if it matches the format
 	// In the future, we could add proper formatting (e.g. standardizing date formats)
 	return value;
