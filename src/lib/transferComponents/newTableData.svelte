@@ -100,19 +100,31 @@
 		let latColumn = null;
 		let lonColumn = null;
 
-		// First pass: look for columns with lat/lon in the name
+		// First pass: look for columns with explicit latitude/longitude format
 		for (const column of importedData.columns) {
 			const headerLower = column.headerName.toLowerCase();
-			if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
-				// Check for latitude column
+			const value = column.values[rowIndex];
+			
+			if (value === null || value === '') continue;
+
+			// Check for explicit latitude column
+			if (column.currentFormat === 'latitude' && !latValue) {
+				latValue = value;
+				latColumn = column;
+			}
+			// Check for explicit longitude column
+			else if (column.currentFormat === 'longitude' && !lonValue) {
+				lonValue = value;
+				lonColumn = column;
+			}
+			// Fallback: check for lat/lon in column name for backward compatibility
+			else if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
 				if (headerLower.includes('lat') && !latValue) {
+					latValue = value;
 					latColumn = column;
-					latValue = column.values[rowIndex];
-				}
-				// Check for longitude column
-				else if ((headerLower.includes('lon') || headerLower.includes('lng')) && !lonValue) {
+				} else if ((headerLower.includes('lon') || headerLower.includes('lng')) && !lonValue) {
+					lonValue = value;
 					lonColumn = column;
-					lonValue = column.values[rowIndex];
 				}
 			}
 		}

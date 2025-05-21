@@ -1,4 +1,4 @@
-import type { ColumnFormat } from '../types/columnModel';
+import type { ColumnFormat } from '$lib/types/columnModel';
 
 // 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
 
@@ -260,86 +260,12 @@ export function detectFormat(
 	currentColumnHeader: string
 ): ColumnFormat {
 	console.log('Checking column format for:', currentColumnHeader);
-	// Reset detected format for new column
 
-	// Comprehensive GPS detection - handles both individual lat/lon columns and combined "lat,lon" strings
-
-	// Case 1: Check for individual lat/lon values
-	let individualGpsCount = 0;
-	let totalNonNull = 0;
-	let isLikelyLatitude = false;
-	let isLikelyLongitude = false;
-	const lowerHeader = currentColumnHeader.toLowerCase();
-
-	// Use column name as a hint
-	if (lowerHeader.includes('lat')) {
-		isLikelyLatitude = true;
-	} else if (lowerHeader.includes('lon') || lowerHeader.includes('lng')) {
-		isLikelyLongitude = true;
-	}
-
-	// Count valid GPS values
-	for (const val of columnData) {
-		if (val === null || val === undefined || val === '') continue;
-		totalNonNull++;
-
-		// Check for individual lat/lon values
-		if (typeof val === 'number' || !isNaN(Number(val))) {
-			const num = typeof val === 'number' ? val : Number(val);
-
-			// If column name suggests it's latitude, check latitude range
-			if (isLikelyLatitude && isLatitude(num)) {
-				individualGpsCount++;
-			}
-			// If column name suggests it's longitude, check longitude range
-			else if (isLikelyLongitude && isLongitude(num)) {
-				individualGpsCount++;
-			}
-			// If we don't know which it is, accept either range
-			else if (!isLikelyLatitude && !isLikelyLongitude && (isLatitude(num) || isLongitude(num))) {
-				individualGpsCount++;
-
-				// Try to determine if this is a latitude or longitude column
-				if (!isLikelyLatitude && !isLikelyLongitude) {
-					// If it's only in latitude range, it's likely latitude
-					if (isLatitude(num) && !isLongitude(num)) {
-						isLikelyLatitude = true;
-					}
-					// If it's only in longitude range but outside latitude range, it's likely longitude
-					else if (!isLatitude(num) && isLongitude(num)) {
-						isLikelyLongitude = true;
-					}
-				}
-			}
-		}
-
-		// Check for combined "lat,lon" strings
-		if (typeof val === 'string' && val.includes(',')) {
-			const regex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
-			const match = val.match(regex);
-			if (match) {
-				const lat = parseFloat(match[1]);
-				const lon = parseFloat(match[2]);
-				if (isLatitude(lat) && isLongitude(lon)) {
-					individualGpsCount++;
-				}
-			}
-		}
-	}
-
-	// If at least 70% of non-null values are valid GPS values
-	if (totalNonNull > 0 && individualGpsCount / totalNonNull >= 0.7) {
-		// Log helpful debug information
-		if (isLikelyLatitude) {
-			console.log(`Column ${currentColumnHeader} detected as GPS (latitude component)`);
-		} else if (isLikelyLongitude) {
-			console.log(`Column ${currentColumnHeader} detected as GPS (longitude component)`);
-		} else {
-			console.log(
-				`Column ${currentColumnHeader} detected as GPS (combined or undetermined component)`
-			);
-		}
-		return 'gps';
+	// First, try to detect GPS type (latitude, longitude, or combined GPS)
+	const gpsType = detectGpsType(columnData, currentColumnHeader);
+	if (gpsType) {
+		console.log(`Column ${currentColumnHeader} detected as GPS type: ${gpsType}`);
+		return gpsType;
 	}
 	let selectedFormat: ColumnFormat = 'string';
 	const sampleValues = columnData
@@ -432,95 +358,57 @@ function formatString(value: any): string {
 	return value;
 }
 
-// New GPS format types
-export type GpsFormat = 'gps' | 'latitude' | 'longitude';
+// New GPS format type
+type GpsFormat = Extract<ColumnFormat, 'gps' | 'latitude' | 'longitude'>;
 
 /**
  * Determines the specific GPS type of a column (full GPS, latitude, or longitude)
  * based on column name and data values.
  */
 export function detectGpsType(
-	values: Array<string | number | null>,
-	columnHeader: string
-): GpsFormat | null {
-	if (!values || values.length === 0) return null;
+  values: Array<string | number | null>,
+  columnHeader: string
+): ColumnFormat | null {
+  if (!values || values.length === 0) return null;
 
-	// Check column name for strong indicators
-	const header = columnHeader.toLowerCase();
-	const isLikelyLatitude = /\b(lat|latitude)\b/i.test(header);
-	const isLikelyLongitude = /\b(lon|lng|long|longitude)\b/i.test(header);
+  const header = columnHeader.toLowerCase().trim();
+  
+  // Quick checks based on header
+  if (/\b(lat|latitude)\b/i.test(header)) return 'latitude';
+  if (/\b(lon|lng|long|longitude)\b/i.test(header)) return 'longitude';
+  if (header === 'gps' || header === 'coordinates' || header.includes('location')) return 'gps';
 
-	// Count valid values of each type
-	let latCount = 0;
-	let lonCount = 0;
-	let fullGpsCount = 0;
-	let totalNonNull = 0;
+  // Count valid values of each type
+  let latCount = 0;
+  let lonCount = 0;
+  let gpsCount = 0;
+  let totalSamples = 0;
+  const sampleSize = Math.min(50, values.length); // Check up to 50 values for better accuracy
 
-	// Analyze sample values (up to 10)
-	const sampleValues = values.filter((v) => v !== null && v !== '').slice(0, 10);
+  // Analyze sample values
+  for (let i = 0; i < sampleSize; i++) {
+    const val = values[i];
+    if (val === null || val === '') continue;
+    
+    totalSamples++;
+    if (isLatitude(val)) latCount++;
+    if (isLongitude(val)) lonCount++;
+    if (isGps(val)) gpsCount++;
+  }
 
-	for (const val of sampleValues) {
-		if (val === null || val === '') continue;
-		totalNonNull++;
+  // Calculate confidence scores (0-1)
+  const latConfidence = latCount / totalSamples;
+  const lonConfidence = lonCount / totalSamples;
+  const gpsConfidence = gpsCount / totalSamples;
 
-		// Check for combined GPS format (lat,lon)
-		if (typeof val === 'string' && val.includes(',')) {
-			// Check decimal degrees format
-			const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
-			const ddMatch = val.match(ddRegex);
+  // Only return a type if we're reasonably confident
+  if (latConfidence > 0.8 && lonConfidence < 0.2) return 'latitude';
+  if (lonConfidence > 0.8 && latConfidence < 0.2) return 'longitude';
+  if (gpsConfidence > 0.7) return 'gps';
 
-			if (ddMatch) {
-				const lat = parseFloat(ddMatch[1]);
-				const lon = parseFloat(ddMatch[2]);
-				if (isLatitude(lat) && isLongitude(lon)) {
-					fullGpsCount++;
-					continue;
-				}
-			}
+  // If we have high confidence in both lat and lon, it's likely a GPS column
+  if (latConfidence > 0.6 && lonConfidence > 0.6) return 'gps';
 
-			// Check DMS format
-			const parts = val.split(',').map((part) => part.trim());
-			if (parts.length === 2) {
-				const latDMS = parseDMS(parts[0]);
-				const lonDMS = parseDMS(parts[1]);
-				if (latDMS !== null && lonDMS !== null && isLatitude(latDMS) && isLongitude(lonDMS)) {
-					fullGpsCount++;
-					continue;
-				}
-			}
-		}
-
-		// Check for individual lat/lon values
-		if (isLatitude(val) && !isLongitude(val)) {
-			latCount++;
-		} else if (!isLatitude(val) && isLongitude(val)) {
-			lonCount++;
-		} else if (isLatitude(val) && isLongitude(val)) {
-			// Value is in both ranges, use column name to disambiguate
-			if (isLikelyLatitude) {
-				latCount++;
-			} else if (isLikelyLongitude) {
-				lonCount++;
-			}
-			// If we can't determine, don't count it
-		}
-	}
-
-	// Determine the most likely type based on counts and column name
-	if (totalNonNull > 0) {
-		const latRatio = latCount / totalNonNull;
-		const lonRatio = lonCount / totalNonNull;
-		const fullGpsRatio = fullGpsCount / totalNonNull;
-
-		// If 70% or more values are of a specific type
-		if (fullGpsRatio >= 0.7) {
-			return 'gps';
-		} else if (latRatio >= 0.7 || isLikelyLatitude) {
-			return 'latitude';
-		} else if (lonRatio >= 0.7 || isLikelyLongitude) {
-			return 'longitude';
-		}
-	}
-
-	return null;
+  // If we get here, we couldn't determine the type with confidence
+  return null;
 }
