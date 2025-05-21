@@ -22,9 +22,9 @@ import type { ColumnFormat } from '$lib/types/columnModel';
 // DETECTION CONFIGURATION
 // ============================================
 const VALIDATION_CONFIG = {
-  REQUIRED_MATCHES: 3,  // Number of values that must match the type
-  SAMPLE_SIZE: 5,       // Number of non-blank values to check
-  MIN_SAMPLES: 2        // Minimum samples needed to make a decision
+	REQUIRED_MATCHES: 3, // Number of values that must match the type
+	SAMPLE_SIZE: 5, // Number of non-blank values to check
+	MIN_SAMPLES: 2 // Minimum samples needed to make a decision
 } as const;
 
 // ============================================
@@ -41,105 +41,132 @@ const VALIDATION_CONFIG = {
  * Determines if a column matches a specific type based on the validation rules
  */
 function isColumnOfType(
-  values: Array<string | number | null>,
-  validator: (value: string | number) => boolean
+	values: Array<string | number | null>,
+	validator: (value: string | number) => boolean
 ): boolean {
-  let matchCount = 0;
-  let checkedCount = 0;
+	let matchCount = 0;
+	let checkedCount = 0;
 
-  for (const val of values) {
-    // Skip null/empty values
-    if (val === null || val === undefined || val === '') continue;
+	for (const val of values) {
+		// Skip null/empty values
+		if (val === null || val === undefined || val === '') continue;
 
-    // Check if value matches the type
-    if (validator(val)) {
-      matchCount++;
-    } else {
-      // If we can't reach the required matches even with remaining samples, exit early
-      const remainingSamples = VALIDATION_CONFIG.SAMPLE_SIZE - checkedCount - 1;
-      if (matchCount + remainingSamples < VALIDATION_CONFIG.REQUIRED_MATCHES) {
-        return false;
-      }
-    }
+		// Check if value matches the type
+		if (validator(val)) {
+			matchCount++;
+		} else {
+			// If we can't reach the required matches even with remaining samples, exit early
+			const remainingSamples = VALIDATION_CONFIG.SAMPLE_SIZE - checkedCount - 1;
+			if (matchCount + remainingSamples < VALIDATION_CONFIG.REQUIRED_MATCHES) {
+				return false;
+			}
+		}
 
-    checkedCount++;
-    // Stop after checking SAMPLE_SIZE non-null values
-    if (checkedCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
-  }
+		checkedCount++;
+		// Stop after checking SAMPLE_SIZE non-null values
+		if (checkedCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
+	}
 
-  // Need at least MIN_SAMPLES to make a decision
-  return checkedCount >= VALIDATION_CONFIG.MIN_SAMPLES && 
-         matchCount >= VALIDATION_CONFIG.REQUIRED_MATCHES;
+	// Need at least MIN_SAMPLES to make a decision
+	return (
+		checkedCount >= VALIDATION_CONFIG.MIN_SAMPLES &&
+		matchCount >= VALIDATION_CONFIG.REQUIRED_MATCHES
+	);
 }
 
 /**
  * Main function to detect the format of a column based on its values
  */
 export function detectFormat(
-  columnData: Array<string | number | null>,
-  currentColumnHeader: string
+	columnData: Array<string | number | null>,
+	currentColumnHeader: string
 ): ColumnFormat {
-  // 1. Check for GPS (most specific type)
-  if (isColumnOfType(columnData, val => {
-    if (typeof val === 'number') return isLatitude(val) || isLongitude(val);
-    if (typeof val === 'string') {
-      const num = Number(val);
-      return !isNaN(num) && (isLatitude(num) || isLongitude(num));
-    }
-    return false;
-  })) {
-    return 'gps';
-  }
+	// 1. Check for GPS (comma-separated lat,lon pairs)
+	const lowerHeader = currentColumnHeader.toLowerCase();
+	if (lowerHeader.includes('gps') || lowerHeader.includes('coordinate')) {
+		if (isColumnOfType(columnData, (val) => {
+			if (val === null || val === '') return false;
+			if (typeof val === 'string' && val.includes(',')) {
+				const [lat, lon] = val.split(',').map(coord => coord.trim());
+				return isLatitude(lat) && isLongitude(lon);
+			}
+			return false;
+		})) {
+			return 'gps';
+		}
+	}
 
-  // 2. Check for Date
-  if (isColumnOfType(columnData, val => isDate(val))) {
-    return 'date';
-  }
+	// 2. Check for Latitude (only if header suggests it's a latitude field)
+	if (lowerHeader.includes('lat')) {
+		if (isColumnOfType(columnData, (val) => {
+			if (val === null || val === '') return false;
+			return isLatitude(val);
+		})) {
+			return 'latitude';
+		}
+	}
 
-  // 3. Check for Number
-  if (isColumnOfType(columnData, val => {
-    if (typeof val === 'number') return true;
-    if (typeof val === 'string') {
-      // Handle numbers with commas as thousand separators
-      const cleanVal = val.replace(/,/g, '').trim();
-      if (cleanVal === '') return false;
-      const num = Number(cleanVal);
-      return !isNaN(num);
-    }
-    return false;
-  })) {
-    return 'number';
-  }
+	// 3. Check for Longitude (only if header suggests it's a longitude field)
+	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
+		if (isColumnOfType(columnData, (val) => {
+			if (val === null || val === '') return false;
+			return isLongitude(val);
+		})) {
+			return 'longitude';
+		}
+	}
 
-  // 4. Default to String
-  return 'string';
+	// 2. Check for Date
+	if (isColumnOfType(columnData, (val) => isDate(val))) {
+		return 'date';
+	}
+
+	// 3. Check for Number
+	if (
+		isColumnOfType(columnData, (val) => {
+			if (typeof val === 'number') return true;
+			if (typeof val === 'string') {
+				// Handle numbers with commas as thousand separators
+				const cleanVal = val.replace(/,/g, '').trim();
+				if (cleanVal === '') return false;
+				const num = Number(cleanVal);
+				return !isNaN(num);
+			}
+			return false;
+		})
+	) {
+		return 'number';
+	}
+
+	// 4. Default to String
+	return 'string';
 }
 
 // ============================================
 // NUMBER DETECTION (TYPE-SPECIFIC)
 // ============================================
 export function isNumber(value: any): boolean {
-  // Check if value is already a number
-  if (typeof value === 'number') {
-    return true;
-  }
+	// Check if value is already a number
+	if (typeof value === 'number') {
+		return true;
+	}
 
-  if (typeof value === 'string') {
-    // First check if it looks like a date format (to avoid misclassifying dates as numbers)
-    if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
-      return false; // Looks like ISO date format
-    }
+	if (typeof value === 'string') {
+		// First check if it looks like a date format (to avoid misclassifying dates as numbers)
+		if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
+			return false; // Looks like ISO date format
+		}
 
-    // Handle numbers with commas as thousand separators
-    const cleanVal = value.replace(/,/g, '').trim();
-    if (cleanVal === '') return false;
-    
-    // Check if it's a valid number string (including scientific notation)
-    const num = Number(cleanVal);
-    return !isNaN(num);
-  }
-  
-  return false;
+		// Handle numbers with commas as thousand separators
+		const cleanVal = value.replace(/,/g, '').trim();
+		if (cleanVal === '') return false;
+
+		// Check if it's a valid number string (including scientific notation)
+		const num = Number(cleanVal);
+		return !isNaN(num);
+	}
+
+	return false;
 }
 
 // ============================================
@@ -153,7 +180,7 @@ export function isNumber(value: any): boolean {
 // - ISO weeks (YYYY-W##)
 // ============================================
 export function isDate(value: any): boolean {
-  if (value === null || value === undefined || value === '') return false;
+	if (value === null || value === undefined || value === '') return false;
 	if (typeof value === 'number') {
 		// Check if it's a valid year
 		return 1900 < value && value < 2040;
@@ -219,7 +246,7 @@ function hasEnoughDecimalPlaces(val: number): boolean {
 // ============================================
 
 export function isLatitude(val: string | number | null): boolean {
-  if (val === null || val === undefined || val === '') return false;
+	if (val === null || val === undefined || val === '') return false;
 	if (val === null || val === undefined || val === '') return false;
 
 	// Handle numeric values
@@ -257,7 +284,7 @@ export function isLatitude(val: string | number | null): boolean {
 // ============================================
 
 export function isLongitude(val: string | number | null): boolean {
-  if (val === null || val === undefined || val === '') return false;
+	if (val === null || val === undefined || val === '') return false;
 	if (val === null || val === undefined || val === '') return false;
 
 	// Handle numeric values
@@ -398,16 +425,16 @@ export function isGps(value: any): boolean {
  * by checking if most values are valid lat/lon values.
  */
 export function isGpsColumn(values: Array<string | number | null>): boolean {
-  return isColumnOfType(values, (val) => {
-    if (typeof val === 'number') {
-      return isLatitude(val) || isLongitude(val);
-    }
-    if (typeof val === 'string') {
-      const num = Number(val);
-      return !isNaN(num) && (isLatitude(num) || isLongitude(num));
-    }
-    return false;
-  });
+	return isColumnOfType(values, (val) => {
+		if (typeof val === 'number') {
+			return isLatitude(val) || isLongitude(val);
+		}
+		if (typeof val === 'string') {
+			const num = Number(val);
+			return !isNaN(num) && (isLatitude(num) || isLongitude(num));
+		}
+		return false;
+	});
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
