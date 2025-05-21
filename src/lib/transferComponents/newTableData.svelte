@@ -5,6 +5,8 @@
 		isColumnNormalizedByLand
 	} from './columnNormalizationUtils';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+	import type { ColumnFormat } from '$lib/types/columnModel';
+	import { detectFormat, isGps, isLatitude, isLongitude } from './FormatDetection';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	// Add this constant
@@ -81,95 +83,50 @@
 	}
 
 	function pullFirstGpsSelected(rowIndex: number) {
-		// Loop through all columns to find GPS data, regardless of toggle state
-		// First try to find a full GPS column
+		// First try to find a full GPS coordinate pair
 		for (const column of importedData.columns) {
-			// Check if it's a GPS column and has data for this row
 			if (
 				column.currentFormat === 'gps' &&
 				column.values[rowIndex] !== null &&
 				column.values[rowIndex] !== ''
 			) {
-				return { type: 'full', value: column.values[rowIndex] };
+				const gpsValue = column.values[rowIndex];
+				if (isGps(gpsValue)) {
+					return { type: 'full', value: gpsValue };
+				}
 			}
 		}
 
-		// If no full GPS column, try to find latitude and longitude pair
+		// Try to find a complete latitude/longitude pair
 		let latValue: string | number | null = null;
 		let lonValue: string | number | null = null;
-		let latColumn = null;
-		let lonColumn = null;
 
-		// First pass: look for columns with explicit latitude/longitude format
+		// First pass: look for explicit latitude and longitude columns
 		for (const column of importedData.columns) {
-			const headerLower = column.headerName.toLowerCase();
 			const value = column.values[rowIndex];
-			
+
 			if (value === null || value === '') continue;
 
-			// Check for explicit latitude column
+			// Check for latitude column
 			if (column.currentFormat === 'latitude' && !latValue) {
-				latValue = value;
-				latColumn = column;
-			}
-			// Check for explicit longitude column
-			else if (column.currentFormat === 'longitude' && !lonValue) {
-				lonValue = value;
-				lonColumn = column;
-			}
-			// Fallback: check for lat/lon in column name for backward compatibility
-			else if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
-				if (headerLower.includes('lat') && !latValue) {
+				if (isLatitude(value)) {
 					latValue = value;
-					latColumn = column;
-				} else if ((headerLower.includes('lon') || headerLower.includes('lng')) && !lonValue) {
+				}
+			}
+			// Check for longitude column
+			else if (column.currentFormat === 'longitude' && !lonValue) {
+				if (isLongitude(value)) {
 					lonValue = value;
-					lonColumn = column;
 				}
 			}
 		}
 
-		// If we found both lat and lon values, return them
-		if (latValue !== null && lonValue !== null && latValue !== '' && lonValue !== '') {
+		// If we found both valid lat and lon values, return them
+		if (latValue !== null && lonValue !== null) {
 			return { type: 'pair', lat: latValue, lon: lonValue };
 		}
 
-		// Second pass: look for any numeric columns in the right ranges
-		if (!latValue || !lonValue) {
-			for (const column of importedData.columns) {
-				if (column.currentFormat === 'gps' || column.currentFormat === 'number') {
-					const value = column.values[rowIndex];
-					if (value === null || value === '') continue;
-
-					// Try to convert to number
-					const numValue = typeof value === 'number' ? value : Number(value);
-					if (isNaN(numValue)) continue;
-
-					// Check if it's in latitude range (-90 to 90) but not already found
-					if (!latValue && numValue >= -90 && numValue <= 90) {
-						latValue = numValue;
-						latColumn = column;
-					}
-					// Check if it's in longitude range (-180 to 180) but outside latitude range
-					else if (
-						!lonValue &&
-						numValue >= -180 &&
-						numValue <= 180 &&
-						(numValue < -90 || numValue > 90)
-					) {
-						lonValue = numValue;
-						lonColumn = column;
-					}
-				}
-			}
-		}
-
-		// If we found both lat and lon values in the second pass, return them
-		if (latValue !== null && lonValue !== null && latValue !== '' && lonValue !== '') {
-			return { type: 'pair', lat: latValue, lon: lonValue };
-		}
-
-		// If we couldn't find GPS data, return null
+		// If we couldn't find a complete pair of valid coordinates, return null
 		return null;
 	}
 </script>

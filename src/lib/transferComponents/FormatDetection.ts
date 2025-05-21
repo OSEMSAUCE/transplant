@@ -81,23 +81,42 @@ export function detectFormat(
 	columnData: Array<string | number | null>,
 	currentColumnHeader: string
 ): ColumnFormat {
-	// 1. Check for GPS (comma-separated lat,lon pairs)
-	const lowerHeader = currentColumnHeader.toLowerCase();
-	if (lowerHeader.includes('gps') || lowerHeader.includes('coordinate')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			if (typeof val === 'string' && val.includes(',')) {
-				const [lat, lon] = val.split(',').map(coord => coord.trim());
-				return isLatitude(lat) && isLongitude(lon);
-			}
-			return false;
-		})) {
-			return 'gps';
-		}
+	// 1. Check for GPS - must be exact decimal format: "lat,lon" with no extra text
+	if (isColumnOfType(columnData, (val) => {
+		if (val === null || val === '') return false;
+		if (typeof val !== 'string' || !val.includes(',')) return false;
+		
+		// Remove any quotes and trim
+		const cleanVal = val.replace(/"/g, '').trim();
+		const [lat, lon] = cleanVal.split(',').map(coord => coord.trim());
+		
+		// Must be exactly two values
+		if (!lat || !lon) return false;
+		
+		// Must be valid decimal numbers
+		const latNum = Number(lat);
+		const lonNum = Number(lon);
+		
+		// Check if valid numbers
+		if (isNaN(latNum) || isNaN(lonNum)) return false;
+		
+		// Check if valid latitude/longitude
+		if (latNum < -90 || latNum > 90) return false;
+		if (lonNum < -180 || lonNum > 180) return false;
+		
+		// Must have at least 5 decimal places
+		if (lat.split('.')[1]?.length < 5 || lon.split('.')[1]?.length < 5) return false;
+		
+		// Must be clean decimal numbers, no extra text
+		if (!/^[-+]?\d*\.?\d+$/.test(lat) || !/^[-+]?\d*\.?\d+$/.test(lon)) return false;
+		
+		return true;
+	})) {
+		return 'gps';
 	}
 
 	// 2. Check for Latitude (only if header suggests it's a latitude field)
-	if (lowerHeader.includes('lat')) {
+	if (currentColumnHeader.toLowerCase().includes('lat')) {
 		if (isColumnOfType(columnData, (val) => {
 			if (val === null || val === '') return false;
 			return isLatitude(val);
@@ -107,7 +126,7 @@ export function detectFormat(
 	}
 
 	// 3. Check for Longitude (only if header suggests it's a longitude field)
-	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
+	if (currentColumnHeader.toLowerCase().includes('lon') || currentColumnHeader.toLowerCase().includes('lon')) {
 		if (isColumnOfType(columnData, (val) => {
 			if (val === null || val === '') return false;
 			return isLongitude(val);
@@ -116,29 +135,26 @@ export function detectFormat(
 		}
 	}
 
-	// 2. Check for Date
+	// 4. Check for Date
 	if (isColumnOfType(columnData, (val) => isDate(val))) {
 		return 'date';
 	}
 
-	// 3. Check for Number
-	if (
-		isColumnOfType(columnData, (val) => {
-			if (typeof val === 'number') return true;
-			if (typeof val === 'string') {
-				// Handle numbers with commas as thousand separators
-				const cleanVal = val.replace(/,/g, '').trim();
-				if (cleanVal === '') return false;
-				const num = Number(cleanVal);
-				return !isNaN(num);
-			}
-			return false;
-		})
-	) {
+	// 5. Check for Number
+	if (isColumnOfType(columnData, (val) => {
+		if (typeof val === 'number') return true;
+		if (typeof val === 'string') {
+			const cleanVal = val.replace(/,/g, '').trim();
+			if (cleanVal === '') return false;
+			const num = Number(cleanVal);
+			return !isNaN(num);
+		}
+		return false;
+	})) {
 		return 'number';
 	}
 
-	// 4. Default to String
+	// 6. Default to String
 	return 'string';
 }
 
@@ -530,13 +546,6 @@ export function detectGpsType(
 	columnHeader: string
 ): ColumnFormat | null {
 	if (!values || values.length === 0) return null;
-
-	const header = columnHeader.toLowerCase().trim();
-
-	// Quick checks based on header
-	if (/\b(lat|latitude)\b/i.test(header)) return 'latitude';
-	if (/\b(lon|lng|long|longitude)\b/i.test(header)) return 'longitude';
-	if (header === 'gps' || header === 'coordinates' || header.includes('location')) return 'gps';
 
 	// Count valid values of each type
 	let latCount = 0;
