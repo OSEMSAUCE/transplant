@@ -1,15 +1,114 @@
 import type { ColumnFormat } from '$lib/types/columnModel';
 
 // ============================================
+// COLUMN TYPE DETECTION RULES
+// ============================================
+// 1. VALIDATION FLOW (in order of priority):
+//    a. GPS - Check for GPS coordinates (most specific)
+//    b. Date - Check for date formats
+//    c. Number - Check for numeric values
+//    d. String - Default fallback
+//
+// 2. VALIDATION RULE (applies to all types):
+//    - Check first 5 non-blank values in column
+//    - If 3/5 values (60%) match the type → Column is that type
+//    - If not, move to next type in priority order
+//    - If no types match → Default to String
+// ============================================
+
+// ============================================
+// DETECTION CONFIGURATION
+// ============================================
+const VALIDATION_CONFIG = {
+  REQUIRED_MATCHES: 3,  // Number of values that must match the type
+  SAMPLE_SIZE: 5,       // Number of non-blank values to check
+  MIN_SAMPLES: 2        // Minimum samples needed to make a decision
+} as const;
+
+// ============================================
 // TYPE DETECTION MODULE
 // ============================================
 // This module handles detection and validation of different data formats
 // including numbers, dates, and GPS coordinates.
 // ============================================
-
 // 🔍 SECTION: DETECTION FUNCTIONS (READ-ONLY)
 // These functions analyze data to determine its format without modifying it
 // ============================================
+
+/**
+ * Determines if a column matches a specific type based on the validation rules
+ */
+function isColumnOfType(
+  values: Array<string | number | null>,
+  validator: (value: string | number) => boolean
+): boolean {
+  let matchCount = 0;
+  let checkedCount = 0;
+
+  for (const val of values) {
+    // Skip null/empty values
+    if (val === null || val === undefined || val === '') continue;
+
+    // Check if value matches the type
+    if (validator(val)) {
+      matchCount++;
+    } else {
+      // If we can't reach the required matches even with remaining samples, exit early
+      const remainingSamples = VALIDATION_CONFIG.SAMPLE_SIZE - checkedCount - 1;
+      if (matchCount + remainingSamples < VALIDATION_CONFIG.REQUIRED_MATCHES) {
+        return false;
+      }
+    }
+
+    checkedCount++;
+    // Stop after checking SAMPLE_SIZE non-null values
+    if (checkedCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
+  }
+
+  // Need at least MIN_SAMPLES to make a decision
+  return checkedCount >= VALIDATION_CONFIG.MIN_SAMPLES && 
+         matchCount >= VALIDATION_CONFIG.REQUIRED_MATCHES;
+}
+
+/**
+ * Main function to detect the format of a column based on its values
+ */
+export function detectFormat(
+  columnData: Array<string | number | null>,
+  currentColumnHeader: string
+): ColumnFormat {
+  // 1. Check for GPS (most specific type)
+  if (isColumnOfType(columnData, val => {
+    if (typeof val === 'number') return isLatitude(val) || isLongitude(val);
+    if (typeof val === 'string') {
+      const num = Number(val);
+      return !isNaN(num) && (isLatitude(num) || isLongitude(num));
+    }
+    return false;
+  })) {
+    return 'gps';
+  }
+
+  // 2. Check for Date
+  if (isColumnOfType(columnData, val => isDate(val))) {
+    return 'date';
+  }
+
+  // 3. Check for Number
+  if (isColumnOfType(columnData, val => {
+    if (typeof val === 'number') return true;
+    if (typeof val === 'string') {
+      const num = Number(val);
+      return !isNaN(num) && val.trim() !== '';
+    }
+    return false;
+  })) {
+    return 'number';
+  }
+
+  // 4. Default to String
+  return 'string';
+}
 
 // ============================================
 // NUMBER DETECTION (TYPE-SPECIFIC)
@@ -47,6 +146,7 @@ export function isNumber(value: any): boolean {
 // - ISO weeks (YYYY-W##)
 // ============================================
 export function isDate(value: any): boolean {
+  if (value === null || value === undefined || value === '') return false;
 	if (typeof value === 'number') {
 		// Check if it's a valid year
 		return 1900 < value && value < 2040;
@@ -88,7 +188,6 @@ export function isDate(value: any): boolean {
 // Shared validation functions for GPS coordinates
 // ============================================
 
-
 /**
  * SHARED: Used by latitude, longitude, and GPS pair validation
  * Checks if a number has sufficient decimal places for GPS precision
@@ -112,7 +211,8 @@ function hasEnoughDecimalPlaces(val: number): boolean {
 // - Range: -90 to +90 degrees
 // ============================================
 
-export function isLatitude(val: string | number): boolean {
+export function isLatitude(val: string | number | null): boolean {
+  if (val === null || val === undefined || val === '') return false;
 	if (val === null || val === undefined || val === '') return false;
 
 	// Handle numeric values
@@ -149,7 +249,8 @@ export function isLatitude(val: string | number): boolean {
 // - Range: -180 to +180 degrees
 // ============================================
 
-export function isLongitude(val: string | number): boolean {
+export function isLongitude(val: string | number | null): boolean {
+  if (val === null || val === undefined || val === '') return false;
 	if (val === null || val === undefined || val === '') return false;
 
 	// Handle numeric values
@@ -290,67 +391,16 @@ export function isGps(value: any): boolean {
  * by checking if most values are valid lat/lon values.
  */
 export function isGpsColumn(values: Array<string | number | null>): boolean {
-	if (!values || values.length === 0) return false;
-
-	// Count valid lat/lon values
-	let validCount = 0;
-	let totalNonNull = 0;
-
-	for (const val of values) {
-		if (val === null || val === undefined || val === '') continue;
-
-		totalNonNull++;
-		if (typeof val === 'number') {
-			if (isLatitude(val) || isLongitude(val)) validCount++;
-		} else if (typeof val === 'string') {
-			const num = Number(val);
-			if (!isNaN(num) && (isLatitude(num) || isLongitude(num))) validCount++;
-		}
-	}
-
-	// If at least 70% of non-null values are valid lat/lon values
-	return totalNonNull > 0 && validCount / totalNonNull >= 0.7;
-}
-
-//  3 Apr 2025  8:55 AM New function
-export function detectFormat(
-	columnData: Array<string | number | null>,
-	currentColumnHeader: string
-): ColumnFormat {
-	console.log('Checking column format for:', currentColumnHeader);
-
-	// First, try to detect GPS type (latitude, longitude, or combined GPS)
-	const gpsType = detectGpsType(columnData, currentColumnHeader);
-	if (gpsType) {
-		console.log(`Column ${currentColumnHeader} detected as GPS type: ${gpsType}`);
-		return gpsType;
-	}
-	let selectedFormat: ColumnFormat = 'string';
-	const sampleValues = columnData
-		.filter((val: string | number | null) => val !== null && val !== '')
-		.slice(0, 3); // Get first 3 non-empty values
-	// console.log('Checking sample values:', sampleValues);
-	// Count dates and numbers in sample
-	const dateCount = sampleValues.filter(isDate).length;
-	const numberCount = sampleValues.filter((val) => !isDate(val) && isNumber(val)).length;
-
-	// Check for dates FIRST, then numbers
-	if (dateCount >= Math.ceil(sampleValues.length / 2)) {
-		selectedFormat = 'date';
-		console.log(
-			`Column ${currentColumnHeader} detected as date format (${dateCount}/${sampleValues.length} date values)`
-		);
-	} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
-		selectedFormat = 'number';
-		console.log(
-			`Column ${currentColumnHeader} detected as number format (${numberCount}/${sampleValues.length} number values)`
-		);
-	} else {
-		console.log(
-			`No majority format for ${currentColumnHeader} - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
-		);
-	}
-	return selectedFormat;
+  return isColumnOfType(values, (val) => {
+    if (typeof val === 'number') {
+      return isLatitude(val) || isLongitude(val);
+    }
+    if (typeof val === 'string') {
+      const num = Number(val);
+      return !isNaN(num) && (isLatitude(num) || isLongitude(num));
+    }
+    return false;
+  });
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
