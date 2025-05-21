@@ -81,8 +81,8 @@ export function detectFormat(
 ): ColumnFormat {
 	const lowerHeader = currentColumnHeader.toLowerCase();
 
-	// 1. GPS DETECTION
-	if (lowerHeader.includes('gps') || lowerHeader.includes('coordinate')) {
+	// 1. GPS DETECTION (comma-separated lat/lon pairs)
+	if (lowerHeader.includes('lat') && lowerHeader.includes('lon')) {
 		if (checkGpsColumn(columnData)) {
 			return 'gps';
 		}
