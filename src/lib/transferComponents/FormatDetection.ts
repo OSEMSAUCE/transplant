@@ -5,9 +5,11 @@ import type { ColumnFormat } from '$lib/types/columnModel';
 // ============================================
 // 1. VALIDATION FLOW (in order of priority):
 //    a. GPS - Check for GPS coordinates (most specific)
-//    b. Date - Check for date formats
-//    c. Number - Check for numeric values
-//    d. String - Default fallback
+//    b. latitude - Check for latitude values
+//    c. longitude - Check for longitude values
+//    d. Date - Check for date formats
+//    e. Number - Check for numeric values
+//    f. String - Default fallback
 //
 // 2. VALIDATION RULE (applies to all types):
 //    - Check first 5 non-blank values in column
@@ -98,8 +100,11 @@ export function detectFormat(
   if (isColumnOfType(columnData, val => {
     if (typeof val === 'number') return true;
     if (typeof val === 'string') {
-      const num = Number(val);
-      return !isNaN(num) && val.trim() !== '';
+      // Handle numbers with commas as thousand separators
+      const cleanVal = val.replace(/,/g, '').trim();
+      if (cleanVal === '') return false;
+      const num = Number(cleanVal);
+      return !isNaN(num);
     }
     return false;
   })) {
@@ -114,25 +119,27 @@ export function detectFormat(
 // NUMBER DETECTION (TYPE-SPECIFIC)
 // ============================================
 export function isNumber(value: any): boolean {
-	// Check if value is already a number
-	if (typeof value === 'number') {
-		return true;
-	}
+  // Check if value is already a number
+  if (typeof value === 'number') {
+    return true;
+  }
 
-	if (typeof value === 'string') {
-		// First check if it looks like a date format (to avoid misclassifying dates as numbers)
-		if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
-			return false; // Looks like ISO date format
-		}
+  if (typeof value === 'string') {
+    // First check if it looks like a date format (to avoid misclassifying dates as numbers)
+    if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
+      return false; // Looks like ISO date format
+    }
 
-		// Remove commas, whitespace, and currency symbols
-		const cleaned = value.replace(/[,\s€$£]/g, '').trim();
-
-		// Check if it's a valid number string (including scientific notation)
-		const isValidNumber = /^-?\d+(\.\d+)?(e-?\d+)?$/.test(cleaned);
-		return isValidNumber;
-	}
-	return false;
+    // Handle numbers with commas as thousand separators
+    const cleanVal = value.replace(/,/g, '').trim();
+    if (cleanVal === '') return false;
+    
+    // Check if it's a valid number string (including scientific notation)
+    const num = Number(cleanVal);
+    return !isNaN(num);
+  }
+  
+  return false;
 }
 
 // ============================================
