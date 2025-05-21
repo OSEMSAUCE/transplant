@@ -15,10 +15,10 @@ export function isNumber(value: any): boolean {
 		if (value.includes('-') && /\d{4}-\d{2}-\d{2}/.test(value)) {
 			return false; // Looks like ISO date format
 		}
-		
+
 		// Remove commas, whitespace, and currency symbols
 		const cleaned = value.replace(/[,\s€$£]/g, '').trim();
-		
+
 		// Check if it's a valid number string (including scientific notation)
 		const isValidNumber = /^-?\d+(\.\d+)?(e-?\d+)?$/.test(cleaned);
 		return isValidNumber;
@@ -62,7 +62,6 @@ export function isDate(value: any): boolean {
 	}
 	return false;
 }
-
 
 // 👍️🍅️👍️🍅️👍️🍅️👍️🍅️👍️🍅️ GPS Lat Lon 🍅️🍅️🍅️🍅️🍅️🍅️🍅️
 
@@ -274,15 +273,19 @@ export function detectFormat(
 	// console.log('Checking sample values:', sampleValues);
 	// Count dates and numbers in sample
 	const dateCount = sampleValues.filter(isDate).length;
-	const numberCount = sampleValues.filter(val => !isDate(val) && isNumber(val)).length;
+	const numberCount = sampleValues.filter((val) => !isDate(val) && isNumber(val)).length;
 
 	// Check for dates FIRST, then numbers
 	if (dateCount >= Math.ceil(sampleValues.length / 2)) {
 		selectedFormat = 'date';
-		console.log(`Column ${currentColumnHeader} detected as date format (${dateCount}/${sampleValues.length} date values)`);
+		console.log(
+			`Column ${currentColumnHeader} detected as date format (${dateCount}/${sampleValues.length} date values)`
+		);
 	} else if (numberCount >= Math.ceil(sampleValues.length / 2)) {
 		selectedFormat = 'number';
-		console.log(`Column ${currentColumnHeader} detected as number format (${numberCount}/${sampleValues.length} number values)`);
+		console.log(
+			`Column ${currentColumnHeader} detected as number format (${numberCount}/${sampleValues.length} number values)`
+		);
 	} else {
 		console.log(
 			`No majority format for ${currentColumnHeader} - keeping as '${selectedFormat}' (${numberCount} numbers, ${dateCount} dates)`
@@ -296,6 +299,8 @@ export function matchesFormat(value: string | number | null, format: ColumnForma
 	if (format === 'number') return isNumber(value);
 	if (format === 'date') return isDate(value);
 	if (format === 'gps') return isGps(value);
+	if (format === 'latitude') return isLatitude(value);
+	if (format === 'longitude') return isLongitude(value);
 	return false;
 }
 
@@ -338,15 +343,15 @@ function formatNumber(value: any): string {
 	if (typeof value === 'string') {
 		value = value.replace(/[,\s€$£]/g, '');
 	}
-	
+
 	// Convert to number and format with Intl.NumberFormat
 	const num = Number(value);
-	
+
 	// Ensure we don't return 'NaN' string
 	if (isNaN(num)) {
 		return value.toString();
 	}
-	
+
 	return new Intl.NumberFormat('en-US', {
 		style: 'decimal',
 		minimumFractionDigits: 0,
@@ -366,49 +371,49 @@ type GpsFormat = Extract<ColumnFormat, 'gps' | 'latitude' | 'longitude'>;
  * based on column name and data values.
  */
 export function detectGpsType(
-  values: Array<string | number | null>,
-  columnHeader: string
+	values: Array<string | number | null>,
+	columnHeader: string
 ): ColumnFormat | null {
-  if (!values || values.length === 0) return null;
+	if (!values || values.length === 0) return null;
 
-  const header = columnHeader.toLowerCase().trim();
-  
-  // Quick checks based on header
-  if (/\b(lat|latitude)\b/i.test(header)) return 'latitude';
-  if (/\b(lon|lng|long|longitude)\b/i.test(header)) return 'longitude';
-  if (header === 'gps' || header === 'coordinates' || header.includes('location')) return 'gps';
+	const header = columnHeader.toLowerCase().trim();
 
-  // Count valid values of each type
-  let latCount = 0;
-  let lonCount = 0;
-  let gpsCount = 0;
-  let totalSamples = 0;
-  const sampleSize = Math.min(50, values.length); // Check up to 50 values for better accuracy
+	// Quick checks based on header
+	if (/\b(lat|latitude)\b/i.test(header)) return 'latitude';
+	if (/\b(lon|lng|long|longitude)\b/i.test(header)) return 'longitude';
+	if (header === 'gps' || header === 'coordinates' || header.includes('location')) return 'gps';
 
-  // Analyze sample values
-  for (let i = 0; i < sampleSize; i++) {
-    const val = values[i];
-    if (val === null || val === '') continue;
-    
-    totalSamples++;
-    if (isLatitude(val)) latCount++;
-    if (isLongitude(val)) lonCount++;
-    if (isGps(val)) gpsCount++;
-  }
+	// Count valid values of each type
+	let latCount = 0;
+	let lonCount = 0;
+	let gpsCount = 0;
+	let totalSamples = 0;
+	const sampleSize = Math.min(50, values.length); // Check up to 50 values for better accuracy
 
-  // Calculate confidence scores (0-1)
-  const latConfidence = latCount / totalSamples;
-  const lonConfidence = lonCount / totalSamples;
-  const gpsConfidence = gpsCount / totalSamples;
+	// Analyze sample values
+	for (let i = 0; i < sampleSize; i++) {
+		const val = values[i];
+		if (val === null || val === '') continue;
 
-  // Only return a type if we're reasonably confident
-  if (latConfidence > 0.8 && lonConfidence < 0.2) return 'latitude';
-  if (lonConfidence > 0.8 && latConfidence < 0.2) return 'longitude';
-  if (gpsConfidence > 0.7) return 'gps';
+		totalSamples++;
+		if (isLatitude(val)) latCount++;
+		if (isLongitude(val)) lonCount++;
+		if (isGps(val)) gpsCount++;
+	}
 
-  // If we have high confidence in both lat and lon, it's likely a GPS column
-  if (latConfidence > 0.6 && lonConfidence > 0.6) return 'gps';
+	// Calculate confidence scores (0-1)
+	const latConfidence = latCount / totalSamples;
+	const lonConfidence = lonCount / totalSamples;
+	const gpsConfidence = gpsCount / totalSamples;
 
-  // If we get here, we couldn't determine the type with confidence
-  return null;
+	// Only return a type if we're reasonably confident
+	if (latConfidence > 0.8 && lonConfidence < 0.2) return 'latitude';
+	if (lonConfidence > 0.8 && latConfidence < 0.2) return 'longitude';
+	if (gpsConfidence > 0.7) return 'gps';
+
+	// If we have high confidence in both lat and lon, it's likely a GPS column
+	if (latConfidence > 0.6 && lonConfidence > 0.6) return 'gps';
+
+	// If we get here, we couldn't determine the type with confidence
+	return null;
 }
