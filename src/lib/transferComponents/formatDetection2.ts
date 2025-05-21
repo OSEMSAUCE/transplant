@@ -105,6 +105,8 @@ export function detectFormat(
 	// =============================================
 	// SILO 2: LATITUDE
 	// =============================================
+	// Check if values look like latitude coordinates regardless of header name
+	const lowerHeader = currentColumnHeader.toLowerCase(); // Define here for header checks
 	if (lowerHeader.includes('lat')) {
 		if (isColumnOfType(columnData, (val) => {
 			if (val === null || val === '') return false;
@@ -117,6 +119,7 @@ export function detectFormat(
 	// =============================================
 	// SILO 3: LONGITUDE
 	// =============================================
+	// Check if values look like longitude coordinates
 	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
 		if (isColumnOfType(columnData, (val) => {
 			if (val === null || val === '') return false;
@@ -160,71 +163,21 @@ export function detectFormat(
 }
 
 // =============================================
-// GPS COORDINATE VALIDATION (SHARED)
+// GPS COORDINATE VALIDATION (DECIMAL DEGREES ONLY)
 // =============================================
-// Shared validation functions for GPS coordinates
+// Only supports decimal degrees (DD) format for GPS, latitude, and longitude
 // =============================================
 
 /**
- * SHARED: Used by latitude, longitude, and GPS pair validation
- * Checks if a number has sufficient decimal places for GPS precision
+ * Checks if a number has at least 5 decimal places for GPS precision
  */
 function hasEnoughDecimalPlaces(val: number): boolean {
-	// Convert to string and check decimal places
 	const strVal = val.toString();
 	if (strVal.includes('.')) {
 		const decimalPlaces = strVal.split('.')[1].length;
-		return decimalPlaces >= 3;
+		return decimalPlaces >= 5;
 	}
 	return false;
-}
-
-/**
- * SHARED: Used by both latitude and longitude validation
- * Parses DMS (Degrees, Minutes, Seconds) to decimal degrees
- */
-export function parseDMS(dmsStr: string): number | null {
-	// Handle various DMS formats
-	// Format: 41°24'12.2"N or 41° 24' 12.2" N or 41d 24m 12.2s N
-	const dmsRegex = /^\s*(\d+)\s*[°d]\s*(\d+)\s*['m]\s*(\d+(?:\.\d+)?)\s*["s]\s*([NSEWnsew])\s*$/;
-
-	// Format: 41°24'N or 41° 24' N
-	const dmRegex = /^\s*(\d+)\s*[°d]\s*(\d+)\s*['m]\s*([NSEWnsew])\s*$/;
-
-	// Format: 41°N or 41° N
-	const dRegex = /^\s*(\d+)\s*[°d]\s*([NSEWnsew])\s*$/;
-
-	let match = dmsStr.match(dmsRegex);
-	if (match) {
-		const [_, degrees, minutes, seconds, direction] = match;
-		let dd = parseInt(degrees) + parseInt(minutes) / 60 + parseFloat(seconds) / 3600;
-		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
-			dd = -dd;
-		}
-		return dd;
-	}
-
-	match = dmsStr.match(dmRegex);
-	if (match) {
-		const [_, degrees, minutes, direction] = match;
-		let dd = parseInt(degrees) + parseInt(minutes) / 60;
-		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
-			dd = -dd;
-		}
-		return dd;
-	}
-
-	match = dmsStr.match(dRegex);
-	if (match) {
-		const [_, degrees, direction] = match;
-		let dd = parseInt(degrees);
-		if (direction.toUpperCase() === 'S' || direction.toUpperCase() === 'W') {
-			dd = -dd;
-		}
-		return dd;
-	}
-
-	return null;
 }
 
 // =============================================
@@ -236,43 +189,21 @@ export function parseDMS(dmsStr: string): number | null {
 // =============================================
 
 /**
- * Validates if a value is a GPS coordinate pair
- * Combines latitude and longitude validation for complete GPS points
+ * Validates if a value is a GPS coordinate pair in decimal degrees (DD) format only
+ * Accepts only strings like "40.71280,-74.00600" or numbers (not DMS or other formats)
  */
 export function isGps(value: any): boolean {
 	if (value === null || value === undefined || value === '') return false;
 
-	// Case 1: Individual latitude or longitude value
-	if (typeof value === 'number' || !isNaN(Number(value))) {
-		return isLatitude(value) || isLongitude(value);
-	}
-
-	// Case 2: Combined "lat,lon" string in decimal degrees
 	if (typeof value === 'string') {
-		// Check for decimal degrees format: "lat,lon"
-		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d+)?)\s*,\s*([+-]?\d{1,3}(?:\.\d+)?)\s*$/;
+		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d{5,}))\s*,\s*([+-]?\d{1,3}(?:\.\d{5,}))\s*$/;
 		const ddMatch = value.match(ddRegex);
 		if (ddMatch) {
 			const lat = parseFloat(ddMatch[1]);
 			const lon = parseFloat(ddMatch[2]);
 			return isLatitude(lat) && isLongitude(lon);
 		}
-
-		// Check for DMS format: "lat dms, lon dms"
-		// This regex looks for two DMS-like patterns separated by comma
-		if (
-			(value.includes('°') || value.includes("'") || value.includes('"')) &&
-			value.includes(',')
-		) {
-			const parts = value.split(',').map((part) => part.trim());
-			if (parts.length === 2) {
-				const latDMS = parseDMS(parts[0]);
-				const lonDMS = parseDMS(parts[1]);
-				if (latDMS !== null && lonDMS !== null) {
-					return isLatitude(latDMS) && isLongitude(lonDMS);
-				}
-			}
-		}
+		return false;
 	}
 
 	return false;
@@ -290,25 +221,14 @@ export function isGps(value: any): boolean {
 export function isLatitude(val: string | number | null): boolean {
 	if (val === null || val === undefined || val === '') return false;
 
-	// Handle numeric values
 	if (typeof val === 'number') {
 		return val >= -90 && val <= 90 && hasEnoughDecimalPlaces(val);
 	}
 
-	// Handle string values that are numeric
 	if (typeof val === 'string') {
-		// Try to parse as decimal degrees
 		const num = Number(val);
 		if (!isNaN(num)) {
 			return num >= -90 && num <= 90 && hasEnoughDecimalPlaces(num);
-		}
-
-		// Try to parse as DMS format
-		if (val.includes('°') || val.includes("'") || val.includes('"') || /[NSns]/.test(val)) {
-			const dd = parseDMS(val);
-			if (dd !== null) {
-				return dd >= -90 && dd <= 90;
-			}
 		}
 	}
 
@@ -327,25 +247,14 @@ export function isLatitude(val: string | number | null): boolean {
 export function isLongitude(val: string | number | null): boolean {
 	if (val === null || val === undefined || val === '') return false;
 
-	// Handle numeric values
 	if (typeof val === 'number') {
 		return val >= -180 && val <= 180 && hasEnoughDecimalPlaces(val);
 	}
 
-	// Handle string values that are numeric
 	if (typeof val === 'string') {
-		// Try to parse as decimal degrees
 		const num = Number(val);
 		if (!isNaN(num)) {
 			return num >= -180 && num <= 180 && hasEnoughDecimalPlaces(num);
-		}
-
-		// Try to parse as DMS format
-		if (val.includes('°') || val.includes("'") || val.includes('"') || /[EWew]/.test(val)) {
-			const dd = parseDMS(val);
-			if (dd !== null) {
-				return dd >= -180 && dd <= 180;
-			}
 		}
 	}
 
