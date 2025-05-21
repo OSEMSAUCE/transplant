@@ -15,8 +15,6 @@
 	// Accept pageIs as a prop
 	const { pageIs = 'transfer' } = $props<{ pageIs?: 'transfer' | 'transplant' }>();
 
-
-
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
@@ -133,8 +131,6 @@
 	}
 </script>
 
-
-
 <table class="data-table" style="table-layout: fixed;">
 	<thead>
 		<tr>
@@ -146,7 +142,7 @@
 				<div class="header-name">GPS</div>
 			</th>
 			<!-- Iterate over actual data columns -->
-			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
+			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 				{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
 				{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
 				{@const isPrimaryColumn =
