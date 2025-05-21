@@ -86,19 +86,21 @@ export function detectFormat(
 ): ColumnFormat {
 	// Run through each silo in order of specificity
 	// Each silo is a self-contained detection unit
-	
+
 	// =============================================
 	// SILO 1: GPS COORDINATES (MOST SPECIFIC)
 	// =============================================
 	// Check if values look like GPS coordinates (lat,lon pairs) regardless of header name
-	if (isColumnOfType(columnData, (val) => {
-		if (val === null || val === '') return false;
-		if (typeof val === 'string' && val.includes(',')) {
-			const [lat, lon] = val.split(',').map(coord => coord.trim());
-			return isLatitude(lat) && isLongitude(lon);
-		}
-		return false;
-	})) {
+	if (
+		isColumnOfType(columnData, (val) => {
+			if (val === null || val === '') return false;
+			if (typeof val === 'string' && val.includes(',')) {
+				const [lat, lon] = val.split(',').map((coord) => coord.trim());
+				return isLatitude(lat) && isLongitude(lon);
+			}
+			return false;
+		})
+	) {
 		return 'gps';
 	}
 
@@ -108,10 +110,12 @@ export function detectFormat(
 	// Check if values look like latitude coordinates regardless of header name
 	const lowerHeader = currentColumnHeader.toLowerCase(); // Define here for header checks
 	if (lowerHeader.includes('lat')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			return isLatitude(val);
-		})) {
+		if (
+			isColumnOfType(columnData, (val) => {
+				if (val === null || val === '') return false;
+				return isLatitude(val);
+			})
+		) {
 			return 'latitude';
 		}
 	}
@@ -121,10 +125,12 @@ export function detectFormat(
 	// =============================================
 	// Check if values look like longitude coordinates
 	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			return isLongitude(val);
-		})) {
+		if (
+			isColumnOfType(columnData, (val) => {
+				if (val === null || val === '') return false;
+				return isLongitude(val);
+			})
+		) {
 			return 'longitude';
 		}
 	}
@@ -360,16 +366,37 @@ export function isString(value: any): boolean {
 // Checks if a value matches a specific format
 // =============================================
 
+/**
+ * Formats a value according to the specified format
+ * Returns the formatted value if it matches the format, null otherwise
+ */
+export function formatValue(format: ColumnFormat, value: string | number | null): string | number | null {
+	if (!matchesFormat(value, format)) {
+		return null;
+	}
+	
+	// For now, we just return the original value if it matches the format
+	// In the future, we could add proper formatting (e.g. standardizing date formats)
+	return value;
+}
+
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
 	if (value === null || value === undefined) return false;
-	
+
 	switch (format) {
-		case 'string': return isString(value);
-		case 'number': return isNumber(value);
-		case 'date': return isDate(value);
-		case 'gps': return isGps(value);
-		case 'latitude': return isLatitude(value);
-		case 'longitude': return isLongitude(value);
-		default: return false;
+		case 'string':
+			return isString(value);
+		case 'number':
+			return isNumber(value);
+		case 'date':
+			return isDate(value);
+		case 'gps':
+			return isGps(value);
+		case 'latitude':
+			return isLatitude(value);
+		case 'longitude':
+			return isLongitude(value);
+		default:
+			return false;
 	}
 }

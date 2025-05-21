@@ -6,7 +6,7 @@
 	} from './columnNormalizationUtils';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
-	import { detectFormat, isGps, isLatitude, isLongitude } from './FormatDetection';
+	import { detectFormat, isGps, isLatitude, isLongitude } from './formatDetection2';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	// Add this constant
