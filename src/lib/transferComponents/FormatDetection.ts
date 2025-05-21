@@ -1,9 +1,19 @@
 import type { ColumnFormat } from '$lib/types/columnModel';
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is detection only
+// ============================================
+// TYPE DETECTION MODULE
+// ============================================
+// This module handles detection and validation of different data formats
+// including numbers, dates, and GPS coordinates.
+// ============================================
 
-// 👍️🍅️👍️🍅️👍️🍅️👍️🍅️👍️🍅️NUMBERS🍅️🍅️🍅️🍅️🍅️🍅️🍅️
-// Number detection with debug
+// 🔍 SECTION: DETECTION FUNCTIONS (READ-ONLY)
+// These functions analyze data to determine its format without modifying it
+// ============================================
+
+// ============================================
+// NUMBER DETECTION (TYPE-SPECIFIC)
+// ============================================
 export function isNumber(value: any): boolean {
 	// Check if value is already a number
 	if (typeof value === 'number') {
@@ -26,7 +36,16 @@ export function isNumber(value: any): boolean {
 	return false;
 }
 
-// 🍅️🍅️🍅️🍅️🍅️🍅️🍅️DATES🍅️🍅️🍅️🍅️🍅️🍅️🍅️
+// ============================================
+// DATE DETECTION (TYPE-SPECIFIC)
+// ============================================
+// Supports multiple date formats including:
+// - YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD
+// - Month YYYY, DD Month YYYY, Month DD, YYYY
+// - DD-MMM-YYYY, DD MMM YYYY
+// - Quarters (YYYY-Q[1-4])
+// - ISO weeks (YYYY-W##)
+// ============================================
 export function isDate(value: any): boolean {
 	if (typeof value === 'number') {
 		// Check if it's a valid year
@@ -63,11 +82,16 @@ export function isDate(value: any): boolean {
 	return false;
 }
 
-// 👍️🍅️👍️🍅️👍️🍅️👍️🍅️👍️🍅️ GPS Lat Lon 🍅️🍅️🍅️🍅️🍅️🍅️🍅️
+// ============================================
+// GPS COORDINATE VALIDATION (SHARED & TYPE-SPECIFIC)
+// ============================================
+// Shared validation functions for GPS coordinates
+// ============================================
+
 
 /**
- * Helper function to check if a number has at least 3 decimal places
- * This helps distinguish between regular numbers and GPS coordinates
+ * SHARED: Used by latitude, longitude, and GPS pair validation
+ * Checks if a number has sufficient decimal places for GPS precision
  */
 function hasEnoughDecimalPlaces(val: number): boolean {
 	// Convert to string and check decimal places
@@ -78,6 +102,15 @@ function hasEnoughDecimalPlaces(val: number): boolean {
 	}
 	return false;
 }
+
+// ============================================
+// LATITUDE VALIDATION (TYPE-SPECIFIC)
+// ============================================
+// Validates latitude values in various formats:
+// - Decimal degrees (DD): 40.7128
+// - DMS: 40°42'51"N
+// - Range: -90 to +90 degrees
+// ============================================
 
 export function isLatitude(val: string | number): boolean {
 	if (val === null || val === undefined || val === '') return false;
@@ -107,6 +140,15 @@ export function isLatitude(val: string | number): boolean {
 	return false;
 }
 
+// ============================================
+// LONGITUDE VALIDATION (TYPE-SPECIFIC)
+// ============================================
+// Validates longitude values in various formats:
+// - Decimal degrees (DD): -74.0060
+// - DMS: 74°0'22"W
+// - Range: -180 to +180 degrees
+// ============================================
+
 export function isLongitude(val: string | number): boolean {
 	if (val === null || val === undefined || val === '') return false;
 
@@ -135,9 +177,19 @@ export function isLongitude(val: string | number): boolean {
 	return false;
 }
 
+// ============================================
+// DMS PARSING (SHARED)
+// ============================================
+// Converts DMS (Degrees, Minutes, Seconds) to decimal degrees
+// Supports multiple formats:
+// - Full DMS: 41°24'12.2"N
+// - DM: 41°24.2'N
+// - D: 41°N
+// ============================================
+
 /**
- * Parses a DMS (Degrees, Minutes, Seconds) format string into decimal degrees.
- * Handles formats like: 41°24'12.2"N, 2°10'26.5"E
+ * SHARED: Used by both latitude and longitude validation
+ * Parses DMS (Degrees, Minutes, Seconds) to decimal degrees
  */
 export function parseDMS(dmsStr: string): number | null {
 	// Handle various DMS formats
@@ -183,9 +235,16 @@ export function parseDMS(dmsStr: string): number | null {
 	return null;
 }
 
+// ============================================
+// GPS PAIR VALIDATION (TYPE-SPECIFIC)
+// ============================================
+// Validates combined latitude/longitude pairs:
+// - Decimal degrees: "40.7128,-74.0060"
+// - DMS: "40°42'51\"N 74°0'21\"W"
+// ============================================
 /**
- * Detects if a value is a GPS point in decimal degrees (DD) or DMS format.
- * Can detect both combined "lat,lon" strings and individual lat/lon values.
+ * Validates if a value is a GPS coordinate pair or single coordinate
+ * Combines latitude and longitude validation for complete GPS points
  */
 export function isGps(value: any): boolean {
 	if (value === null || value === undefined || value === '') return false;
@@ -304,7 +363,14 @@ export function matchesFormat(value: string | number | null, format: ColumnForma
 	return false;
 }
 
-// 🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️🔉️ This is FORMATTING only
+// ============================================
+// FORMATTING MODULE
+// ============================================
+// This module handles formatting values for display
+// ============================================
+// 🖨️ SECTION: FORMATTING FUNCTIONS
+// These functions convert values to display strings
+// ============================================
 
 function formatDate(value: string): string {
 	return new Date(value).toLocaleDateString('en-US', {
@@ -363,7 +429,12 @@ function formatString(value: any): string {
 	return value;
 }
 
-// New GPS format type
+// ============================================
+// GPS TYPE DETECTION
+// ============================================
+// Determines the specific type of GPS data in a column
+// (full GPS, latitude, or longitude) based on headers and values
+// ============================================
 type GpsFormat = Extract<ColumnFormat, 'gps' | 'latitude' | 'longitude'>;
 
 /**
