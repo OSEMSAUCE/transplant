@@ -11,8 +11,19 @@ export let dragColumnState = $state<{
 	index: number | null;
 }>({ headerName: null, currentFormat: null, index: null });
 
+// Force a complete reset of the state when new data is loaded
 export function setImportedData(data: ColumnRep[]) {
-	importedData.columns = data;
+	// First completely clear out the existing state
+	importedData.columns = [];
+	
+	// Force a browser reflow to ensure components are properly destroyed
+	setTimeout(() => {
+		// Then set the new data
+		importedData.columns = data;
+		
+		// Log state reset for debugging
+		console.log(`State reset: Loaded ${data.length} columns with fresh state`);
+	}, 0);
 }
 
 export function formatGreyedStatus(

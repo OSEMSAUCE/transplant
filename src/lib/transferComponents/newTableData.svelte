@@ -15,6 +15,40 @@
 	// Accept pageIs as a prop
 	const { pageIs = 'transfer' } = $props<{ pageIs?: 'transfer' | 'transplant' }>();
 
+	// Diagnostic function to print exact format selector layout
+	function logTableStructure() {
+		// Wait for DOM to be fully rendered
+		setTimeout(() => {
+			console.log('=== TABLE STRUCTURE DIAGNOSTIC ===');
+			const table = document.querySelector('.data-table');
+			if (!table) {
+				console.log('Table not found in DOM');
+				return;
+			}
+			
+			// Log data model order
+			console.log('DATA MODEL ORDER:');
+			importedData.columns.forEach((col, idx) => {
+				console.log(`[${idx}] ${col.headerName}: ${col.currentFormat}`);
+			});
+			
+			// Log actual DOM order
+			console.log('\nDOM STRUCTURE:');
+			const headers = Array.from(table.querySelectorAll('th.data-column'));
+			headers.forEach((header, idx) => {
+				const headerName = header.getAttribute('data-header-name');
+				const uiIndex = header.getAttribute('data-column-index');
+				const dataIndex = header.getAttribute('data-real-index');
+				const formatSelector = header.querySelector('select');
+				const format = formatSelector ? formatSelector.value : 'unknown';
+				
+				console.log(`UI[${uiIndex}] Data[${dataIndex}] "${headerName}": Format selector shows "${format}"`);
+			});
+			
+			console.log('===========================');
+		}, 500); // Give DOM time to render
+	}
+
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
@@ -131,21 +165,32 @@
 	}
 </script>
 
-<table class="transplant-toggle-table">
+<!-- Run diagnostic logging when table is created -->
+{#if importedData.columns.length > 0}
+	{@const callDiagnostics = logTableStructure()}
+{/if}
+
+<table class="data-table" style="table-layout: fixed;">
 	<thead>
 		<tr>
-			<!-- Two new empty header columns for alignment -->
-			<th style="position: relative;">GPS</th>
-			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
+			<!-- The GPS column is always first and separate from the iteration -->
+			<th class="gps-column">
+				<div class="column-header">
+					<span class="format-label">GPS</span>
+				</div>
+				<div class="header-name">GPS</div>
+			</th>
+			<!-- Iterate over actual data columns -->
+			{#each importedData.columns.filter((c) => (isTransplant ? c.isToggled : true)) as column, index}
 				{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
 				{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
 				{@const isPrimaryColumn =
-					(landCol && column.headerName === landCol.headerName) ||
-					(cropCol && column.headerName === cropCol.headerName)}
+					column.mappedTo?.includes('landName') || column.mappedTo?.includes('cropName')}
 				{@const isLandCompatible =
 					!column.isMapped && !isPrimaryColumn && landCol
-						? // Don't show compatibility for date columns or parcelOwnership
+						? // Don't show compatibility for date columns, number columns, or parcelOwnership
 							column.currentFormat !== 'date' &&
+							column.currentFormat !== 'number' &&
 							!column.headerName.toLowerCase().includes('ownership') &&
 							isColumnNormalizedByLand(landCol.values, column.values)
 						: false}
@@ -159,38 +204,45 @@
 						: false}
 				<!-- Debugging logs removed -->
 				<th
+					class="data-column"
 					data-header-name={column.headerName}
 					data-column-index={index}
+					data-real-index={importedData.columns.findIndex(col => col.headerName === column.headerName)}
 					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
 					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 				>
-					<!-- Icons commented out for now, can be re-enabled for debugging
-				{#if isLandCompatible}
-					<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
-				{/if}
-				{#if isCropCompatible}
-					<div style="position: absolute; top: 2px; right: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🌳️</div>
-				{/if}
-				-->
-					<div class="column-header">
-						<FormatSelectorComponent
-							columnData={column.values}
-							currentFormat={column.currentFormat}
-							currentColumnHeader={column.headerName}
-							onformatchange={(event) => {
-								// Update column format directly
-								const selectedFormat = event.detail.destinationFormat;
-								column.currentFormat = selectedFormat;
-								column.isFormatted = true;
-							}}
-							{isTransplant}
-							isToggled={column.isToggled}
-						/>
-					</div>
-					<div class="header-name" id={column.headerName}>
-						{column.headerName}
+					<!-- Column with unique identifier to ensure format selectors align properly -->
+					<div class="column-container" id={`col-${column.headerName}-container`}>
+						<!-- Small index indicator to help debug -->
+						<small style="font-size: 8px; position: absolute; top: 0; right: 3px; color: #999;">[{index}]</small>
+						
+						<div class="column-header" id={`col-${column.headerName}-selector`}>
+							<!-- Label indicating which column this format selector controls -->
+							<div style="font-size: 9px; color: #666; margin-bottom: 2px; background: rgba(0,0,0,0.03); padding: 1px 3px; border-radius: 2px; text-align: center;">
+								For: {column.headerName}
+							</div>
+							
+							<FormatSelectorComponent
+								columnData={column.values}
+								currentFormat={column.currentFormat}
+								currentColumnHeader={column.headerName}
+								onformatchange={(event) => {
+									// Update column format directly
+									const selectedFormat = event.detail.destinationFormat;
+									column.currentFormat = selectedFormat;
+									column.isFormatted = true;
+									console.log(`Format updated for ${column.headerName}: ${selectedFormat}`);
+								}}
+								{isTransplant}
+								isToggled={column.isToggled}
+							/>
+						</div>
+						
+						<div class="header-name" id={column.headerName}>
+							{column.headerName}
+						</div>
 					</div>
 				</th>
 			{/each}

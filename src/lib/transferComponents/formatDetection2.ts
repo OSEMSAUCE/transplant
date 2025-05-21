@@ -115,14 +115,32 @@ export function detectFormat(
 	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lat'
 	// 2. STRICT VALIDATION - Values must be in range -90 to 90
 	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
-	const lowerHeader = currentColumnHeader.toLowerCase(); // Define here for header checks
+	const lowerHeader = currentColumnHeader.toLowerCase().trim(); // Define here for header checks
+	// Check header for latitude patterns
 	if (lowerHeader.includes('lat')) {
-		if (
-			isColumnOfType(columnData, (val) => {
-				if (val === null || val === '') return false;
-				return isLatitude(val);
-			})
-		) {
+		// For columns with 'lat' in header, prioritize latitude detection
+		// Check actual values directly but with more relaxed validation
+		let validCount = 0;
+		let totalCount = 0;
+		
+		for (const val of columnData) {
+			if (val === null || val === '') continue;
+			totalCount++;
+			
+			// Simple validation for latitude: number in range -90 to 90
+			if (typeof val === 'number') {
+				if (val >= -90 && val <= 90) validCount++;
+			} else if (typeof val === 'string') {
+				const num = Number(val);
+				if (!isNaN(num) && num >= -90 && num <= 90) validCount++;
+			}
+			
+			// Only check a few samples for performance
+			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
+		}
+		
+		// If enough valid latitude values, return lat format
+		if (totalCount > 0 && validCount / totalCount >= 0.6) {
 			return 'latitude';
 		}
 	}
@@ -131,16 +149,33 @@ export function detectFormat(
 	// SILO 3: LONGITUDE
 	// =============================================
 	// RULES:
-	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lon' or 'long'
+	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lon' or 'lon'
 	// 2. STRICT VALIDATION - Values must be in range -180 to 180
 	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
-	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
-		if (
-			isColumnOfType(columnData, (val) => {
-				if (val === null || val === '') return false;
-				return isLongitude(val);
-			})
-		) {
+	if (lowerHeader.includes('lon')) {
+		// For columns with 'lon' in header, prioritize longitude detection
+		// Check actual values directly but with more relaxed validation
+		let validCount = 0;
+		let totalCount = 0;
+		
+		for (const val of columnData) {
+			if (val === null || val === '') continue;
+			totalCount++;
+			
+			// Simple validation for longitude: number in range -180 to 180
+			if (typeof val === 'number') {
+				if (val >= -180 && val <= 180) validCount++;
+			} else if (typeof val === 'string') {
+				const num = Number(val);
+				if (!isNaN(num) && num >= -180 && num <= 180) validCount++;
+			}
+			
+			// Only check a few samples for performance
+			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
+		}
+		
+		// If enough valid longitude values, return lon format
+		if (totalCount > 0 && validCount / totalCount >= 0.6) {
 			return 'longitude';
 		}
 	}
@@ -196,13 +231,14 @@ export function detectFormat(
 // =============================================
 
 /**
- * Checks if a number has at least 5 decimal places for GPS precision
+ * Checks if a number has enough decimal places for GPS precision
+ * Requiring 3+ decimal places (about 100m precision)
  */
 function hasEnoughDecimalPlaces(val: number): boolean {
 	const strVal = val.toString();
 	if (strVal.includes('.')) {
 		const decimalPlaces = strVal.split('.')[1].length;
-		return decimalPlaces >= 5;
+		return decimalPlaces >= 3; // 3+ decimal places (more permissive than 5+)
 	}
 	return false;
 }
