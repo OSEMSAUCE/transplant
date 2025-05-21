@@ -4,14 +4,14 @@ import type { ColumnFormat } from '$lib/types/columnModel';
 // COLUMN TYPE DETECTION RULES
 // ============================================
 // 1. VALIDATION FLOW (in order of priority):
-//    a. GPS - Check for GPS coordinates (most specific)
-//    b. latitude - Check for latitude values
-//    c. longitude - Check for longitude values
-//    d. Date - Check for date formats
-//    e. Number - Check for numeric values
-//    f. String - Default fallback
+//    1. GPS - Check for GPS coordinates (most specific)
+//    2. latitude - Check for latitude values
+//    3. longitude - Check for longitude values
+//    4. Date - Check for date formats
+//    5. Number - Check for numeric values
+//    6. String - Default fallback
 //
-// 2. VALIDATION RULE (applies to all types):
+// 2. TOLERANCE RULE (applies to all types):
 //    - Check first 5 non-blank values in column
 //    - If 3/5 values (60%) match the type → Column is that type
 //    - If not, move to next type in priority order
@@ -28,13 +28,7 @@ const VALIDATION_CONFIG = {
 } as const;
 
 // ============================================
-// TYPE DETECTION MODULE
-// ============================================
-// This module handles detection and validation of different data formats
-// including numbers, dates, and GPS coordinates.
-// ============================================
-// 🔍 SECTION: DETECTION FUNCTIONS (READ-ONLY)
-// These functions analyze data to determine its format without modifying it
+// CORE VALIDATION FUNCTIONS
 // ============================================
 
 /**
@@ -74,6 +68,10 @@ function isColumnOfType(
 	);
 }
 
+// ============================================
+// MAIN FORMAT DETECTION
+// ============================================
+
 /**
  * Main function to detect the format of a column based on its values
  */
@@ -81,70 +79,94 @@ export function detectFormat(
 	columnData: Array<string | number | null>,
 	currentColumnHeader: string
 ): ColumnFormat {
-	// 1. Check for GPS (comma-separated lat,lon pairs)
 	const lowerHeader = currentColumnHeader.toLowerCase();
+
+	// 1. GPS DETECTION
 	if (lowerHeader.includes('gps') || lowerHeader.includes('coordinate')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			if (typeof val === 'string' && val.includes(',')) {
-				const [lat, lon] = val.split(',').map(coord => coord.trim());
-				return isLatitude(lat) && isLongitude(lon);
-			}
-			return false;
-		})) {
+		if (checkGpsColumn(columnData)) {
 			return 'gps';
 		}
 	}
 
-	// 2. Check for Latitude (only if header suggests it's a latitude field)
+	// 2. LATITUDE DETECTION
 	if (lowerHeader.includes('lat')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			return isLatitude(val);
-		})) {
+		if (isLatitudeColumn(columnData)) {
 			return 'latitude';
 		}
 	}
 
-	// 3. Check for Longitude (only if header suggests it's a longitude field)
+	// 3. LONGITUDE DETECTION
 	if (lowerHeader.includes('lon') || lowerHeader.includes('long')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			return isLongitude(val);
-		})) {
+		if (isLongitudeColumn(columnData)) {
 			return 'longitude';
 		}
 	}
 
-	// 2. Check for Date
-	if (isColumnOfType(columnData, (val) => isDate(val))) {
+	// 4. DATE DETECTION
+	if (isDateColumn(columnData)) {
 		return 'date';
 	}
 
-	// 3. Check for Number
-	if (
-		isColumnOfType(columnData, (val) => {
-			if (typeof val === 'number') return true;
-			if (typeof val === 'string') {
-				// Handle numbers with commas as thousand separators
-				const cleanVal = val.replace(/,/g, '').trim();
-				if (cleanVal === '') return false;
-				const num = Number(cleanVal);
-				return !isNaN(num);
-			}
-			return false;
-		})
-	) {
+	// 5. NUMBER DETECTION
+	if (isNumberColumn(columnData)) {
 		return 'number';
 	}
 
-	// 4. Default to String
+	// 6. Default to String
 	return 'string';
 }
 
+// Helper functions for column type detection - used only in detectFormat
+function checkGpsColumn(columnData: Array<string | number | null>): boolean {
+	return isColumnOfType(columnData, (val) => {
+		if (val === null || val === '') return false;
+		if (typeof val === 'string' && val.includes(',')) {
+			const [lat, lon] = val.split(',').map((coord) => coord.trim());
+			return isLatitude(lat) && isLongitude(lon);
+		}
+		return false;
+	});
+}
+
+function isLatitudeColumn(columnData: Array<string | number | null>): boolean {
+	return isColumnOfType(columnData, (val) => {
+		if (val === null || val === '') return false;
+		return isLatitude(val);
+	});
+}
+
+function isLongitudeColumn(columnData: Array<string | number | null>): boolean {
+	return isColumnOfType(columnData, (val) => {
+		if (val === null || val === '') return false;
+		return isLongitude(val);
+	});
+}
+
+function isDateColumn(columnData: Array<string | number | null>): boolean {
+	return isColumnOfType(columnData, (val) => isDate(val));
+}
+
+function isNumberColumn(columnData: Array<string | number | null>): boolean {
+	return isColumnOfType(columnData, (val) => {
+		if (typeof val === 'number') return true;
+		if (typeof val === 'string') {
+			// Handle numbers with commas as thousand separators
+			const cleanVal = val.replace(/,/g, '').trim();
+			if (cleanVal === '') return false;
+			const num = Number(cleanVal);
+			return !isNaN(num);
+		}
+		return false;
+	});
+}
+
 // ============================================
-// NUMBER DETECTION (TYPE-SPECIFIC)
+// 1. NUMBER DETECTION
 // ============================================
+
+/**
+ * Checks if a value is a valid number
+ */
 export function isNumber(value: any): boolean {
 	// Check if value is already a number
 	if (typeof value === 'number') {
@@ -421,10 +443,10 @@ export function isGps(value: any): boolean {
 }
 
 /**
- * Determines if a column should be treated as a GPS component (lat or lon)
+ * Determines if a column contains GPS coordinate components (latitude or longitude values)
  * by checking if most values are valid lat/lon values.
  */
-export function isGpsColumn(values: Array<string | number | null>): boolean {
+export function checkGpsComponents(values: Array<string | number | null>): boolean {
 	return isColumnOfType(values, (val) => {
 		if (typeof val === 'number') {
 			return isLatitude(val) || isLongitude(val);
