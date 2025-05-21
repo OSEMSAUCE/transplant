@@ -90,18 +90,16 @@ export function detectFormat(
 	// =============================================
 	// SILO 1: GPS COORDINATES (MOST SPECIFIC)
 	// =============================================
-	const lowerHeader = currentColumnHeader.toLowerCase();
-	if (lowerHeader.includes('gps') || lowerHeader.includes('coordinate')) {
-		if (isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			if (typeof val === 'string' && val.includes(',')) {
-				const [lat, lon] = val.split(',').map(coord => coord.trim());
-				return isLatitude(lat) && isLongitude(lon);
-			}
-			return false;
-		})) {
-			return 'gps';
+	// Check if values look like GPS coordinates (lat,lon pairs) regardless of header name
+	if (isColumnOfType(columnData, (val) => {
+		if (val === null || val === '') return false;
+		if (typeof val === 'string' && val.includes(',')) {
+			const [lat, lon] = val.split(',').map(coord => coord.trim());
+			return isLatitude(lat) && isLongitude(lon);
 		}
+		return false;
+	})) {
+		return 'gps';
 	}
 
 	// =============================================
