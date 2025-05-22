@@ -363,23 +363,46 @@ export function isDate(value: any): boolean {
 			return 1900 < year && year < 2040;
 		}
 
+		// Also check for two-digit years (YY) in certain contexts
+		if (/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2}$/i.test(value)) {
+			return true; // Format like 14-Mar-22
+		}
+
 		// Check other date formats
 		const DATE_FORMATS = [
-			/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (ISO)
-			/^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
-			/^\d{4}\.\d{2}\.\d{2}$/, // YYYY.MM.DD
-			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // Month YYYY
+			// ISO formats
+			/^\d{4}-\d{1,2}-\d{1,2}$/, // YYYY-MM-DD
+			/^\d{4}\/\d{1,2}\/\d{1,2}$/, // YYYY/MM/DD
+			/^\d{4}\.\d{1,2}\.\d{1,2}$/, // YYYY.MM.DD
+			
+			// American formats
+			/^\d{1,2}\/\d{1,2}\/\d{4}$/, // MM/DD/YYYY or DD/MM/YYYY
+			/^\d{1,2}\.\d{1,2}\.\d{4}$/, // MM.DD.YYYY or DD.MM.YYYY
+			
+			// Long date formats with month names
+			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s*\d{4}$/i, // Month DD, YYYY
 			/^\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // DD Month YYYY
-			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}$/i, // Month DD, YYYY
+			/^\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // DD(st/nd/rd/th) MMM YYYY (e.g., 14th Mar 2025)
+			
+			// Short date formats with month abbreviations
 			/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}$/i, // DD-MMM-YYYY
-			/^\d{1,2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}$/i, // DD MMM YYYY
+			/^\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // DD MMM YYYY
+			
+			// With day of week
+			/^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // ddd, DD MMM YYYY
+			
+			// Year first formats
+			/^\d{4}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i, // YYYY MMM DD
+			/^\d{4}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}$/i, // YYYY Month DD
+			
+			// Just month and year
+			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // Month YYYY
+			/^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // MMM YYYY
+			
+			// Other formats
 			/^\d{4}-(?:Q[1-4])$/, // YYYY-Q[1-4] (Quarter)
 			/^\d{4}-W(?:0[1-9]|[1-4][0-9]|5[0-3])$/, // YYYY-W[01-53] (ISO week)
-			/\b(19|20)\d{2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/, // Month YYYY
-			/\b(19|20)\d{2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/, // MMM YYYY
-			/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // MMM YYYY
-			/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/, // Month
-			/^\d{1,2}(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\d{4}$/i
+			/^\d{1,2}(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\d{4}$/i // DDMonYYYY (compact format)
 		];
 		return DATE_FORMATS.some((format) => format.test(value));
 	}
@@ -470,23 +493,182 @@ export function formatValue(
 			}).format(num);
 		}
 		case 'date': {
-			// Try to standardize to YYYY-MM-DD if possible
+			// Convert to ISO 8601 JSON string timestamp
+			if (typeof value === 'number') {
+				// If it's just a number, check if it could be a year between 1920-2040
+				if (value >= 1920 && value <= 2040) {
+					// Convert to January 1st at midnight for that year
+					return new Date(value, 0, 1).toISOString();
+				}
+				return value;
+			}
+			
 			if (typeof value === 'string') {
-				// Try to parse common date formats
-				const isoMatch = value.match(/^(\d{4})[-/.](\d{2})[-/.](\d{2})$/);
-				if (isoMatch) {
-					return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-				}
-				const usMatch = value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
-				if (usMatch) {
-					// MM/DD/YYYY or DD/MM/YYYY - assuming MM/DD/YYYY format
-					return `${usMatch[3]}-${usMatch[1].padStart(2, '0')}-${usMatch[2].padStart(2, '0')}`;
-				}
-				// If it's a year only
+				// If it's a year only, convert to January 1st at midnight
 				if (/^\d{4}$/.test(value)) {
+					const year = parseInt(value);
+					if (year >= 1920 && year <= 2040) {
+						return new Date(year, 0, 1).toISOString();
+					}
 					return value;
 				}
-				// Otherwise, return as-is
+
+				let dateObj: Date | null = null;
+				
+				// ISO format: YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
+				const isoMatch = value.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+				if (isoMatch) {
+					const year = parseInt(isoMatch[1]);
+					const month = parseInt(isoMatch[2]) - 1; // JS months are 0-based
+					const day = parseInt(isoMatch[3]);
+					dateObj = new Date(year, month, day);
+				}
+
+				// US/UK format: MM/DD/YYYY or DD/MM/YYYY with slashes, dots, or hyphens
+				if (!dateObj) {
+					const usMatch = value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+					if (usMatch) {
+						const year = parseInt(usMatch[3]);
+						const part1 = parseInt(usMatch[1]);
+						const part2 = parseInt(usMatch[2]);
+						// Assuming MM/DD/YYYY format, but this is ambiguous
+						// MM/DD/YYYY (US) vs DD/MM/YYYY (UK)
+						dateObj = new Date(year, part1 - 1, part2);
+					}
+				}
+
+				// Month name formats
+				const monthNamesLong = [
+					'january', 'february', 'march', 'april', 'may', 'june', 
+					'july', 'august', 'september', 'october', 'november', 'december'
+				];
+				const monthNamesShort = [
+					'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+					'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+				];
+
+				// Format: DD Mon YYYY (e.g., "22 Mar 2024") or 14th Mar 2025
+				if (!dateObj) {
+					// First check for the ordinal format (1st, 2nd, 3rd, 4th, etc)
+					const ordinalMatch = value.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,})\s+(\d{4})$/);
+					if (ordinalMatch) {
+						const day = parseInt(ordinalMatch[1]);
+						const monthStr = ordinalMatch[2].toLowerCase();
+						const year = parseInt(ordinalMatch[3]);
+						
+						// Find month number
+						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						if (monthNum === -1) {
+							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+						}
+						
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, day);
+						}
+					}
+				}
+
+				// Format: Mon DD, YYYY (e.g., "March 22, 2024" or "March 14, 2023")
+				if (!dateObj) {
+					const monthDayYearMatch = value.match(/^([A-Za-z]{3,})\s+(\d{1,2})(?:\,|\s)\s*(\d{4})$/);
+					if (monthDayYearMatch) {
+						const monthStr = monthDayYearMatch[1].toLowerCase();
+						const day = parseInt(monthDayYearMatch[2]);
+						const year = parseInt(monthDayYearMatch[3]);
+						
+						// Find month number
+						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						if (monthNum === -1) {
+							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+						}
+						
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, day);
+						}
+					}
+				}
+
+				// Format: YYYY Mon DD (e.g., "2024 Mar 22")
+				if (!dateObj) {
+					const yearMonthDayMatch = value.match(/^(\d{4})\s+([A-Za-z]{3,})\s+(\d{1,2})$/);
+					if (yearMonthDayMatch) {
+						const year = parseInt(yearMonthDayMatch[1]);
+						const monthStr = yearMonthDayMatch[2].toLowerCase();
+						const day = parseInt(yearMonthDayMatch[3]);
+						
+						// Find month number
+						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						if (monthNum === -1) {
+							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+						}
+						
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, day);
+						}
+					}
+				}
+
+				// Format: DD-MMM-YYYY (e.g., "01-Dec-2024")
+				if (!dateObj) {
+					const ddMmmYyyyMatch = value.match(/^(\d{1,2})[\-\s]((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))[\-\s](\d{4})$/i);
+					if (ddMmmYyyyMatch) {
+						const day = parseInt(ddMmmYyyyMatch[1]);
+						const monthStr = ddMmmYyyyMatch[2].toLowerCase();
+						const year = parseInt(ddMmmYyyyMatch[3]);
+
+						// Find month number
+						const monthNum = monthNamesShort.findIndex(m => monthStr.toLowerCase().startsWith(m));
+						
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, day);
+						}
+					}
+				}
+
+				// Format: ddd, DD MMM YYYY (e.g., "Tue, 14 Mar 2023")
+				if (!dateObj) {
+					const dayOfWeekMatch = value.match(/^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/i);
+					if (dayOfWeekMatch) {
+						const day = parseInt(dayOfWeekMatch[1]);
+						const monthStr = dayOfWeekMatch[2].toLowerCase();
+						const year = parseInt(dayOfWeekMatch[3]);
+
+						// Find month number
+						const monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+						
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, day);
+						}
+					}
+				}
+
+				// Format: MMMM YYYY (e.g., "March 2023") - set to 1st of month at midnight
+				if (!dateObj) {
+					const monthYearMatch = value.match(/^([A-Za-z]+)\s+(\d{4})$/i);
+					if (monthYearMatch) {
+						const monthStr = monthYearMatch[1].toLowerCase();
+						const year = parseInt(monthYearMatch[2]);
+
+						// Find month number
+						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						if (monthNum === -1) {
+							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+						}
+						
+						if (monthNum !== -1) {
+							// Set to 1st day of the month at midnight
+							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
+						}
+					}
+				}
+
+				// If we successfully parsed the date, return as ISO string
+				if (dateObj && !isNaN(dateObj.getTime())) {
+					return dateObj.toISOString();
+				}
+
+				// If we couldn't parse it into a standardized format, return as-is
+				console.log(`Date format not standardized: ${value}`);
 				return value;
 			}
 			return value;
