@@ -32,8 +32,14 @@ export function formatGreyedStatus(
 	detectedFormat: ColumnFormat
 ) {
 	columnData[index].currentFormat = detectedFormat;
+	// Set the isFormatted flag to true to indicate this column has been formatted
+	columnData[index].isFormatted = true;
+	
 	for (let k = 0; k < columnData[index].values.length; ++k) {
 		columnData[index].formattedValues[k] = formatValue(detectedFormat, columnData[index].values[k]);
 		columnData[index].isGreyed[k] = columnData[index].formattedValues[k] === null;
 	}
+
+	// Log formatting information for debugging
+	console.log(`Formatted column '${columnData[index].headerName}' to ${detectedFormat} format`);
 }

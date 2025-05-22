@@ -232,13 +232,13 @@ export function detectFormat(
 
 /**
  * Checks if a number has enough decimal places for GPS precision
- * Requiring 3+ decimal places (about 100m precision)
+ * Now accepts 2+ decimal places for more flexibility
  */
 function hasEnoughDecimalPlaces(val: number): boolean {
 	const strVal = val.toString();
 	if (strVal.includes('.')) {
 		const decimalPlaces = strVal.split('.')[1].length;
-		return decimalPlaces >= 3; // 3+ decimal places (more permissive than 5+)
+		return decimalPlaces >= 2; // 2+ decimal places (more permissive than before)
 	}
 	return false;
 }
@@ -252,19 +252,34 @@ function hasEnoughDecimalPlaces(val: number): boolean {
 // =============================================
 
 /**
- * Validates if a value is a GPS coordinate pair in decimal degrees (DD) format only
- * Accepts only strings like "40.71280,-74.00600" or numbers (not DMS or other formats)
+ * Validates if a value is a GPS coordinate pair in decimal degrees (DD) format
+ * More flexible to handle various decimal place counts and separator styles
  */
 export function isGps(value: any): boolean {
 	if (value === null || value === undefined || value === '') return false;
 
 	if (typeof value === 'string') {
-		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d{5,}))\s*,\s*([+-]?\d{1,3}(?:\.\d{5,}))\s*$/;
+		// More flexible regex for decimal degrees
+		// Allows any number of decimal places and various separators
+		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d{1,})?)[\s,]*([+-]?\d{1,3}(?:\.\d{1,})?)\s*$/;
 		const ddMatch = value.match(ddRegex);
+		
 		if (ddMatch) {
 			const lat = parseFloat(ddMatch[1]);
 			const lon = parseFloat(ddMatch[2]);
 			return isLatitude(lat) && isLongitude(lon);
+		}
+		
+		// Try other common formats like "lat, long" or "lat long"
+		const parts = value.split(/[,\s]+/).filter(part => part.trim() !== '');
+		if (parts.length === 2) {
+			const lat = parseFloat(parts[0]);
+			const lon = parseFloat(parts[1]);
+			if (!isNaN(lat) && !isNaN(lon) && 
+				lat >= -90 && lat <= 90 && 
+				lon >= -180 && lon <= 180) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -435,9 +450,80 @@ export function formatValue(
 		return null;
 	}
 
-	// For now, we just return the original value if it matches the format
-	// In the future, we could add proper formatting (e.g. standardizing date formats)
-	return value;
+	if (value === null || value === undefined || value === '') return value;
+
+	switch (format) {
+		case 'number': {
+			// Handle as number with thousands separator, up to 2 decimals
+			let num: number;
+			if (typeof value === 'number') {
+				num = value;
+			} else {
+				const cleanVal = (value as string).replace(/,/g, '').trim();
+				num = Number(cleanVal);
+			}
+			if (isNaN(num)) return value;
+			return new Intl.NumberFormat('en-US', {
+				style: 'decimal',
+				minimumFractionDigits: 0,
+				maximumFractionDigits: 2
+			}).format(num);
+		}
+		case 'date': {
+			// Try to standardize to YYYY-MM-DD if possible
+			if (typeof value === 'string') {
+				// Try to parse common date formats
+				const isoMatch = value.match(/^(\d{4})[-/.](\d{2})[-/.](\d{2})$/);
+				if (isoMatch) {
+					return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+				}
+				const usMatch = value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+				if (usMatch) {
+					// MM/DD/YYYY or DD/MM/YYYY - assuming MM/DD/YYYY format
+					return `${usMatch[3]}-${usMatch[1].padStart(2, '0')}-${usMatch[2].padStart(2, '0')}`;
+				}
+				// If it's a year only
+				if (/^\d{4}$/.test(value)) {
+					return value;
+				}
+				// Otherwise, return as-is
+				return value;
+			}
+			return value;
+		}
+		case 'gps':
+		case 'latitude':
+		case 'longitude': {
+			let num: number;
+			if (typeof value === 'number') {
+				num = value;
+			} else if (typeof value === 'string') {
+				// For GPS coordinates, we need special handling
+				if (format === 'gps' && value.includes(',')) {
+					// For full GPS coordinates (lat,long)
+					const parts = value.split(',').map(p => p.trim());
+					if (parts.length === 2) {
+						const lat = Number(parts[0]);
+						const long = Number(parts[1]);
+						if (!isNaN(lat) && !isNaN(long)) {
+							return `${lat.toFixed(7)},${long.toFixed(7)}`;
+						}
+					}
+					return value; // Return original if parsing fails
+				}
+				// For single coordinate values
+				const cleanVal = value.replace(/,/g, '').trim();
+				num = Number(cleanVal);
+			} else {
+				return value;
+			}
+			if (isNaN(num)) return value;
+			return Number(num.toFixed(7));
+		}
+		case 'string':
+		default:
+			return value;
+	}
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
