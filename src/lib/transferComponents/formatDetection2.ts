@@ -350,12 +350,18 @@ export function isLongitude(val: string | number | null): boolean {
 // - ISO weeks (YYYY-W##)
 // =============================================
 
+// Define month names for matching (used by both isDate and formatValue)
+const monthNamesLong = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const monthNamesShort = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
 export function isDate(value: any): boolean {
 	if (value === null || value === undefined || value === '') return false;
+	
 	if (typeof value === 'number') {
 		// Check if it's a valid year
 		return 1900 < value && value < 2040;
 	}
+	
 	if (typeof value === 'string') {
 		// Check if it's a standalone year
 		if (/^\d{4}$/.test(value)) {
@@ -363,26 +369,57 @@ export function isDate(value: any): boolean {
 			return 1900 < year && year < 2040;
 		}
 
+		// Check for standalone month ("August", "Aug")
+		const standaloneMonthMatch = value.match(/^\s*([A-Za-z]{3,})\s*$/i);
+		if (standaloneMonthMatch) {
+			const monthStr = standaloneMonthMatch[1].toLowerCase();
+			// Check if it's a valid month name
+			for (const month of [...monthNamesLong, ...monthNamesShort]) {
+				if (monthStr.startsWith(month) || month.startsWith(monthStr)) {
+					return true;
+				}
+			}
+		}
+
+		// Check for month-year combinations in any order
+		const monthYearMatch = value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) || 
+							 value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
+		if (monthYearMatch) {
+			let monthStr;
+			if (isNaN(Number(monthYearMatch[1]))) {
+				monthStr = monthYearMatch[1].toLowerCase();
+			} else {
+				monthStr = monthYearMatch[2].toLowerCase();
+			}
+			
+			// Check if it's a valid month name
+			for (const month of [...monthNamesLong, ...monthNamesShort]) {
+				if (monthStr.startsWith(month) || month.startsWith(monthStr)) {
+					return true;
+				}
+			}
+		}
+
 		// Also check for two-digit years (YY) in certain contexts
 		if (/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2}$/i.test(value)) {
 			return true; // Format like 14-Mar-22
 		}
 
-		// Check other date formats
+		// Check against a list of common date formats
 		const DATE_FORMATS = [
 			// ISO formats
-			/^\d{4}-\d{1,2}-\d{1,2}$/, // YYYY-MM-DD
-			/^\d{4}\/\d{1,2}\/\d{1,2}$/, // YYYY/MM/DD
-			/^\d{4}\.\d{1,2}\.\d{1,2}$/, // YYYY.MM.DD
+			/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (ISO)
+			/^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
+			/^\d{4}\.\d{2}\.\d{2}$/, // YYYY.MM.DD
 			
-			// American formats
-			/^\d{1,2}\/\d{1,2}\/\d{4}$/, // MM/DD/YYYY or DD/MM/YYYY
-			/^\d{1,2}\.\d{1,2}\.\d{4}$/, // MM.DD.YYYY or DD.MM.YYYY
+			// US/UK formats
+			/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}$/, // MM/DD/YYYY or DD/MM/YYYY
+			/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2}$/, // MM/DD/YY or DD/MM/YY
 			
-			// Long date formats with month names
-			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s*\d{4}$/i, // Month DD, YYYY
-			/^\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // DD Month YYYY
-			/^\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // DD(st/nd/rd/th) MMM YYYY (e.g., 14th Mar 2025)
+			// Text month formats
+			/^(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}$/i, // Month DD, YYYY
+			/^\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // DD Month YYYY
+			/^\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // D(st|nd|rd|th) Month YYYY
 			
 			// Short date formats with month abbreviations
 			/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}$/i, // DD-MMM-YYYY
@@ -642,25 +679,91 @@ export function formatValue(
 					}
 				}
 
-				// Format: MMMM YYYY (e.g., "March 2023") - set to 1st of month at midnight
-				if (!dateObj) {
-					const monthYearMatch = value.match(/^([A-Za-z]+)\s+(\d{4})$/i);
-					if (monthYearMatch) {
-						const monthStr = monthYearMatch[1].toLowerCase();
-						const year = parseInt(monthYearMatch[2]);
+				// --- Robust month-year and standalone month parsing ---
+if (!dateObj) {
+  // Try: "Month YYYY", "YYYY Month", "Month, YYYY", "YYYY, Month", any order, any punctuation
+  const flex = value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) || 
+               value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
+  
+  console.log(`DEBUG DATE PARSING [FLEX_MATCH] for '${value}': ${flex ? 'matched' : 'no match'}`);
+  
+  if (flex) {
+    let monthStr, year;
+    if (isNaN(Number(flex[1]))) {
+      monthStr = flex[1].toLowerCase();
+      year = parseInt(flex[2]);
+    } else {
+      year = parseInt(flex[1]);
+      monthStr = flex[2].toLowerCase();
+    }
+    
+    console.log(`DEBUG DATE PARSING [EXTRACTED] for '${value}': month='${monthStr}', year=${year}`);
+    
+    // More robust month matching
+    let monthNum = -1;
+    for (let i = 0; i < monthNamesLong.length; i++) {
+      if (monthStr.startsWith(monthNamesLong[i]) || monthNamesLong[i].startsWith(monthStr)) {
+        monthNum = i;
+        break;
+      }
+    }
+    
+    if (monthNum === -1) {
+      for (let i = 0; i < monthNamesShort.length; i++) {
+        if (monthStr.startsWith(monthNamesShort[i]) || monthNamesShort[i].startsWith(monthStr)) {
+          monthNum = i;
+          break;
+        }
+      }
+    }
+    
+    console.log(`DEBUG DATE PARSING [MONTH_NUM] for '${value}': ${monthNum}`);
+    
+    if (monthNum !== -1) {
+      dateObj = new Date(year, monthNum, 1, 0, 0, 0);
+      console.log(`DEBUG DATE PARSING [CREATED_DATE] for '${value}': ${dateObj.toISOString()}`);
+    }
+  }
+}
 
-						// Find month number
-						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
-						if (monthNum === -1) {
-							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
-						}
-						
-						if (monthNum !== -1) {
-							// Set to 1st day of the month at midnight
-							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
-						}
-					}
-				}
+// Standalone month ("August", "Aug")
+if (!dateObj) {
+  const m = value.match(/^\s*([A-Za-z]{3,})\s*$/i);
+  
+  console.log(`DEBUG DATE PARSING [STANDALONE_MATCH] for '${value}': ${m ? 'matched' : 'no match'}`);
+  
+  if (m) {
+    const monthStr = m[1].toLowerCase();
+    const now = new Date();
+    const year = now.getFullYear() - 1;
+    
+    // More robust month matching
+    let monthNum = -1;
+    for (let i = 0; i < monthNamesLong.length; i++) {
+      if (monthStr.startsWith(monthNamesLong[i]) || monthNamesLong[i].startsWith(monthStr)) {
+        monthNum = i;
+        break;
+      }
+    }
+    
+    if (monthNum === -1) {
+      for (let i = 0; i < monthNamesShort.length; i++) {
+        if (monthStr.startsWith(monthNamesShort[i]) || monthNamesShort[i].startsWith(monthStr)) {
+          monthNum = i;
+          break;
+        }
+      }
+    }
+    
+    console.log(`DEBUG DATE PARSING [STANDALONE_MONTH_NUM] for '${value}': ${monthNum}`);
+    
+    if (monthNum !== -1) {
+      dateObj = new Date(year, monthNum, 1, 0, 0, 0);
+      console.log(`DEBUG DATE PARSING [STANDALONE_DATE] for '${value}': ${dateObj.toISOString()}`);
+    }
+  }
+}
+// --- END robust month-year and standalone month parsing ---
 
 				// If we successfully parsed the date, return as ISO string
 				if (dateObj && !isNaN(dateObj.getTime())) {
