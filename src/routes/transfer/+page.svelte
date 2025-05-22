@@ -1,4 +1,32 @@
 <script lang="ts">
+	import { tick } from 'svelte';
+	let copied = $state(false);
+	function copyColumnModelJson() {
+		const json = JSON.stringify(
+			importedData.columns.map((col) => ({
+				headerName: col.headerName,
+				type: col.type,
+				currentFormat: col.currentFormat,
+				isToggled: col.isToggled,
+				isGreyed: col.isGreyed.slice(0, 3),
+				formattedValues: col.formattedValues.slice(0, 3),
+				isMapped: col.isMapped,
+				mappedTo: col.mappedTo,
+				isFormatted: col.isFormatted,
+				selectFormatCoercion: col.selectFormatCoercion,
+				wasFormatCoerced: col.wasFormatCoerced,
+				values: col.values.slice(0, 3)
+			})),
+			null,
+			2
+		);
+		navigator.clipboard.writeText(json).then(async () => {
+			copied = true;
+			await tick();
+			setTimeout(() => (copied = false), 1200);
+		});
+	}
+
 	import NewTableData from '$lib/transferComponents/newTableData.svelte';
 	import TransferCSVImporter from '$lib/transferComponents/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
@@ -140,7 +168,20 @@
 	{/if}
 
 {#if importedData.columns}
-	<h2>Current Column Model State</h2>
+	<div style="display: flex; align-items: center; gap: 0.5rem;">
+	<button
+		aria-label="Copy column model JSON"
+		style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1.2rem;"
+		onclick={copyColumnModelJson}
+		title="Copy JSON to clipboard"
+	>
+		📋
+	</button>
+	<h2 style="margin: 0;">Current Column Model State</h2>
+	{#if copied}
+		<span style="color: green; font-size: 0.9rem; margin-left: 0.5rem;">Copied!</span>
+	{/if}
+</div>
 	<pre>
 		{JSON.stringify(
 			importedData.columns.map((col) => ({
@@ -155,18 +196,17 @@
 				isFormatted: col.isFormatted,
 				selectFormatCoercion: col.selectFormatCoercion, // Updated name
 				wasFormatCoerced: col.wasFormatCoerced, // Updated name
-				values: col.values.slice(0, 3)
 			})),
 			null,
 			2
 		)}
-	  </pre>
+	</pre>
 {/if}
 
 <style>
 	.spinner {
 		display: inline-block;
-		width: 1rem;
+
 		height: 1rem;
 		margin-right: 0.5rem;
 		border: 2px solid rgba(255, 255, 255, 0.3);
