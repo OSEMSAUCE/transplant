@@ -1,7 +1,9 @@
 <script lang="ts">
 	let projectName: string = '';
 	let { addProjectName } = $props<{ addProjectName?: (projectName: string) => void }>();
-
+// next feature, is  auto complete? dropdown etc/
+// pull from database the project names - Best to do this from the parent. 
+// 
 	function handleSubmit(event: Event) {
 		addProjectName(projectName);
 	}
