@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import TopForm from '$lib/transferComponents/topForm.svelte';
+
+	const addProjectName = (projectName: string) => {
+		console.log('projectName', projectName)
+	}
+
 	let copied = $state(false);
 	function copyColumnModelJson() {
 		const json = JSON.stringify(
@@ -96,6 +102,8 @@
 		});
 	}
 </script>
+
+<TopForm addProjectName={addProjectName} />
 
 <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
 	<div>
