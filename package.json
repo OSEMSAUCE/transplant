@@ -14,6 +14,7 @@
 		"import:dev": "dotenv -e .env.dev -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
 		"import:prod": "dotenv -e .env.production -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
 		"migrate:dev": "dotenv -e .env.dev -- prisma migrate dev",
+		"migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
