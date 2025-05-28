@@ -33,6 +33,7 @@
 	}
 
 	function selectSuggestion(name: string) {
+		Ok;
 		projectName = name;
 		filteredProjects = [];
 		inputFocused = false;
@@ -113,41 +114,39 @@
 			{/each}
 		</ul>
 	{/if}
-
-	
 </form>
 
 <style>
-    :global(#autocomplete-items-list) {
-      /* Override Pico's variable and fallback background */
-      --pico-background-color: #a7c0cc44 !important;
-      background: #a7c0cc55 !important;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #2196f355;
-      border-radius: 0.25rem;
-      min-width: 200px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    
-    :global(#autocomplete-items-list li),
-    :global(#autocomplete-items-list li.selected),
-    :global(#autocomplete-items-list li:hover) {
-      background: transparent !important;
-    }
-    
-    :global(#autocomplete-items-list li.selected) {
-      background-color: #2196f355 !important;
-      color: #2196f3 !important;
-      border: 2px solid #2196f355;
-      border-radius: 0.25rem;
-      font-weight: bold;
-    }
-    
-    :global(#autocomplete-items-list li:hover) {
-      background: #6b7980 !important;
-    }
-    </style>
+	:global(#autocomplete-items-list) {
+		/* Override Pico's variable and fallback background */
+		--pico-background-color: #a7c0cc44 !important;
+		background: #a7c0cc55 !important;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid #2196f355;
+		border-radius: 0.25rem;
+		min-width: 200px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	:global(#autocomplete-items-list li),
+	:global(#autocomplete-items-list li.selected),
+	:global(#autocomplete-items-list li:hover) {
+		background: transparent !important;
+	}
+
+	:global(#autocomplete-items-list li.selected) {
+		background-color: #21f35625 !important;
+		color: #2196f3 !important;
+		border: 2px solid #21f35655;
+		border-radius: 0.25rem;
+		font-weight: bold;
+	}
+
+	:global(#autocomplete-items-list li:hover) {
+		background: #6b7980 !important;
+	}
+</style>
