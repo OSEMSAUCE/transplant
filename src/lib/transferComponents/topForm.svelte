@@ -1,21 +1,39 @@
 <script lang="ts">
-	let projectName: string = '';
+let inputFocused = $state(false);
+	import { onMount } from 'svelte';
+
 	let { addProjectName } = $props<{ addProjectName?: (projectName: string) => void }>();
-    
-    // API HERE!!!!  @+server.ts#L1-9 
+	let projectName = $state('');
+	let data = $state<projects[]>([]);
+	let filteredProjects = $state<projects[]>([]);
 
+	type projects = {
+		projectName: string;
+		projectId: string;
+	};
 
-    
-    // pull from database the project names - Best to do this from the parent. 
-    // Remove submit button and tie it to Send to TransPlant button
-    // make transplant button grey out until requred filled out.
-    // red outline of top Form for required
-    // make organization input and give it lookup from projectName
-    // make project auto complete? dropdown etc from projects
-    // deal with auto genarated projects name submitted through Retreever.
-    // 
-    // next feature, is  auto complete? dropdown etc/
-// 
+	let projectNameList = $state<projects[]>([]);
+
+// Filtered suggestions based on input
+// let filteredProjects = $derived(
+//   projectNameList.filter(
+//     (p) => projectName && p.projectName.toLowerCase().includes(projectName.toLowerCase())
+//   )
+// );
+
+function selectSuggestion(name: string) {
+  projectName = name;
+}
+
+	// Call the GET endpoint when the component mounts
+	onMount(async () => {
+		const res = await fetch('/api/topFormApi');
+		data = (await res.json()) as projects[];
+		console.log(data);
+		projectNameList = data || [];
+	});
+
+	
 	function handleSubmit(event: Event) {
 		addProjectName(projectName);
 	}
@@ -24,6 +42,20 @@
 <form action="" onsubmit={handleSubmit}>
 	<h1>Top Form</h1>
 
-	<input type="text" bind:value={projectName} placeholder="Project Name" />
+	<input
+  type="text"
+  bind:value={projectName}
+  placeholder="Project Name"
+  onfocus={() => inputFocused = true}
+  onblur={() => inputFocused = false}
+/>
+<p>Debug: {JSON.stringify(projectNameList)}</p>
+{#if (inputFocused || projectName.length > 0) && projectNameList.length > 0}
+  <ul id="autocomplete-items-list">
+    {#each projectNameList as project}
+      <li>{project.projectName}</li>
+    {/each}
+  </ul>
+{/if}
 	<button type="submit">Submit</button>
-</form>RU
+</form>
