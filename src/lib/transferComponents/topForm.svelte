@@ -114,7 +114,7 @@
 		</ul>
 	{/if}
 
-	<button type="submit">Submit</button>
+	
 </form>
 
 <style>
@@ -127,7 +127,7 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      border: 1px solid #2196f3;
+      border: 1px solid #2196f355;
       border-radius: 0.25rem;
       min-width: 200px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -140,14 +140,14 @@
     }
     
     :global(#autocomplete-items-list li.selected) {
-      background-color: #2196f3 !important;
-      color: white !important;
-      border: 2px solid #2196f3;
+      background-color: #2196f355 !important;
+      color: #2196f3 !important;
+      border: 2px solid #2196f355;
       border-radius: 0.25rem;
       font-weight: bold;
     }
     
     :global(#autocomplete-items-list li:hover) {
-      background: #a7c0cc !important;
+      background: #6b7980 !important;
     }
     </style>
