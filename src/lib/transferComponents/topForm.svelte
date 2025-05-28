@@ -106,7 +106,7 @@
 				<li
 					onmousedown={() => selectSuggestion(project.projectName)}
 					class:selected={i === highlightedIndex}
-					style="cursor:pointer; background: {i === highlightedIndex ? '#eee' : 'transparent'}"
+					style="cursor:pointer"
 				>
 					{project.projectName}
 				</li>
@@ -118,8 +118,36 @@
 </form>
 
 <style>
-	.selected {
-		background: #eee;
-		font-weight: bold;
-	}
-</style>
+    :global(#autocomplete-items-list) {
+      /* Override Pico's variable and fallback background */
+      --pico-background-color: #a7c0cc44 !important;
+      background: #a7c0cc55 !important;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #2196f3;
+      border-radius: 0.25rem;
+      min-width: 200px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    :global(#autocomplete-items-list li),
+    :global(#autocomplete-items-list li.selected),
+    :global(#autocomplete-items-list li:hover) {
+      background: transparent !important;
+    }
+    
+    :global(#autocomplete-items-list li.selected) {
+      background-color: #2196f3 !important;
+      color: white !important;
+      border: 2px solid #2196f3;
+      border-radius: 0.25rem;
+      font-weight: bold;
+    }
+    
+    :global(#autocomplete-items-list li:hover) {
+      background: #a7c0cc !important;
+    }
+    </style>
