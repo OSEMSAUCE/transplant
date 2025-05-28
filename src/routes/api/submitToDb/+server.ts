@@ -1,6 +1,14 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 
+// 
+// this is going to post projectName and projectStatus along with 
+// the rest of the posts on this page. Upsert, like the rest of it.
+// export async function POST() {
+// 	// add new projects
+// 	}
+	
+
 export async function POST({ request }) {
 	const data = await request.json();
 
