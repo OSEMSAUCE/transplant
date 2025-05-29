@@ -111,9 +111,11 @@ model Organizations {
   deleted             Boolean?              @default(false)
   gpsLat              Float?
   gpsLon              Float?
+  stakeholderTypeId   String?               @db.Uuid
   Crop                Crop[]
   CropStakeholders    CropStakeholders[]
   LandStakeholders    LandStakeholders[]
+  StakeholderTypes    StakeholderTypes?     @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onUpdate: NoAction, map: "fk_organizations_stakeholdertypeid")
   ProjectStakeholders ProjectStakeholders[]
 
   @@map("Organizations")
@@ -141,9 +143,10 @@ model StakeholderTypes {
   createdAt           DateTime?             @default(now()) @db.Timestamptz(6)
   lastEditedAt        DateTime?             @default(now()) @db.Timestamptz(6)
   deleted             Boolean?              @default(false)
-  stakeholderTypeId   String                @id @db.Uuid
+  stakeholderTypeId   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   CropStakeholders    CropStakeholders[]
   LandStakeholders    LandStakeholders[]
+  Organizations       Organizations[]
   ProjectStakeholders ProjectStakeholders[]
 
   @@map("StakeholderTypes")
