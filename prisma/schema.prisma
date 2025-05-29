@@ -141,7 +141,7 @@ model StakeholderTypes {
   createdAt           DateTime?             @default(now()) @db.Timestamptz(6)
   lastEditedAt        DateTime?             @default(now()) @db.Timestamptz(6)
   deleted             Boolean?              @default(false)
-  stakeholderTypeId   String                @id
+  stakeholderTypeId   String                @id @db.Uuid
   CropStakeholders    CropStakeholders[]
   LandStakeholders    LandStakeholders[]
   ProjectStakeholders ProjectStakeholders[]
@@ -190,7 +190,7 @@ model CropStakeholders {
   cropStakeholderId String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cropId            String           @db.Uuid
   organizationId    String           @db.Uuid
-  stakeholderTypeId String
+  stakeholderTypeId String           @db.Uuid
   Crop              Crop             @relation(fields: [cropId], references: [cropId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_cropid")
   Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_organizationid")
   StakeholderTypes  StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_stakeholdertypeid")
@@ -206,7 +206,7 @@ model LandStakeholders {
   landStakeholderId String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   landId            String           @db.Uuid
   organizationId    String           @db.Uuid
-  stakeholderTypeId String
+  stakeholderTypeId String           @db.Uuid
   Land              Land             @relation(fields: [landId], references: [landId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_landid")
   Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_organizationid")
   StakeholderTypes  StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_stakeholdertypeid")
@@ -221,7 +221,7 @@ model LandStakeholders {
 model ProjectStakeholders {
   stakeholderId     String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId    String           @db.Uuid
-  stakeholderTypeId String
+  stakeholderTypeId String           @db.Uuid
   projectId         String           @db.Uuid
   Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_organizationid")
   Projects          Projects         @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_projectid")
