@@ -32,7 +32,9 @@
 	let organizationHighlighted = $state<number | null>(null);
 	let inputFocusedOrganization = $state(false);
 	
-	
+	// NOT generic OrgnaisationName , allOrganizations, filteredOrganizations, 
+	// GENERIC organizationHighlighted, inputFocusedOrganization
+	//
 	
 	
 
