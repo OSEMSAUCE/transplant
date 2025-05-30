@@ -4,10 +4,10 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"db:generate:dev": "prisma generate",
-		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
 		"db:pull:dev": "dotenv -e .env.dev -- prisma db pull",
 		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
+		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
+		"db:generate:dev": "prisma generate",
 		"dev:dev": "dotenv -e .env.dev -- vite dev",
 		"dev:prod": "dotenv -e .env.production -- vite dev",
 		"dev:prod_db": "dotenv -e .env.production -- vite dev",
