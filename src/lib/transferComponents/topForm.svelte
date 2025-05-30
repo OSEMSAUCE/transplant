@@ -10,27 +10,31 @@
 	}
 
 	// Existing project name logic
-
-	type Project = { projectName: string; projectId: string };
 	type ApiResponse = { projects: Project[], organizations: Organization[] };
+	type Project = { projectName: string; projectId: string };
 	type Organization = { organizationName: string; organizationId: string };
-
+	
+	// Generic autocomplete state
+	let inputFocused = $state(false);
+	
+	// Project autocomplete state	
 	let { addProjectName } = $props<{ addProjectName?: (projectName: string) => void }>();
 	let projectName = $state('');
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
-	let inputFocused = $state(false);
 	let highlightedIndex = $state<number | null>(null);
+	let inputFocusedProject = $state(false);
 
 	// Organization autocomplete state	
-	let organizationInput = $state('');
 	let organizationName = $state('');
 	let allOrganizations = $state<Organization[]>([]);
 	let filteredOrganizations = $state<Organization[]>([]);
-	let organizationSuggestions = $state<string[]>([]);
-	let organizationLoading = $state(false);
-	let organizationFocused = $state(false);
 	let organizationHighlighted = $state<number | null>(null);
+	let inputFocusedOrganization = $state(false);
+	
+	
+	
+	
 
 	// Fetch all projects on mount
 	onMount(async () => {
@@ -55,67 +59,58 @@
 		highlightedIndex = filteredProjects.length > 0 ? 0 : null;
 	}
 
-	function selectSuggestion(name: string) {
+	function filterOrganizations() {
+		if (!organizationName) {
+			filteredOrganizations = [];
+			organizationHighlighted = null;
+			return;
+		}
+		filteredOrganizations = allOrganizations.filter((o) =>
+			o.organizationName.toLowerCase().includes(organizationName.toLowerCase())
+		);
+		organizationHighlighted = filteredOrganizations.length > 0 ? 0 : null;
+	}
+
+	function selectProjectSuggestion(name: string) {
 		projectName = name;
 		filteredProjects = [];
 		inputFocused = false;
 	}
 
-	function handleFocus() {
-		inputFocused = true;
+	function selectOrganizationSuggestion(name: string) {
+		organizationName = name;
+		filteredOrganizations = [];
+		inputFocused = false;
+	}
+
+	function handleProjectFocus() {
+		inputFocusedProject = true;
 		filterProjects();
 	}
 
-	// --- Organization Autocomplete Logic ---
-	const fetchOrganizationSuggestions = debounce(async () => {
-		if (organizationInput.length < 2) {
-			organizationSuggestions = [];
-			organizationLoading = false;
-			return;
-		}
-		organizationLoading = true;
-		try {
-			// Replace this URL with your real endpoint
-			const res = await fetch(`/api/organizations?search=${encodeURIComponent(organizationInput)}`);
-			if (res.ok) {
-				const data = await res.json();
-				organizationSuggestions = data.organizations || [];
-			} else {
-				organizationSuggestions = [];
-			}
-		} catch (err) {
-			organizationSuggestions = [];
-		}
-		organizationLoading = false;
-	}, 300);
-
-	function onOrganizationInput() {
-		organizationHighlighted = null;
-		fetchOrganizationSuggestions();
+	function handleOrganizationFocus() {
+		inputFocusedOrganization = true;
+		filterOrganizations();
 	}
 
-	function selectOrganization(org: string) {
-		organizationInput = org;
-		organizationSuggestions = [];
-		organizationFocused = false;
-	}
-
-	function createNewOrganization(org: string) {
-		// TODO: Implement creation logic or emit event
-		organizationInput = org;
-		organizationSuggestions = [];
-		organizationFocused = false;
-	}
-
-	function handleBlur() {
+	function handleProjectBlur() {
 		// Delay to allow click event on suggestion
 		setTimeout(() => {
-			inputFocused = false;
+			inputFocusedProject = false;
 			highlightedIndex = null;
 		}, 100);
 	}
 
-	function handleKeydown(e: KeyboardEvent) {
+	function handleOrganizationBlur() {
+		// Delay to allow click event on suggestion
+		setTimeout(() => {
+			inputFocusedOrganization = false;
+			organizationHighlighted = null;
+		}, 100);
+	}
+
+
+	function handleProjectKeydown(e: KeyboardEvent) {
 		if (!filteredProjects.length) return;
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
@@ -133,12 +128,39 @@
 			}
 		} else if (e.key === 'Enter' || e.key === 'Tab') {
 			if (highlightedIndex !== null && filteredProjects[highlightedIndex]) {
-				selectSuggestion(filteredProjects[highlightedIndex].projectName);
+				selectProjectSuggestion(filteredProjects[highlightedIndex].projectName);
 				e.preventDefault();
 			}
 		} else if (e.key === 'Escape') {
 			filteredProjects = [];
 			highlightedIndex = null;
+		}
+	}
+
+	function handleOrganizationKeydown(e: KeyboardEvent) {
+		if (!filteredOrganizations.length) return;
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			if (organizationHighlighted === null || organizationHighlighted === filteredOrganizations.length - 1) {
+				organizationHighlighted = 0;
+			} else {
+				organizationHighlighted!++;
+			}
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			if (organizationHighlighted === null || organizationHighlighted === 0) {
+				organizationHighlighted = filteredOrganizations.length - 1;
+			} else {
+				organizationHighlighted!--;
+			}
+		} else if (e.key === 'Enter' || e.key === 'Tab') {
+			if (organizationHighlighted !== null && filteredOrganizations[organizationHighlighted]) {
+				selectOrganizationSuggestion(filteredOrganizations[organizationHighlighted].organizationName);
+				e.preventDefault();
+			}
+		} else if (e.key === 'Escape') {
+			filteredOrganizations = [];
+			organizationHighlighted = null;
 		}
 	}
 
@@ -159,17 +181,17 @@
 			bind:value={projectName}
 			placeholder="Project Name"
 			oninput={filterProjects}
-			onfocus={handleFocus}
-			onblur={handleBlur}
-			onkeydown={handleKeydown}
+			onfocus={handleProjectFocus}
+			onblur={handleProjectBlur}
+			onkeydown={handleProjectKeydown}
 			autocomplete="off"
 		/>
-		{#if inputFocused && filteredProjects.length > 0}
+		{#if inputFocusedProject && filteredProjects.length > 0}
 			<ul id="autocomplete-items-list" role="listbox">
 				{#each filteredProjects as project, i}
 					<li
 						role="option"
-						onmousedown={() => selectSuggestion(project.projectName)}
+						onmousedown={() => selectProjectSuggestion(project.projectName)}
 						class:selected={i === highlightedIndex}
 						style="cursor:pointer"
 					>
@@ -186,18 +208,18 @@
 			type="text"
 			bind:value={organizationName}
 			placeholder="Organization Name"
-			oninput={filterProjects}
-			onfocus={handleFocus}
-			onblur={handleBlur}
-			onkeydown={handleKeydown}
+			oninput={filterOrganizations}
+			onfocus={handleOrganizationFocus}
+			onblur={handleOrganizationBlur}
+			onkeydown={handleOrganizationKeydown}
 			autocomplete="off"
 		/>
-		{#if inputFocused && filteredOrganizations.length > 0}
+		{#if inputFocusedOrganization && filteredOrganizations.length > 0}
 			<ul id="autocomplete-items-list" role="listbox">
 				{#each filteredOrganizations as organization, i}
 					<li
 						role="option"
-						onmousedown={() => selectOrganization(organization.organizationName)}
+						onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
 						class:selected={i === organizationHighlighted}
 						style="cursor:pointer"
 					>
