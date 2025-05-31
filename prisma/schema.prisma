@@ -10,250 +10,6 @@ datasource db {
   schemas  = ["auth", "public"]
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Crop {
-  cropId           String             @id(map: "Trees_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cropName         String
-  speciesId        String?            @db.Uuid
-  seedInfo         String?
-  cropStock        String?
-  createdAt        DateTime?          @default(now()) @db.Timestamptz(6)
-  lastEditedAt     DateTime?          @default(now()) @db.Timestamptz(6)
-  editedBy         String?            @db.Uuid
-  deleted          Boolean?           @default(false)
-  projectId        String?            @db.Uuid
-  organizationId   String?            @db.Uuid
-  cropNotes        String?
-  csvobjId         String?            @db.Uuid
-  csvobj           csvobj?            @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
-  Organizations    Organizations?     @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction)
-  Projects         Projects?          @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
-  Species          Species?           @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction)
-  CropStakeholders CropStakeholders[]
-  Planting         Planting[]
-
-  @@unique([projectId, cropName], map: "unique_crop_name_per_project")
-  @@index([organizationId], map: "idx_crop_organization_id")
-  @@index([projectId], map: "idx_crop_project_id")
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Land {
-  landId           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landName         String
-  projectId        String?            @db.Uuid
-  hectares         Decimal?           @db.Decimal
-  landHolder       String?
-  gpsLat           Decimal?           @db.Decimal
-  gpsLon           Decimal?           @db.Decimal
-  landNotes        String?
-  createdAt        DateTime?          @default(now()) @db.Timestamptz(6)
-  lastEditedAt     DateTime?          @default(now()) @db.Timestamptz(6)
-  editedBy         String?            @db.Uuid
-  deleted          Boolean?           @default(false)
-  preparation      Preparation?
-  csvobjId         String?            @db.Uuid
-  polygon          Json?
-  csvobj           csvobj?            @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
-  Projects         Projects?          @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
-  LandStakeholders LandStakeholders[]
-  Planting         Planting[]
-
-  @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
-  @@index([projectId], map: "idx_land_project_id")
-  @@schema("public")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Organizations {
-  organizationId      String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationName    String                @unique(map: "unique_organization_name")
-  contactName         String?
-  contactEmail        String?
-  contactPhone        String?
-  address             String?
-  website             String?
-  organizationNotes   String?
-  createdAt           DateTime?             @default(now()) @db.Timestamptz(6)
-  lastEditedAt        DateTime?             @default(now()) @db.Timestamptz(6)
-  editedBy            String?               @db.Uuid
-  deleted             Boolean?              @default(false)
-  gpsLat              Float?
-  gpsLon              Float?
-  stakeholderTypeId   String?               @db.Uuid
-  Crop                Crop[]
-  CropStakeholders    CropStakeholders[]
-  LandStakeholders    LandStakeholders[]
-  StakeholderTypes    StakeholderTypes?     @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onUpdate: NoAction, map: "fk_organizations_stakeholdertypeid")
-  ProjectStakeholders ProjectStakeholders[]
-  profiles            profiles[]
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Planting {
-  plantingId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landId        String?   @db.Uuid
-  planted       Int?
-  plantingDate  DateTime? @db.Date
-  createdAt     DateTime? @default(now()) @db.Timestamptz(6)
-  lastEditedAt  DateTime? @default(now()) @db.Timestamptz(6)
-  deleted       Boolean?  @default(false)
-  cropId        String?   @db.Uuid
-  plantingNotes String?
-  Crop          Crop?     @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction)
-  Land          Land?     @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction)
-
-  @@unique([landId, cropId], map: "unique_land_crop")
-  @@index([cropId], map: "idx_planting_crop_id")
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Projects {
-  projectId           String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectName         String                @unique(map: "unique_project_name")
-  projectNotes        String?
-  createdAt           DateTime?             @default(now()) @db.Timestamptz(6)
-  lastEditedAt        DateTime?             @default(now()) @db.Timestamptz(6)
-  editedBy            String?               @db.Uuid
-  deleted             Boolean?              @default(false)
-  csvobjId            String?               @db.Uuid
-  source              String?
-  Crop                Crop[]
-  Land                Land[]
-  ProjectStakeholders ProjectStakeholders[]
-  csvobj              csvobj?               @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Species {
-  speciesId      String    @id @db.Uuid
-  commonName     String    @unique(map: "unique_common_name")
-  scientificName String?
-  type           String?
-  family         String?
-  reference      String?
-  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
-  lastEditedAt   DateTime? @default(now()) @db.Timestamptz(6)
-  editedBy       String?   @db.Uuid
-  deleted        Boolean?  @default(false)
-  Crop           Crop[]
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model StakeholderTypes {
-  stakeholderType     String
-  createdAt           DateTime?             @default(now()) @db.Timestamptz(6)
-  lastEditedAt        DateTime?             @default(now()) @db.Timestamptz(6)
-  deleted             Boolean?              @default(false)
-  stakeholderTypeId   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  CropStakeholders    CropStakeholders[]
-  LandStakeholders    LandStakeholders[]
-  Organizations       Organizations[]
-  ProjectStakeholders ProjectStakeholders[]
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model ProjectStakeholders {
-  stakeholderId     String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId    String           @db.Uuid
-  stakeholderTypeId String           @db.Uuid
-  projectId         String           @db.Uuid
-  Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_organizationid")
-  Projects          Projects         @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_projectid")
-  StakeholderTypes  StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_stakeholdertypeid")
-
-  @@unique([organizationId, stakeholderTypeId, projectId], map: "unique_org_type_project")
-  @@index([organizationId], map: "idx_organizationid")
-  @@index([projectId], map: "idx_projectid")
-  @@index([stakeholderTypeId], map: "idx_stakeholdertypeid")
-  @@schema("public")
-}
-
-/// New model for land-specific stakeholders
-model LandStakeholders {
-  landStakeholderId String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landId            String           @db.Uuid
-  organizationId    String           @db.Uuid
-  stakeholderTypeId String           @db.Uuid
-  Land              Land             @relation(fields: [landId], references: [landId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_landid")
-  Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_organizationid")
-  StakeholderTypes  StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_stakeholdertypeid")
-
-  @@unique([landId, organizationId, stakeholderTypeId], map: "unique_land_org_type")
-  @@index([landId], map: "idx_land_stakeholders_landid")
-  @@index([organizationId], map: "idx_land_stakeholders_organizationid")
-  @@index([stakeholderTypeId], map: "idx_land_stakeholders_stakeholdertypeid")
-  @@schema("public")
-}
-
-/// New model for crop-specific stakeholders
-model CropStakeholders {
-  cropStakeholderId String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cropId            String           @db.Uuid
-  organizationId    String           @db.Uuid
-  stakeholderTypeId String           @db.Uuid
-  Crop              Crop             @relation(fields: [cropId], references: [cropId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_cropid")
-  Organizations     Organizations    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_organizationid")
-  StakeholderTypes  StakeholderTypes @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_stakeholdertypeid")
-
-  @@unique([cropId, organizationId, stakeholderTypeId], map: "unique_crop_org_type")
-  @@index([cropId], map: "idx_crop_stakeholders_cropid")
-  @@index([organizationId], map: "idx_crop_stakeholders_organizationid")
-  @@index([stakeholderTypeId], map: "idx_crop_stakeholders_stakeholdertypeid")
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model csvobj {
-  csvobjId  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  jsonData  Json
-  createdAt DateTime?  @default(now()) @db.Timestamp(6)
-  Crop      Crop[]
-  Land      Land[]
-  Projects  Projects[]
-  metadata  metadata[]
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model metadata {
-  metadataId String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  csvobjId   String    @db.Uuid
-  csvKey     String
-  dbKey      String
-  createdAt  DateTime? @default(now()) @db.Timestamp(6)
-  csvobj     csvobj    @relation(fields: [csvobjId], references: [csvobjId], onDelete: Cascade, onUpdate: NoAction)
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Nursery {
-  nurseryId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  gpsLat       Float
-  gpsLon       Float
-  capacity     Int
-  nurseryNotes String?
-  tradeName    String
-  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
-  createdBy    String    @db.Uuid
-  lastEditedAt DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@schema("public")
-}
-
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model audit_log_entries {
@@ -564,7 +320,7 @@ model users {
   mfa_factors                 mfa_factors[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
-  profiles                    profiles?
+  profilesTable               profilesTable?
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -572,30 +328,274 @@ model users {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model profiles {
-  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id          String         @unique @db.Uuid
-  firstname        String
-  lastname         String
-  phonenumber      String?
-  isactive         Boolean?       @default(true)
-  isverified       Boolean?       @default(false)
-  role             user_role?     @default(user)
-  permissions      Json?          @default("{}")
-  createdat        DateTime?      @default(now()) @db.Timestamptz(6)
-  updatedat        DateTime?      @default(now()) @db.Timestamptz(6)
-  lastlogin        DateTime?      @db.Timestamptz(6)
-  twofactorenabled Boolean?       @default(false)
-  twofactorsecret  String?
-  organizationid   String?        @db.Uuid
-  locale           String?        @default("en")
-  timezone         String?        @default("UTC")
-  Organizations    Organizations? @relation(fields: [organizationid], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
-  users            users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model cropStakeholdersTable {
+  cropStakeholderId     String                @id(map: "CropStakeholders_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cropId                String                @db.Uuid
+  organizationId        String                @db.Uuid
+  stakeholderTypeId     String                @db.Uuid
+  cropTable             cropTable             @relation(fields: [cropId], references: [cropId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_cropid")
+  organizationsTable    organizationsTable    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_organizationid")
+  stakeholderTypesTable stakeholderTypesTable @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_cropstakeholders_stakeholdertypeid")
+
+  @@unique([cropId, organizationId, stakeholderTypeId], map: "unique_crop_org_type")
+  @@index([cropId], map: "idx_crop_stakeholders_cropid")
+  @@index([organizationId], map: "idx_crop_stakeholders_organizationid")
+  @@index([stakeholderTypeId], map: "idx_crop_stakeholders_stakeholdertypeid")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cropTable {
+  cropId                String                  @id(map: "Trees_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cropName              String
+  speciesId             String?                 @db.Uuid
+  seedInfo              String?
+  cropStock             String?
+  createdAt             DateTime?               @default(now()) @db.Timestamptz(6)
+  lastEditedAt          DateTime?               @default(now()) @db.Timestamptz(6)
+  editedBy              String?                 @db.Uuid
+  deleted               Boolean?                @default(false)
+  projectId             String?                 @db.Uuid
+  organizationId        String?                 @db.Uuid
+  cropNotes             String?
+  csvobjId              String?                 @db.Uuid
+  speciesTemp           String?
+  cropStakeholdersTable cropStakeholdersTable[]
+  csvObjTable           csvObjTable?            @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
+  organizationsTable    organizationsTable?     @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
+  projectsTable         projectsTable?          @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
+  speciesTable          speciesTable?           @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
+  plantingTable         plantingTable[]
+
+  @@unique([projectId, cropName], map: "unique_crop_name_per_project")
+  @@index([organizationId], map: "idx_crop_organization_id")
+  @@index([projectId], map: "idx_crop_project_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model csvObjTable {
+  csvobjId      String          @id(map: "csvobj_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jsonData      Json
+  createdAt     DateTime?       @default(now()) @db.Timestamp(6)
+  cropTable     cropTable[]
+  landTable     landTable[]
+  metadataTable metadataTable[]
+  projectsTable projectsTable[]
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model landStakeholdersTable {
+  landStakeholderId     String                @id(map: "LandStakeholders_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landId                String                @db.Uuid
+  organizationId        String                @db.Uuid
+  stakeholderTypeId     String                @db.Uuid
+  landTable             landTable             @relation(fields: [landId], references: [landId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_landid")
+  organizationsTable    organizationsTable    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_organizationid")
+  stakeholderTypesTable stakeholderTypesTable @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_landstakeholders_stakeholdertypeid")
+
+  @@unique([landId, organizationId, stakeholderTypeId], map: "unique_land_org_type")
+  @@index([landId], map: "idx_land_stakeholders_landid")
+  @@index([organizationId], map: "idx_land_stakeholders_organizationid")
+  @@index([stakeholderTypeId], map: "idx_land_stakeholders_stakeholdertypeid")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model landTable {
+  landId                String                  @id(map: "Land_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landName              String
+  projectId             String?                 @db.Uuid
+  hectares              Decimal?                @db.Decimal
+  gpsLat                Decimal?                @db.Decimal
+  gpsLon                Decimal?                @db.Decimal
+  landNotes             String?
+  createdAt             DateTime?               @default(now()) @db.Timestamptz(6)
+  lastEditedAt          DateTime?               @default(now()) @db.Timestamptz(6)
+  editedBy              String?                 @db.Uuid
+  deleted               Boolean?                @default(false)
+  preparation           Preparation?
+  csvobjId              String?                 @db.Uuid
+  polygon               Json?
+  landStakeholdersTable landStakeholdersTable[]
+  csvObjTable           csvObjTable?            @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
+  projectsTable         projectsTable?          @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
+  plantingTable         plantingTable[]
+
+  @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
+  @@index([projectId], map: "idx_land_project_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model metadataTable {
+  metadataId  String      @id(map: "metadata_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  csvobjId    String      @db.Uuid
+  csvKey      String
+  dbKey       String
+  createdAt   DateTime?   @default(now()) @db.Timestamp(6)
+  csvObjTable csvObjTable @relation(fields: [csvobjId], references: [csvobjId], onDelete: Cascade, onUpdate: NoAction, map: "metadata_csvobjId_fkey")
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model nurseryTable {
+  nurseryId    String    @id(map: "Nursery_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gpsLat       Float
+  gpsLon       Float
+  capacity     Int
+  nurseryNotes String?
+  tradeName    String
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  createdBy    String    @db.Uuid
+  lastEditedAt DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model organizationsTable {
+  organizationId           String                     @id(map: "Organizations_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationName         String                     @unique(map: "unique_organization_name")
+  contactName              String?
+  contactEmail             String?
+  contactPhone             String?
+  address                  String?
+  website                  String?
+  organizationNotes        String?
+  createdAt                DateTime?                  @default(now()) @db.Timestamptz(6)
+  lastEditedAt             DateTime?                  @default(now()) @db.Timestamptz(6)
+  editedBy                 String?                    @db.Uuid
+  deleted                  Boolean?                   @default(false)
+  gpsLat                   Float?
+  gpsLon                   Float?
+  stakeholderTypeId        String?                    @db.Uuid
+  cropStakeholdersTable    cropStakeholdersTable[]
+  cropTable                cropTable[]
+  landStakeholdersTable    landStakeholdersTable[]
+  stakeholderTypesTable    stakeholderTypesTable?     @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onUpdate: NoAction, map: "fk_organizations_stakeholdertypeid")
+  profilesTable            profilesTable[]
+  projectStakeholdersTable projectStakeholdersTable[]
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model plantingTable {
+  plantingId    String     @id(map: "Planting_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landId        String?    @db.Uuid
+  planted       Int?
+  plantingDate  DateTime?  @db.Date
+  createdAt     DateTime?  @default(now()) @db.Timestamptz(6)
+  lastEditedAt  DateTime?  @default(now()) @db.Timestamptz(6)
+  deleted       Boolean?   @default(false)
+  cropId        String?    @db.Uuid
+  plantingNotes String?
+  cropTable     cropTable? @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_cropId_fkey")
+  landTable     landTable? @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_landId_fkey")
+
+  @@unique([landId, cropId], map: "unique_land_crop")
+  @@index([cropId], map: "idx_planting_crop_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profilesTable {
+  id                 String              @id(map: "profiles_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String              @unique(map: "profiles_user_id_key") @db.Uuid
+  firstname          String
+  lastname           String
+  phonenumber        String?
+  isactive           Boolean?            @default(true)
+  isverified         Boolean?            @default(false)
+  role               user_role?          @default(user)
+  permissions        Json?               @default("{}")
+  createdat          DateTime?           @default(now()) @db.Timestamptz(6)
+  updatedat          DateTime?           @default(now()) @db.Timestamptz(6)
+  lastlogin          DateTime?           @db.Timestamptz(6)
+  twofactorenabled   Boolean?            @default(false)
+  twofactorsecret    String?
+  organizationid     String?             @db.Uuid
+  locale             String?             @default("en")
+  timezone           String?             @default("UTC")
+  organizationsTable organizationsTable? @relation(fields: [organizationid], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
+  users              users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "profiles_user_id_fkey")
 
   @@index([organizationid], map: "idx_profiles_organization_id")
   @@index([role], map: "idx_profiles_role")
   @@index([user_id], map: "idx_profiles_user_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model projectStakeholdersTable {
+  stakeholderId         String                @id(map: "ProjectStakeholders_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId        String                @db.Uuid
+  stakeholderTypeId     String                @db.Uuid
+  projectId             String                @db.Uuid
+  organizationsTable    organizationsTable    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_organizationid")
+  projectsTable         projectsTable         @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_projectid")
+  stakeholderTypesTable stakeholderTypesTable @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_projectstakeholders_stakeholdertypeid")
+
+  @@unique([organizationId, stakeholderTypeId, projectId], map: "unique_org_type_project")
+  @@index([organizationId], map: "idx_organizationid")
+  @@index([projectId], map: "idx_projectid")
+  @@index([stakeholderTypeId], map: "idx_stakeholdertypeid")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model projectsTable {
+  projectId                String                     @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectName              String                     @unique(map: "unique_project_name")
+  projectNotes             String?
+  createdAt                DateTime?                  @default(now()) @db.Timestamptz(6)
+  lastEditedAt             DateTime?                  @default(now()) @db.Timestamptz(6)
+  editedBy                 String?                    @db.Uuid
+  deleted                  Boolean?                   @default(false)
+  csvobjId                 String?                    @db.Uuid
+  source                   String?
+  cropTable                cropTable[]
+  landTable                landTable[]
+  projectStakeholdersTable projectStakeholdersTable[]
+  csvObjTable              csvObjTable?               @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Projects_csvobjId_fkey")
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model speciesTable {
+  speciesId      String      @id(map: "Species_pkey") @db.Uuid
+  commonName     String      @unique(map: "unique_common_name")
+  scientificName String?
+  type           String?
+  family         String?
+  reference      String?
+  createdAt      DateTime?   @default(now()) @db.Timestamptz(6)
+  lastEditedAt   DateTime?   @default(now()) @db.Timestamptz(6)
+  editedBy       String?     @db.Uuid
+  deleted        Boolean?    @default(false)
+  cropTable      cropTable[]
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model stakeholderTypesTable {
+  stakeholderType          String
+  createdAt                DateTime?                  @default(now()) @db.Timestamptz(6)
+  lastEditedAt             DateTime?                  @default(now()) @db.Timestamptz(6)
+  deleted                  Boolean?                   @default(false)
+  stakeholderTypeId        String                     @id(map: "StakeholderTypes_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cropStakeholdersTable    cropStakeholdersTable[]
+  landStakeholdersTable    landStakeholdersTable[]
+  organizationsTable       organizationsTable[]
+  projectStakeholdersTable projectStakeholdersTable[]
+
   @@schema("public")
 }
 
