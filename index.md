@@ -6,4 +6,4 @@
 ---
 
 - [About](about.md)
-- [Contact](mailto:your@email.com)
+- [Contact](mailto:chris@osemsauce.org)
