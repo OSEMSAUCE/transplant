@@ -1,0 +1,14 @@
+name: Enforce Svelte 5 Runes
+description: All Svelte components must use Svelte 5 Runes state management.
+trigger: always
+checks:
+  - type: file_glob
+    pattern: "src/**/*.svelte"
+    check: |
+      if (!content.includes('$state') && !content.includes('$derived')) {
+        fail("Svelte component does not use Svelte 5 runes for state management.");
+      }
+  - type: dependency
+    must_include:
+      - svelte@^5
+      - "@sveltejs/kit"

@@ -1,0 +1,16 @@
+name: Pre-Deploy QA
+trigger: manual # Change to 'predeploy' or 'always' if you want automatic runs
+steps:
+  - name: Lint
+    run: npm run lint
+  - name: Type Check
+    run: npm run check
+  - name: Test
+    run: npm test
+  - name: Enforce Svelte 5 Runes
+    check: |
+      for (const file of files('src/**/*.svelte')) {
+        if (!file.content.includes('$state') && !file.content.includes('$derived')) {
+          fail(`${file.path} does not use Svelte 5 runes for state management.`);
+        }
+      }

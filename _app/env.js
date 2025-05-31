@@ -1,0 +1,1 @@
+export const env={"PUBLIC_SUPABASE_URL":"https://ysoskbdeggvyrkofasmi.supabase.co","PUBLIC_SUPABASE_ANON_KEY":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlzb3NrYmRlZ2d2eXJrb2Zhc21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzczNDQwNDAsImV4cCI6MjA1MjkyMDA0MH0.DgmqQn5skYQgQ0rnxdVHFWUlzTwgYqC8YqU3RC5VIAI"}

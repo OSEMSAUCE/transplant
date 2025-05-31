@@ -1,0 +1,7 @@
+{
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"cSpell.words": ["papaparse", "pico", "picocss", "seedlot", "seedzone", "Supabase"],
+	"jest.runMode": {
+		"type": "watch"
+	}
+}
