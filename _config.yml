@@ -1,3 +1,1 @@
-theme: mmistakes/minimal-mistakes
-
-#OSEM🤘🌲 
+remote_theme: "mmistakes/minimal-mistakes@4.27.1"
