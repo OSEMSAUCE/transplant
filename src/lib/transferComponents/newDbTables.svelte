@@ -53,31 +53,31 @@
 		// Get the column name and the column index that was mapped
 		const columnName = dbTable[index].name;
 		const modelRepColumnIndex = dbTable[index].modelRepColumnIndex;
-		
+
 		// Clear the current column
 		dbTable[index].values = ['', '', ''];
-		
+
 		if (modelRepColumnIndex !== -1) {
 			// Unmap the column in the imported data
 			importedData.columns[modelRepColumnIndex].isMapped = false;
 			importedData.columns[modelRepColumnIndex].mappedTo = undefined;
-			
+
 			// Clear the current column's mapping
 			dbTable[index].modelRepColumnIndex = -1;
-			
+
 			// If this is landName or cropName, also clear it in other tables
 			if (columnName === 'landName') {
 				// Clear landName in the other table
 				if (dbTable === landTable) {
 					// Clear in planting table
-					const plantingLandNameIndex = plantingTable.findIndex(col => col.name === 'landName');
+					const plantingLandNameIndex = plantingTable.findIndex((col) => col.name === 'landName');
 					if (plantingLandNameIndex !== -1) {
 						plantingTable[plantingLandNameIndex].values = ['', '', ''];
 						plantingTable[plantingLandNameIndex].modelRepColumnIndex = -1;
 					}
 				} else if (dbTable === plantingTable) {
 					// Clear in land table
-					const landNameIndex = landTable.findIndex(col => col.name === 'landName');
+					const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
 					if (landNameIndex !== -1) {
 						landTable[landNameIndex].values = ['', '', ''];
 						landTable[landNameIndex].modelRepColumnIndex = -1;
@@ -87,14 +87,14 @@
 				// Clear cropName in the other table
 				if (dbTable === cropTable) {
 					// Clear in planting table
-					const plantingCropNameIndex = plantingTable.findIndex(col => col.name === 'cropName');
+					const plantingCropNameIndex = plantingTable.findIndex((col) => col.name === 'cropName');
 					if (plantingCropNameIndex !== -1) {
 						plantingTable[plantingCropNameIndex].values = ['', '', ''];
 						plantingTable[plantingCropNameIndex].modelRepColumnIndex = -1;
 					}
 				} else if (dbTable === plantingTable) {
 					// Clear in crop table
-					const cropNameIndex = cropTable.findIndex(col => col.name === 'cropName');
+					const cropNameIndex = cropTable.findIndex((col) => col.name === 'cropName');
 					if (cropNameIndex !== -1) {
 						cropTable[cropNameIndex].values = ['', '', ''];
 						cropTable[cropNameIndex].modelRepColumnIndex = -1;
@@ -102,7 +102,7 @@
 				}
 			}
 		}
-		
+
 		// Cleared column and related columns
 	}
 
@@ -166,37 +166,37 @@
 	) {
 		// Always prevent default to allow drop
 		ev.preventDefault();
-		
+
 		if (!ev.dataTransfer) return;
-		
+
 		// Get the dragged column index from dataTransfer
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text') || '-1');
 		if (draggedColumnIndex < 0) return; // Invalid dragged column
-		
+
 		// Find the drop target element (th or td) with column index
 		// Use currentTarget (the element with the event listener) instead of target (which could be a child element)
 		const dropElement = ev.currentTarget as HTMLElement;
 		if (!dropElement) return;
-		
+
 		// Get the column index from the drop target
 		const targetColumnIndexAttr = dropElement.dataset.columnIndex;
 		if (targetColumnIndexAttr === undefined) return; // No column index found
-		
+
 		const targetColumnIndex = Number(targetColumnIndexAttr);
 		if (isNaN(targetColumnIndex)) return; // Invalid column index
-		
+
 		// Get the target column name
 		const targetColumnName = dbDropTable[targetColumnIndex].name;
-		
+
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
 			// Cannot map to view-only field
 			return;
 		}
-		
+
 		// Get the dragged column data
 		const draggedCol = importedData.columns[draggedColumnIndex];
-		
+
 		// Block drop for Land table if column is not normalized
 		if (dbDropTable === landTable) {
 			// Always allow the land column itself to be mapped to landName
@@ -233,7 +233,7 @@
 				}
 			}
 		}
-		
+
 		// Block drop for Crop table if column is not normalized
 		if (dbDropTable === cropTable) {
 			// Always allow the crop column itself to be mapped to cropName
@@ -270,7 +270,7 @@
 				}
 			}
 		}
-		
+
 		// Check format compatibility
 		const draggedColumnFormat = draggedCol.currentFormat;
 		const targetColumnFormat = dropFormat[targetColumnName];
@@ -518,7 +518,9 @@
 									dragColumnState.currentFormat === landDbFormat[column.name]
 								: // For other columns, check normalization too
 									!column.viewOnly &&
-									landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+									landTable.some(
+										(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+									) &&
 									dragColumnState.currentFormat === landDbFormat[column.name] &&
 									column.modelRepColumnIndex === -1 &&
 									(() => {
@@ -540,7 +542,10 @@
 										if (draggedCol.headerName === landCol.headerName) return true;
 
 										// Check normalization for all other columns
-										const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
+										const isNormalized = isColumnNormalizedByLand(
+											landCol.values,
+											draggedCol.values
+										);
 										return isNormalized;
 									})()}
 							class:view-only={column.viewOnly ||
@@ -753,7 +758,7 @@
 							data-column-index={index}
 							ondragover={column.viewOnly || column.name !== 'cropName' ? null : dragoverHandler}
 							ondrop={column.viewOnly || column.name !== 'cropName' ? null : cropDropHandler}
-							class:legal-droptarget={column.name === 'cropName' && 
+							class:legal-droptarget={column.name === 'cropName' &&
 								!column.viewOnly &&
 								dragColumnState.currentFormat === cropDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
@@ -794,12 +799,12 @@
 	.no-table-bottom-margin {
 		margin-bottom: 0rem;
 	}
-	
+
 	/* Add colored borders to tables */
 	.land-table {
 		border: 1px solid #2196f3; /* Blue border for Land Table */
 	}
-	
+
 	.crop-table {
 		border: 1px solid #4caf50; /* Green border for Crop Table */
 	}
