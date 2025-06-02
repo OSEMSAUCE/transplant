@@ -169,18 +169,18 @@ export type projectsTable = $Result.DefaultSelection<Prisma.$projectsTablePayloa
  */
 export type speciesTable = $Result.DefaultSelection<Prisma.$speciesTablePayload>
 /**
+ * Model stakeholderTable
+ * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+ */
+export type stakeholderTable = $Result.DefaultSelection<Prisma.$stakeholderTablePayload>
+/**
  * Model stakeholderTypesTable
  * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
  */
 export type stakeholderTypesTable = $Result.DefaultSelection<Prisma.$stakeholderTypesTablePayload>
 /**
- * Model stakeholderTable
- * 
- */
-export type stakeholderTable = $Result.DefaultSelection<Prisma.$stakeholderTablePayload>
-/**
  * Model tableTable
- * 
+ * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
  */
 export type tableTable = $Result.DefaultSelection<Prisma.$tableTablePayload>
 
@@ -188,19 +188,7 @@ export type tableTable = $Result.DefaultSelection<Prisma.$tableTablePayload>
  * Enums
  */
 export namespace $Enums {
-  export const Preparation: {
-  raw: 'raw',
-  mechanical: 'mechanical',
-  chemical: 'chemical',
-  burned: 'burned',
-  grass_seed: 'grass_seed',
-  landscaped: 'landscaped'
-};
-
-export type Preparation = (typeof Preparation)[keyof typeof Preparation]
-
-
-export const aal_level: {
+  export const aal_level: {
   aal1: 'aal1',
   aal2: 'aal2',
   aal3: 'aal3'
@@ -246,6 +234,18 @@ export const one_time_token_type: {
 export type one_time_token_type = (typeof one_time_token_type)[keyof typeof one_time_token_type]
 
 
+export const Preparation: {
+  raw: 'raw',
+  mechanical: 'mechanical',
+  chemical: 'chemical',
+  burned: 'burned',
+  grass_seed: 'grass_seed',
+  landscaped: 'landscaped'
+};
+
+export type Preparation = (typeof Preparation)[keyof typeof Preparation]
+
+
 export const user_role: {
   user: 'user',
   manager: 'manager',
@@ -256,10 +256,6 @@ export const user_role: {
 export type user_role = (typeof user_role)[keyof typeof user_role]
 
 }
-
-export type Preparation = $Enums.Preparation
-
-export const Preparation: typeof $Enums.Preparation
 
 export type aal_level = $Enums.aal_level
 
@@ -280,6 +276,10 @@ export const factor_type: typeof $Enums.factor_type
 export type one_time_token_type = $Enums.one_time_token_type
 
 export const one_time_token_type: typeof $Enums.one_time_token_type
+
+export type Preparation = $Enums.Preparation
+
+export const Preparation: typeof $Enums.Preparation
 
 export type user_role = $Enums.user_role
 
@@ -671,16 +671,6 @@ export class PrismaClient<
   get speciesTable(): Prisma.speciesTableDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.stakeholderTypesTable`: Exposes CRUD operations for the **stakeholderTypesTable** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more StakeholderTypesTables
-    * const stakeholderTypesTables = await prisma.stakeholderTypesTable.findMany()
-    * ```
-    */
-  get stakeholderTypesTable(): Prisma.stakeholderTypesTableDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.stakeholderTable`: Exposes CRUD operations for the **stakeholderTable** model.
     * Example usage:
     * ```ts
@@ -689,6 +679,16 @@ export class PrismaClient<
     * ```
     */
   get stakeholderTable(): Prisma.stakeholderTableDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.stakeholderTypesTable`: Exposes CRUD operations for the **stakeholderTypesTable** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more StakeholderTypesTables
+    * const stakeholderTypesTables = await prisma.stakeholderTypesTable.findMany()
+    * ```
+    */
+  get stakeholderTypesTable(): Prisma.stakeholderTypesTableDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tableTable`: Exposes CRUD operations for the **tableTable** model.
@@ -1165,8 +1165,8 @@ export namespace Prisma {
     profilesTable: 'profilesTable',
     projectsTable: 'projectsTable',
     speciesTable: 'speciesTable',
-    stakeholderTypesTable: 'stakeholderTypesTable',
     stakeholderTable: 'stakeholderTable',
+    stakeholderTypesTable: 'stakeholderTypesTable',
     tableTable: 'tableTable'
   };
 
@@ -1186,7 +1186,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "audit_log_entries" | "flow_state" | "identities" | "instances" | "mfa_amr_claims" | "mfa_challenges" | "mfa_factors" | "one_time_tokens" | "refresh_tokens" | "saml_providers" | "saml_relay_states" | "schema_migrations" | "sessions" | "sso_domains" | "sso_providers" | "users" | "cropTable" | "csvObjTable" | "landTable" | "metadataTable" | "nurseryTable" | "organizationsTable" | "plantingTable" | "profilesTable" | "projectsTable" | "speciesTable" | "stakeholderTypesTable" | "stakeholderTable" | "tableTable"
+      modelProps: "audit_log_entries" | "flow_state" | "identities" | "instances" | "mfa_amr_claims" | "mfa_challenges" | "mfa_factors" | "one_time_tokens" | "refresh_tokens" | "saml_providers" | "saml_relay_states" | "schema_migrations" | "sessions" | "sso_domains" | "sso_providers" | "users" | "cropTable" | "csvObjTable" | "landTable" | "metadataTable" | "nurseryTable" | "organizationsTable" | "plantingTable" | "profilesTable" | "projectsTable" | "speciesTable" | "stakeholderTable" | "stakeholderTypesTable" | "tableTable"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3114,80 +3114,6 @@ export namespace Prisma {
           }
         }
       }
-      stakeholderTypesTable: {
-        payload: Prisma.$stakeholderTypesTablePayload<ExtArgs>
-        fields: Prisma.stakeholderTypesTableFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.stakeholderTypesTableFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.stakeholderTypesTableFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          findFirst: {
-            args: Prisma.stakeholderTypesTableFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.stakeholderTypesTableFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          findMany: {
-            args: Prisma.stakeholderTypesTableFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
-          }
-          create: {
-            args: Prisma.stakeholderTypesTableCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          createMany: {
-            args: Prisma.stakeholderTypesTableCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.stakeholderTypesTableCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
-          }
-          delete: {
-            args: Prisma.stakeholderTypesTableDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          update: {
-            args: Prisma.stakeholderTypesTableUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          deleteMany: {
-            args: Prisma.stakeholderTypesTableDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.stakeholderTypesTableUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.stakeholderTypesTableUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
-          }
-          upsert: {
-            args: Prisma.stakeholderTypesTableUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
-          }
-          aggregate: {
-            args: Prisma.StakeholderTypesTableAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateStakeholderTypesTable>
-          }
-          groupBy: {
-            args: Prisma.stakeholderTypesTableGroupByArgs<ExtArgs>
-            result: $Utils.Optional<StakeholderTypesTableGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.stakeholderTypesTableCountArgs<ExtArgs>
-            result: $Utils.Optional<StakeholderTypesTableCountAggregateOutputType> | number
-          }
-        }
-      }
       stakeholderTable: {
         payload: Prisma.$stakeholderTablePayload<ExtArgs>
         fields: Prisma.stakeholderTableFieldRefs
@@ -3259,6 +3185,80 @@ export namespace Prisma {
           count: {
             args: Prisma.stakeholderTableCountArgs<ExtArgs>
             result: $Utils.Optional<StakeholderTableCountAggregateOutputType> | number
+          }
+        }
+      }
+      stakeholderTypesTable: {
+        payload: Prisma.$stakeholderTypesTablePayload<ExtArgs>
+        fields: Prisma.stakeholderTypesTableFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.stakeholderTypesTableFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.stakeholderTypesTableFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          findFirst: {
+            args: Prisma.stakeholderTypesTableFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.stakeholderTypesTableFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          findMany: {
+            args: Prisma.stakeholderTypesTableFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
+          }
+          create: {
+            args: Prisma.stakeholderTypesTableCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          createMany: {
+            args: Prisma.stakeholderTypesTableCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.stakeholderTypesTableCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
+          }
+          delete: {
+            args: Prisma.stakeholderTypesTableDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          update: {
+            args: Prisma.stakeholderTypesTableUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          deleteMany: {
+            args: Prisma.stakeholderTypesTableDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.stakeholderTypesTableUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.stakeholderTypesTableUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>[]
+          }
+          upsert: {
+            args: Prisma.stakeholderTypesTableUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$stakeholderTypesTablePayload>
+          }
+          aggregate: {
+            args: Prisma.StakeholderTypesTableAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStakeholderTypesTable>
+          }
+          groupBy: {
+            args: Prisma.stakeholderTypesTableGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StakeholderTypesTableGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.stakeholderTypesTableCountArgs<ExtArgs>
+            result: $Utils.Optional<StakeholderTypesTableCountAggregateOutputType> | number
           }
         }
       }
@@ -3446,8 +3446,8 @@ export namespace Prisma {
     profilesTable?: profilesTableOmit
     projectsTable?: projectsTableOmit
     speciesTable?: speciesTableOmit
-    stakeholderTypesTable?: stakeholderTypesTableOmit
     stakeholderTable?: stakeholderTableOmit
+    stakeholderTypesTable?: stakeholderTypesTableOmit
     tableTable?: tableTableOmit
   }
 
@@ -33952,6 +33952,1080 @@ export namespace Prisma {
 
 
   /**
+   * Model stakeholderTable
+   */
+
+  export type AggregateStakeholderTable = {
+    _count: StakeholderTableCountAggregateOutputType | null
+    _min: StakeholderTableMinAggregateOutputType | null
+    _max: StakeholderTableMaxAggregateOutputType | null
+  }
+
+  export type StakeholderTableMinAggregateOutputType = {
+    stakeholderTableId: string | null
+    organizationId: string | null
+    stakeholderTypeId: string | null
+    tableId: string | null
+    stakeholderChildId: string | null
+  }
+
+  export type StakeholderTableMaxAggregateOutputType = {
+    stakeholderTableId: string | null
+    organizationId: string | null
+    stakeholderTypeId: string | null
+    tableId: string | null
+    stakeholderChildId: string | null
+  }
+
+  export type StakeholderTableCountAggregateOutputType = {
+    stakeholderTableId: number
+    organizationId: number
+    stakeholderTypeId: number
+    tableId: number
+    stakeholderChildId: number
+    _all: number
+  }
+
+
+  export type StakeholderTableMinAggregateInputType = {
+    stakeholderTableId?: true
+    organizationId?: true
+    stakeholderTypeId?: true
+    tableId?: true
+    stakeholderChildId?: true
+  }
+
+  export type StakeholderTableMaxAggregateInputType = {
+    stakeholderTableId?: true
+    organizationId?: true
+    stakeholderTypeId?: true
+    tableId?: true
+    stakeholderChildId?: true
+  }
+
+  export type StakeholderTableCountAggregateInputType = {
+    stakeholderTableId?: true
+    organizationId?: true
+    stakeholderTypeId?: true
+    tableId?: true
+    stakeholderChildId?: true
+    _all?: true
+  }
+
+  export type StakeholderTableAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which stakeholderTable to aggregate.
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stakeholderTables to fetch.
+     */
+    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: stakeholderTableWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stakeholderTables from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stakeholderTables.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned stakeholderTables
+    **/
+    _count?: true | StakeholderTableCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StakeholderTableMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StakeholderTableMaxAggregateInputType
+  }
+
+  export type GetStakeholderTableAggregateType<T extends StakeholderTableAggregateArgs> = {
+        [P in keyof T & keyof AggregateStakeholderTable]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStakeholderTable[P]>
+      : GetScalarType<T[P], AggregateStakeholderTable[P]>
+  }
+
+
+
+
+  export type stakeholderTableGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: stakeholderTableWhereInput
+    orderBy?: stakeholderTableOrderByWithAggregationInput | stakeholderTableOrderByWithAggregationInput[]
+    by: StakeholderTableScalarFieldEnum[] | StakeholderTableScalarFieldEnum
+    having?: stakeholderTableScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StakeholderTableCountAggregateInputType | true
+    _min?: StakeholderTableMinAggregateInputType
+    _max?: StakeholderTableMaxAggregateInputType
+  }
+
+  export type StakeholderTableGroupByOutputType = {
+    stakeholderTableId: string
+    organizationId: string
+    stakeholderTypeId: string
+    tableId: string
+    stakeholderChildId: string
+    _count: StakeholderTableCountAggregateOutputType | null
+    _min: StakeholderTableMinAggregateOutputType | null
+    _max: StakeholderTableMaxAggregateOutputType | null
+  }
+
+  type GetStakeholderTableGroupByPayload<T extends stakeholderTableGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StakeholderTableGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StakeholderTableGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StakeholderTableGroupByOutputType[P]>
+            : GetScalarType<T[P], StakeholderTableGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type stakeholderTableSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    stakeholderTableId?: boolean
+    organizationId?: boolean
+    stakeholderTypeId?: boolean
+    tableId?: boolean
+    stakeholderChildId?: boolean
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["stakeholderTable"]>
+
+  export type stakeholderTableSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    stakeholderTableId?: boolean
+    organizationId?: boolean
+    stakeholderTypeId?: boolean
+    tableId?: boolean
+    stakeholderChildId?: boolean
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["stakeholderTable"]>
+
+  export type stakeholderTableSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    stakeholderTableId?: boolean
+    organizationId?: boolean
+    stakeholderTypeId?: boolean
+    tableId?: boolean
+    stakeholderChildId?: boolean
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["stakeholderTable"]>
+
+  export type stakeholderTableSelectScalar = {
+    stakeholderTableId?: boolean
+    organizationId?: boolean
+    stakeholderTypeId?: boolean
+    tableId?: boolean
+    stakeholderChildId?: boolean
+  }
+
+  export type stakeholderTableOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"stakeholderTableId" | "organizationId" | "stakeholderTypeId" | "tableId" | "stakeholderChildId", ExtArgs["result"]["stakeholderTable"]>
+  export type stakeholderTableInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }
+  export type stakeholderTableIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }
+  export type stakeholderTableIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
+    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
+    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
+  }
+
+  export type $stakeholderTablePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "stakeholderTable"
+    objects: {
+      organizationsTable: Prisma.$organizationsTablePayload<ExtArgs>
+      stakeholderTypesTable: Prisma.$stakeholderTypesTablePayload<ExtArgs>
+      tableTable: Prisma.$tableTablePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      stakeholderTableId: string
+      organizationId: string
+      stakeholderTypeId: string
+      tableId: string
+      stakeholderChildId: string
+    }, ExtArgs["result"]["stakeholderTable"]>
+    composites: {}
+  }
+
+  type stakeholderTableGetPayload<S extends boolean | null | undefined | stakeholderTableDefaultArgs> = $Result.GetResult<Prisma.$stakeholderTablePayload, S>
+
+  type stakeholderTableCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<stakeholderTableFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: StakeholderTableCountAggregateInputType | true
+    }
+
+  export interface stakeholderTableDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['stakeholderTable'], meta: { name: 'stakeholderTable' } }
+    /**
+     * Find zero or one StakeholderTable that matches the filter.
+     * @param {stakeholderTableFindUniqueArgs} args - Arguments to find a StakeholderTable
+     * @example
+     * // Get one StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends stakeholderTableFindUniqueArgs>(args: SelectSubset<T, stakeholderTableFindUniqueArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one StakeholderTable that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {stakeholderTableFindUniqueOrThrowArgs} args - Arguments to find a StakeholderTable
+     * @example
+     * // Get one StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends stakeholderTableFindUniqueOrThrowArgs>(args: SelectSubset<T, stakeholderTableFindUniqueOrThrowArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StakeholderTable that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableFindFirstArgs} args - Arguments to find a StakeholderTable
+     * @example
+     * // Get one StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends stakeholderTableFindFirstArgs>(args?: SelectSubset<T, stakeholderTableFindFirstArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StakeholderTable that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableFindFirstOrThrowArgs} args - Arguments to find a StakeholderTable
+     * @example
+     * // Get one StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends stakeholderTableFindFirstOrThrowArgs>(args?: SelectSubset<T, stakeholderTableFindFirstOrThrowArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more StakeholderTables that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all StakeholderTables
+     * const stakeholderTables = await prisma.stakeholderTable.findMany()
+     * 
+     * // Get first 10 StakeholderTables
+     * const stakeholderTables = await prisma.stakeholderTable.findMany({ take: 10 })
+     * 
+     * // Only select the `stakeholderTableId`
+     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.findMany({ select: { stakeholderTableId: true } })
+     * 
+     */
+    findMany<T extends stakeholderTableFindManyArgs>(args?: SelectSubset<T, stakeholderTableFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a StakeholderTable.
+     * @param {stakeholderTableCreateArgs} args - Arguments to create a StakeholderTable.
+     * @example
+     * // Create one StakeholderTable
+     * const StakeholderTable = await prisma.stakeholderTable.create({
+     *   data: {
+     *     // ... data to create a StakeholderTable
+     *   }
+     * })
+     * 
+     */
+    create<T extends stakeholderTableCreateArgs>(args: SelectSubset<T, stakeholderTableCreateArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many StakeholderTables.
+     * @param {stakeholderTableCreateManyArgs} args - Arguments to create many StakeholderTables.
+     * @example
+     * // Create many StakeholderTables
+     * const stakeholderTable = await prisma.stakeholderTable.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends stakeholderTableCreateManyArgs>(args?: SelectSubset<T, stakeholderTableCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many StakeholderTables and returns the data saved in the database.
+     * @param {stakeholderTableCreateManyAndReturnArgs} args - Arguments to create many StakeholderTables.
+     * @example
+     * // Create many StakeholderTables
+     * const stakeholderTable = await prisma.stakeholderTable.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many StakeholderTables and only return the `stakeholderTableId`
+     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.createManyAndReturn({
+     *   select: { stakeholderTableId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends stakeholderTableCreateManyAndReturnArgs>(args?: SelectSubset<T, stakeholderTableCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a StakeholderTable.
+     * @param {stakeholderTableDeleteArgs} args - Arguments to delete one StakeholderTable.
+     * @example
+     * // Delete one StakeholderTable
+     * const StakeholderTable = await prisma.stakeholderTable.delete({
+     *   where: {
+     *     // ... filter to delete one StakeholderTable
+     *   }
+     * })
+     * 
+     */
+    delete<T extends stakeholderTableDeleteArgs>(args: SelectSubset<T, stakeholderTableDeleteArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one StakeholderTable.
+     * @param {stakeholderTableUpdateArgs} args - Arguments to update one StakeholderTable.
+     * @example
+     * // Update one StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends stakeholderTableUpdateArgs>(args: SelectSubset<T, stakeholderTableUpdateArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more StakeholderTables.
+     * @param {stakeholderTableDeleteManyArgs} args - Arguments to filter StakeholderTables to delete.
+     * @example
+     * // Delete a few StakeholderTables
+     * const { count } = await prisma.stakeholderTable.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends stakeholderTableDeleteManyArgs>(args?: SelectSubset<T, stakeholderTableDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StakeholderTables.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many StakeholderTables
+     * const stakeholderTable = await prisma.stakeholderTable.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends stakeholderTableUpdateManyArgs>(args: SelectSubset<T, stakeholderTableUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StakeholderTables and returns the data updated in the database.
+     * @param {stakeholderTableUpdateManyAndReturnArgs} args - Arguments to update many StakeholderTables.
+     * @example
+     * // Update many StakeholderTables
+     * const stakeholderTable = await prisma.stakeholderTable.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more StakeholderTables and only return the `stakeholderTableId`
+     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.updateManyAndReturn({
+     *   select: { stakeholderTableId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends stakeholderTableUpdateManyAndReturnArgs>(args: SelectSubset<T, stakeholderTableUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one StakeholderTable.
+     * @param {stakeholderTableUpsertArgs} args - Arguments to update or create a StakeholderTable.
+     * @example
+     * // Update or create a StakeholderTable
+     * const stakeholderTable = await prisma.stakeholderTable.upsert({
+     *   create: {
+     *     // ... data to create a StakeholderTable
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the StakeholderTable we want to update
+     *   }
+     * })
+     */
+    upsert<T extends stakeholderTableUpsertArgs>(args: SelectSubset<T, stakeholderTableUpsertArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of StakeholderTables.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableCountArgs} args - Arguments to filter StakeholderTables to count.
+     * @example
+     * // Count the number of StakeholderTables
+     * const count = await prisma.stakeholderTable.count({
+     *   where: {
+     *     // ... the filter for the StakeholderTables we want to count
+     *   }
+     * })
+    **/
+    count<T extends stakeholderTableCountArgs>(
+      args?: Subset<T, stakeholderTableCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StakeholderTableCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a StakeholderTable.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StakeholderTableAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StakeholderTableAggregateArgs>(args: Subset<T, StakeholderTableAggregateArgs>): Prisma.PrismaPromise<GetStakeholderTableAggregateType<T>>
+
+    /**
+     * Group by StakeholderTable.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {stakeholderTableGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends stakeholderTableGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: stakeholderTableGroupByArgs['orderBy'] }
+        : { orderBy?: stakeholderTableGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, stakeholderTableGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStakeholderTableGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the stakeholderTable model
+   */
+  readonly fields: stakeholderTableFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for stakeholderTable.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__stakeholderTableClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    organizationsTable<T extends organizationsTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, organizationsTableDefaultArgs<ExtArgs>>): Prisma__organizationsTableClient<$Result.GetResult<Prisma.$organizationsTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    stakeholderTypesTable<T extends stakeholderTypesTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, stakeholderTypesTableDefaultArgs<ExtArgs>>): Prisma__stakeholderTypesTableClient<$Result.GetResult<Prisma.$stakeholderTypesTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    tableTable<T extends tableTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, tableTableDefaultArgs<ExtArgs>>): Prisma__tableTableClient<$Result.GetResult<Prisma.$tableTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the stakeholderTable model
+   */
+  interface stakeholderTableFieldRefs {
+    readonly stakeholderTableId: FieldRef<"stakeholderTable", 'String'>
+    readonly organizationId: FieldRef<"stakeholderTable", 'String'>
+    readonly stakeholderTypeId: FieldRef<"stakeholderTable", 'String'>
+    readonly tableId: FieldRef<"stakeholderTable", 'String'>
+    readonly stakeholderChildId: FieldRef<"stakeholderTable", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * stakeholderTable findUnique
+   */
+  export type stakeholderTableFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter, which stakeholderTable to fetch.
+     */
+    where: stakeholderTableWhereUniqueInput
+  }
+
+  /**
+   * stakeholderTable findUniqueOrThrow
+   */
+  export type stakeholderTableFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter, which stakeholderTable to fetch.
+     */
+    where: stakeholderTableWhereUniqueInput
+  }
+
+  /**
+   * stakeholderTable findFirst
+   */
+  export type stakeholderTableFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter, which stakeholderTable to fetch.
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stakeholderTables to fetch.
+     */
+    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for stakeholderTables.
+     */
+    cursor?: stakeholderTableWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stakeholderTables from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stakeholderTables.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of stakeholderTables.
+     */
+    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
+  }
+
+  /**
+   * stakeholderTable findFirstOrThrow
+   */
+  export type stakeholderTableFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter, which stakeholderTable to fetch.
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stakeholderTables to fetch.
+     */
+    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for stakeholderTables.
+     */
+    cursor?: stakeholderTableWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stakeholderTables from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stakeholderTables.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of stakeholderTables.
+     */
+    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
+  }
+
+  /**
+   * stakeholderTable findMany
+   */
+  export type stakeholderTableFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter, which stakeholderTables to fetch.
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of stakeholderTables to fetch.
+     */
+    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing stakeholderTables.
+     */
+    cursor?: stakeholderTableWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` stakeholderTables from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` stakeholderTables.
+     */
+    skip?: number
+    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
+  }
+
+  /**
+   * stakeholderTable create
+   */
+  export type stakeholderTableCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * The data needed to create a stakeholderTable.
+     */
+    data: XOR<stakeholderTableCreateInput, stakeholderTableUncheckedCreateInput>
+  }
+
+  /**
+   * stakeholderTable createMany
+   */
+  export type stakeholderTableCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many stakeholderTables.
+     */
+    data: stakeholderTableCreateManyInput | stakeholderTableCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * stakeholderTable createManyAndReturn
+   */
+  export type stakeholderTableCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * The data used to create many stakeholderTables.
+     */
+    data: stakeholderTableCreateManyInput | stakeholderTableCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * stakeholderTable update
+   */
+  export type stakeholderTableUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * The data needed to update a stakeholderTable.
+     */
+    data: XOR<stakeholderTableUpdateInput, stakeholderTableUncheckedUpdateInput>
+    /**
+     * Choose, which stakeholderTable to update.
+     */
+    where: stakeholderTableWhereUniqueInput
+  }
+
+  /**
+   * stakeholderTable updateMany
+   */
+  export type stakeholderTableUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update stakeholderTables.
+     */
+    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyInput>
+    /**
+     * Filter which stakeholderTables to update
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * Limit how many stakeholderTables to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * stakeholderTable updateManyAndReturn
+   */
+  export type stakeholderTableUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * The data used to update stakeholderTables.
+     */
+    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyInput>
+    /**
+     * Filter which stakeholderTables to update
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * Limit how many stakeholderTables to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * stakeholderTable upsert
+   */
+  export type stakeholderTableUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * The filter to search for the stakeholderTable to update in case it exists.
+     */
+    where: stakeholderTableWhereUniqueInput
+    /**
+     * In case the stakeholderTable found by the `where` argument doesn't exist, create a new stakeholderTable with this data.
+     */
+    create: XOR<stakeholderTableCreateInput, stakeholderTableUncheckedCreateInput>
+    /**
+     * In case the stakeholderTable was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<stakeholderTableUpdateInput, stakeholderTableUncheckedUpdateInput>
+  }
+
+  /**
+   * stakeholderTable delete
+   */
+  export type stakeholderTableDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+    /**
+     * Filter which stakeholderTable to delete.
+     */
+    where: stakeholderTableWhereUniqueInput
+  }
+
+  /**
+   * stakeholderTable deleteMany
+   */
+  export type stakeholderTableDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which stakeholderTables to delete
+     */
+    where?: stakeholderTableWhereInput
+    /**
+     * Limit how many stakeholderTables to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * stakeholderTable without action
+   */
+  export type stakeholderTableDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the stakeholderTable
+     */
+    select?: stakeholderTableSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the stakeholderTable
+     */
+    omit?: stakeholderTableOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: stakeholderTableInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model stakeholderTypesTable
    */
 
@@ -35046,1080 +36120,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: stakeholderTypesTableInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model stakeholderTable
-   */
-
-  export type AggregateStakeholderTable = {
-    _count: StakeholderTableCountAggregateOutputType | null
-    _min: StakeholderTableMinAggregateOutputType | null
-    _max: StakeholderTableMaxAggregateOutputType | null
-  }
-
-  export type StakeholderTableMinAggregateOutputType = {
-    stakeholderTableId: string | null
-    organizationId: string | null
-    stakeholderTypeId: string | null
-    tableId: string | null
-    stakeholderChildId: string | null
-  }
-
-  export type StakeholderTableMaxAggregateOutputType = {
-    stakeholderTableId: string | null
-    organizationId: string | null
-    stakeholderTypeId: string | null
-    tableId: string | null
-    stakeholderChildId: string | null
-  }
-
-  export type StakeholderTableCountAggregateOutputType = {
-    stakeholderTableId: number
-    organizationId: number
-    stakeholderTypeId: number
-    tableId: number
-    stakeholderChildId: number
-    _all: number
-  }
-
-
-  export type StakeholderTableMinAggregateInputType = {
-    stakeholderTableId?: true
-    organizationId?: true
-    stakeholderTypeId?: true
-    tableId?: true
-    stakeholderChildId?: true
-  }
-
-  export type StakeholderTableMaxAggregateInputType = {
-    stakeholderTableId?: true
-    organizationId?: true
-    stakeholderTypeId?: true
-    tableId?: true
-    stakeholderChildId?: true
-  }
-
-  export type StakeholderTableCountAggregateInputType = {
-    stakeholderTableId?: true
-    organizationId?: true
-    stakeholderTypeId?: true
-    tableId?: true
-    stakeholderChildId?: true
-    _all?: true
-  }
-
-  export type StakeholderTableAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which stakeholderTable to aggregate.
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of stakeholderTables to fetch.
-     */
-    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: stakeholderTableWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` stakeholderTables from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` stakeholderTables.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned stakeholderTables
-    **/
-    _count?: true | StakeholderTableCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: StakeholderTableMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: StakeholderTableMaxAggregateInputType
-  }
-
-  export type GetStakeholderTableAggregateType<T extends StakeholderTableAggregateArgs> = {
-        [P in keyof T & keyof AggregateStakeholderTable]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateStakeholderTable[P]>
-      : GetScalarType<T[P], AggregateStakeholderTable[P]>
-  }
-
-
-
-
-  export type stakeholderTableGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: stakeholderTableWhereInput
-    orderBy?: stakeholderTableOrderByWithAggregationInput | stakeholderTableOrderByWithAggregationInput[]
-    by: StakeholderTableScalarFieldEnum[] | StakeholderTableScalarFieldEnum
-    having?: stakeholderTableScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: StakeholderTableCountAggregateInputType | true
-    _min?: StakeholderTableMinAggregateInputType
-    _max?: StakeholderTableMaxAggregateInputType
-  }
-
-  export type StakeholderTableGroupByOutputType = {
-    stakeholderTableId: string
-    organizationId: string
-    stakeholderTypeId: string
-    tableId: string
-    stakeholderChildId: string
-    _count: StakeholderTableCountAggregateOutputType | null
-    _min: StakeholderTableMinAggregateOutputType | null
-    _max: StakeholderTableMaxAggregateOutputType | null
-  }
-
-  type GetStakeholderTableGroupByPayload<T extends stakeholderTableGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<StakeholderTableGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof StakeholderTableGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], StakeholderTableGroupByOutputType[P]>
-            : GetScalarType<T[P], StakeholderTableGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type stakeholderTableSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    stakeholderTableId?: boolean
-    organizationId?: boolean
-    stakeholderTypeId?: boolean
-    tableId?: boolean
-    stakeholderChildId?: boolean
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["stakeholderTable"]>
-
-  export type stakeholderTableSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    stakeholderTableId?: boolean
-    organizationId?: boolean
-    stakeholderTypeId?: boolean
-    tableId?: boolean
-    stakeholderChildId?: boolean
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["stakeholderTable"]>
-
-  export type stakeholderTableSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    stakeholderTableId?: boolean
-    organizationId?: boolean
-    stakeholderTypeId?: boolean
-    tableId?: boolean
-    stakeholderChildId?: boolean
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["stakeholderTable"]>
-
-  export type stakeholderTableSelectScalar = {
-    stakeholderTableId?: boolean
-    organizationId?: boolean
-    stakeholderTypeId?: boolean
-    tableId?: boolean
-    stakeholderChildId?: boolean
-  }
-
-  export type stakeholderTableOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"stakeholderTableId" | "organizationId" | "stakeholderTypeId" | "tableId" | "stakeholderChildId", ExtArgs["result"]["stakeholderTable"]>
-  export type stakeholderTableInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }
-  export type stakeholderTableIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }
-  export type stakeholderTableIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    organizationsTable?: boolean | organizationsTableDefaultArgs<ExtArgs>
-    stakeholderTypesTable?: boolean | stakeholderTypesTableDefaultArgs<ExtArgs>
-    tableTable?: boolean | tableTableDefaultArgs<ExtArgs>
-  }
-
-  export type $stakeholderTablePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "stakeholderTable"
-    objects: {
-      organizationsTable: Prisma.$organizationsTablePayload<ExtArgs>
-      stakeholderTypesTable: Prisma.$stakeholderTypesTablePayload<ExtArgs>
-      tableTable: Prisma.$tableTablePayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      stakeholderTableId: string
-      organizationId: string
-      stakeholderTypeId: string
-      tableId: string
-      stakeholderChildId: string
-    }, ExtArgs["result"]["stakeholderTable"]>
-    composites: {}
-  }
-
-  type stakeholderTableGetPayload<S extends boolean | null | undefined | stakeholderTableDefaultArgs> = $Result.GetResult<Prisma.$stakeholderTablePayload, S>
-
-  type stakeholderTableCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<stakeholderTableFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: StakeholderTableCountAggregateInputType | true
-    }
-
-  export interface stakeholderTableDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['stakeholderTable'], meta: { name: 'stakeholderTable' } }
-    /**
-     * Find zero or one StakeholderTable that matches the filter.
-     * @param {stakeholderTableFindUniqueArgs} args - Arguments to find a StakeholderTable
-     * @example
-     * // Get one StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends stakeholderTableFindUniqueArgs>(args: SelectSubset<T, stakeholderTableFindUniqueArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one StakeholderTable that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {stakeholderTableFindUniqueOrThrowArgs} args - Arguments to find a StakeholderTable
-     * @example
-     * // Get one StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends stakeholderTableFindUniqueOrThrowArgs>(args: SelectSubset<T, stakeholderTableFindUniqueOrThrowArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first StakeholderTable that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableFindFirstArgs} args - Arguments to find a StakeholderTable
-     * @example
-     * // Get one StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends stakeholderTableFindFirstArgs>(args?: SelectSubset<T, stakeholderTableFindFirstArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first StakeholderTable that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableFindFirstOrThrowArgs} args - Arguments to find a StakeholderTable
-     * @example
-     * // Get one StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends stakeholderTableFindFirstOrThrowArgs>(args?: SelectSubset<T, stakeholderTableFindFirstOrThrowArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more StakeholderTables that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all StakeholderTables
-     * const stakeholderTables = await prisma.stakeholderTable.findMany()
-     * 
-     * // Get first 10 StakeholderTables
-     * const stakeholderTables = await prisma.stakeholderTable.findMany({ take: 10 })
-     * 
-     * // Only select the `stakeholderTableId`
-     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.findMany({ select: { stakeholderTableId: true } })
-     * 
-     */
-    findMany<T extends stakeholderTableFindManyArgs>(args?: SelectSubset<T, stakeholderTableFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a StakeholderTable.
-     * @param {stakeholderTableCreateArgs} args - Arguments to create a StakeholderTable.
-     * @example
-     * // Create one StakeholderTable
-     * const StakeholderTable = await prisma.stakeholderTable.create({
-     *   data: {
-     *     // ... data to create a StakeholderTable
-     *   }
-     * })
-     * 
-     */
-    create<T extends stakeholderTableCreateArgs>(args: SelectSubset<T, stakeholderTableCreateArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many StakeholderTables.
-     * @param {stakeholderTableCreateManyArgs} args - Arguments to create many StakeholderTables.
-     * @example
-     * // Create many StakeholderTables
-     * const stakeholderTable = await prisma.stakeholderTable.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends stakeholderTableCreateManyArgs>(args?: SelectSubset<T, stakeholderTableCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many StakeholderTables and returns the data saved in the database.
-     * @param {stakeholderTableCreateManyAndReturnArgs} args - Arguments to create many StakeholderTables.
-     * @example
-     * // Create many StakeholderTables
-     * const stakeholderTable = await prisma.stakeholderTable.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many StakeholderTables and only return the `stakeholderTableId`
-     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.createManyAndReturn({
-     *   select: { stakeholderTableId: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends stakeholderTableCreateManyAndReturnArgs>(args?: SelectSubset<T, stakeholderTableCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a StakeholderTable.
-     * @param {stakeholderTableDeleteArgs} args - Arguments to delete one StakeholderTable.
-     * @example
-     * // Delete one StakeholderTable
-     * const StakeholderTable = await prisma.stakeholderTable.delete({
-     *   where: {
-     *     // ... filter to delete one StakeholderTable
-     *   }
-     * })
-     * 
-     */
-    delete<T extends stakeholderTableDeleteArgs>(args: SelectSubset<T, stakeholderTableDeleteArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one StakeholderTable.
-     * @param {stakeholderTableUpdateArgs} args - Arguments to update one StakeholderTable.
-     * @example
-     * // Update one StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends stakeholderTableUpdateArgs>(args: SelectSubset<T, stakeholderTableUpdateArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more StakeholderTables.
-     * @param {stakeholderTableDeleteManyArgs} args - Arguments to filter StakeholderTables to delete.
-     * @example
-     * // Delete a few StakeholderTables
-     * const { count } = await prisma.stakeholderTable.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends stakeholderTableDeleteManyArgs>(args?: SelectSubset<T, stakeholderTableDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more StakeholderTables.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many StakeholderTables
-     * const stakeholderTable = await prisma.stakeholderTable.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends stakeholderTableUpdateManyArgs>(args: SelectSubset<T, stakeholderTableUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more StakeholderTables and returns the data updated in the database.
-     * @param {stakeholderTableUpdateManyAndReturnArgs} args - Arguments to update many StakeholderTables.
-     * @example
-     * // Update many StakeholderTables
-     * const stakeholderTable = await prisma.stakeholderTable.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more StakeholderTables and only return the `stakeholderTableId`
-     * const stakeholderTableWithStakeholderTableIdOnly = await prisma.stakeholderTable.updateManyAndReturn({
-     *   select: { stakeholderTableId: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends stakeholderTableUpdateManyAndReturnArgs>(args: SelectSubset<T, stakeholderTableUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one StakeholderTable.
-     * @param {stakeholderTableUpsertArgs} args - Arguments to update or create a StakeholderTable.
-     * @example
-     * // Update or create a StakeholderTable
-     * const stakeholderTable = await prisma.stakeholderTable.upsert({
-     *   create: {
-     *     // ... data to create a StakeholderTable
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the StakeholderTable we want to update
-     *   }
-     * })
-     */
-    upsert<T extends stakeholderTableUpsertArgs>(args: SelectSubset<T, stakeholderTableUpsertArgs<ExtArgs>>): Prisma__stakeholderTableClient<$Result.GetResult<Prisma.$stakeholderTablePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of StakeholderTables.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableCountArgs} args - Arguments to filter StakeholderTables to count.
-     * @example
-     * // Count the number of StakeholderTables
-     * const count = await prisma.stakeholderTable.count({
-     *   where: {
-     *     // ... the filter for the StakeholderTables we want to count
-     *   }
-     * })
-    **/
-    count<T extends stakeholderTableCountArgs>(
-      args?: Subset<T, stakeholderTableCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], StakeholderTableCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a StakeholderTable.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {StakeholderTableAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends StakeholderTableAggregateArgs>(args: Subset<T, StakeholderTableAggregateArgs>): Prisma.PrismaPromise<GetStakeholderTableAggregateType<T>>
-
-    /**
-     * Group by StakeholderTable.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {stakeholderTableGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends stakeholderTableGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: stakeholderTableGroupByArgs['orderBy'] }
-        : { orderBy?: stakeholderTableGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, stakeholderTableGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStakeholderTableGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the stakeholderTable model
-   */
-  readonly fields: stakeholderTableFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for stakeholderTable.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__stakeholderTableClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    organizationsTable<T extends organizationsTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, organizationsTableDefaultArgs<ExtArgs>>): Prisma__organizationsTableClient<$Result.GetResult<Prisma.$organizationsTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    stakeholderTypesTable<T extends stakeholderTypesTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, stakeholderTypesTableDefaultArgs<ExtArgs>>): Prisma__stakeholderTypesTableClient<$Result.GetResult<Prisma.$stakeholderTypesTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    tableTable<T extends tableTableDefaultArgs<ExtArgs> = {}>(args?: Subset<T, tableTableDefaultArgs<ExtArgs>>): Prisma__tableTableClient<$Result.GetResult<Prisma.$tableTablePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the stakeholderTable model
-   */
-  interface stakeholderTableFieldRefs {
-    readonly stakeholderTableId: FieldRef<"stakeholderTable", 'String'>
-    readonly organizationId: FieldRef<"stakeholderTable", 'String'>
-    readonly stakeholderTypeId: FieldRef<"stakeholderTable", 'String'>
-    readonly tableId: FieldRef<"stakeholderTable", 'String'>
-    readonly stakeholderChildId: FieldRef<"stakeholderTable", 'String'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * stakeholderTable findUnique
-   */
-  export type stakeholderTableFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter, which stakeholderTable to fetch.
-     */
-    where: stakeholderTableWhereUniqueInput
-  }
-
-  /**
-   * stakeholderTable findUniqueOrThrow
-   */
-  export type stakeholderTableFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter, which stakeholderTable to fetch.
-     */
-    where: stakeholderTableWhereUniqueInput
-  }
-
-  /**
-   * stakeholderTable findFirst
-   */
-  export type stakeholderTableFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter, which stakeholderTable to fetch.
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of stakeholderTables to fetch.
-     */
-    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for stakeholderTables.
-     */
-    cursor?: stakeholderTableWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` stakeholderTables from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` stakeholderTables.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of stakeholderTables.
-     */
-    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
-  }
-
-  /**
-   * stakeholderTable findFirstOrThrow
-   */
-  export type stakeholderTableFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter, which stakeholderTable to fetch.
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of stakeholderTables to fetch.
-     */
-    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for stakeholderTables.
-     */
-    cursor?: stakeholderTableWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` stakeholderTables from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` stakeholderTables.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of stakeholderTables.
-     */
-    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
-  }
-
-  /**
-   * stakeholderTable findMany
-   */
-  export type stakeholderTableFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter, which stakeholderTables to fetch.
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of stakeholderTables to fetch.
-     */
-    orderBy?: stakeholderTableOrderByWithRelationInput | stakeholderTableOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing stakeholderTables.
-     */
-    cursor?: stakeholderTableWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` stakeholderTables from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` stakeholderTables.
-     */
-    skip?: number
-    distinct?: StakeholderTableScalarFieldEnum | StakeholderTableScalarFieldEnum[]
-  }
-
-  /**
-   * stakeholderTable create
-   */
-  export type stakeholderTableCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * The data needed to create a stakeholderTable.
-     */
-    data: XOR<stakeholderTableCreateInput, stakeholderTableUncheckedCreateInput>
-  }
-
-  /**
-   * stakeholderTable createMany
-   */
-  export type stakeholderTableCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many stakeholderTables.
-     */
-    data: stakeholderTableCreateManyInput | stakeholderTableCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * stakeholderTable createManyAndReturn
-   */
-  export type stakeholderTableCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * The data used to create many stakeholderTables.
-     */
-    data: stakeholderTableCreateManyInput | stakeholderTableCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * stakeholderTable update
-   */
-  export type stakeholderTableUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * The data needed to update a stakeholderTable.
-     */
-    data: XOR<stakeholderTableUpdateInput, stakeholderTableUncheckedUpdateInput>
-    /**
-     * Choose, which stakeholderTable to update.
-     */
-    where: stakeholderTableWhereUniqueInput
-  }
-
-  /**
-   * stakeholderTable updateMany
-   */
-  export type stakeholderTableUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update stakeholderTables.
-     */
-    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyInput>
-    /**
-     * Filter which stakeholderTables to update
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * Limit how many stakeholderTables to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * stakeholderTable updateManyAndReturn
-   */
-  export type stakeholderTableUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * The data used to update stakeholderTables.
-     */
-    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyInput>
-    /**
-     * Filter which stakeholderTables to update
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * Limit how many stakeholderTables to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * stakeholderTable upsert
-   */
-  export type stakeholderTableUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * The filter to search for the stakeholderTable to update in case it exists.
-     */
-    where: stakeholderTableWhereUniqueInput
-    /**
-     * In case the stakeholderTable found by the `where` argument doesn't exist, create a new stakeholderTable with this data.
-     */
-    create: XOR<stakeholderTableCreateInput, stakeholderTableUncheckedCreateInput>
-    /**
-     * In case the stakeholderTable was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<stakeholderTableUpdateInput, stakeholderTableUncheckedUpdateInput>
-  }
-
-  /**
-   * stakeholderTable delete
-   */
-  export type stakeholderTableDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
-    /**
-     * Filter which stakeholderTable to delete.
-     */
-    where: stakeholderTableWhereUniqueInput
-  }
-
-  /**
-   * stakeholderTable deleteMany
-   */
-  export type stakeholderTableDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which stakeholderTables to delete
-     */
-    where?: stakeholderTableWhereInput
-    /**
-     * Limit how many stakeholderTables to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * stakeholderTable without action
-   */
-  export type stakeholderTableDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the stakeholderTable
-     */
-    select?: stakeholderTableSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the stakeholderTable
-     */
-    omit?: stakeholderTableOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: stakeholderTableInclude<ExtArgs> | null
   }
 
 
@@ -37573,17 +37573,6 @@ export namespace Prisma {
   export type SpeciesTableScalarFieldEnum = (typeof SpeciesTableScalarFieldEnum)[keyof typeof SpeciesTableScalarFieldEnum]
 
 
-  export const StakeholderTypesTableScalarFieldEnum: {
-    stakeholderType: 'stakeholderType',
-    createdAt: 'createdAt',
-    lastEditedAt: 'lastEditedAt',
-    deleted: 'deleted',
-    stakeholderTypeId: 'stakeholderTypeId'
-  };
-
-  export type StakeholderTypesTableScalarFieldEnum = (typeof StakeholderTypesTableScalarFieldEnum)[keyof typeof StakeholderTypesTableScalarFieldEnum]
-
-
   export const StakeholderTableScalarFieldEnum: {
     stakeholderTableId: 'stakeholderTableId',
     organizationId: 'organizationId',
@@ -37593,6 +37582,17 @@ export namespace Prisma {
   };
 
   export type StakeholderTableScalarFieldEnum = (typeof StakeholderTableScalarFieldEnum)[keyof typeof StakeholderTableScalarFieldEnum]
+
+
+  export const StakeholderTypesTableScalarFieldEnum: {
+    stakeholderType: 'stakeholderType',
+    createdAt: 'createdAt',
+    lastEditedAt: 'lastEditedAt',
+    deleted: 'deleted',
+    stakeholderTypeId: 'stakeholderTypeId'
+  };
+
+  export type StakeholderTypesTableScalarFieldEnum = (typeof StakeholderTypesTableScalarFieldEnum)[keyof typeof StakeholderTypesTableScalarFieldEnum]
 
 
   export const TableTableScalarFieldEnum: {
@@ -39972,64 +39972,6 @@ export namespace Prisma {
     deleted?: BoolNullableWithAggregatesFilter<"speciesTable"> | boolean | null
   }
 
-  export type stakeholderTypesTableWhereInput = {
-    AND?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
-    OR?: stakeholderTypesTableWhereInput[]
-    NOT?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
-    stakeholderType?: StringFilter<"stakeholderTypesTable"> | string
-    createdAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
-    deleted?: BoolNullableFilter<"stakeholderTypesTable"> | boolean | null
-    stakeholderTypeId?: UuidFilter<"stakeholderTypesTable"> | string
-    organizationsTable?: OrganizationsTableListRelationFilter
-    stakeholderTable?: StakeholderTableListRelationFilter
-  }
-
-  export type stakeholderTypesTableOrderByWithRelationInput = {
-    stakeholderType?: SortOrder
-    createdAt?: SortOrderInput | SortOrder
-    lastEditedAt?: SortOrderInput | SortOrder
-    deleted?: SortOrderInput | SortOrder
-    stakeholderTypeId?: SortOrder
-    organizationsTable?: organizationsTableOrderByRelationAggregateInput
-    stakeholderTable?: stakeholderTableOrderByRelationAggregateInput
-  }
-
-  export type stakeholderTypesTableWhereUniqueInput = Prisma.AtLeast<{
-    stakeholderTypeId?: string
-    AND?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
-    OR?: stakeholderTypesTableWhereInput[]
-    NOT?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
-    stakeholderType?: StringFilter<"stakeholderTypesTable"> | string
-    createdAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
-    deleted?: BoolNullableFilter<"stakeholderTypesTable"> | boolean | null
-    organizationsTable?: OrganizationsTableListRelationFilter
-    stakeholderTable?: StakeholderTableListRelationFilter
-  }, "stakeholderTypeId">
-
-  export type stakeholderTypesTableOrderByWithAggregationInput = {
-    stakeholderType?: SortOrder
-    createdAt?: SortOrderInput | SortOrder
-    lastEditedAt?: SortOrderInput | SortOrder
-    deleted?: SortOrderInput | SortOrder
-    stakeholderTypeId?: SortOrder
-    _count?: stakeholderTypesTableCountOrderByAggregateInput
-    _max?: stakeholderTypesTableMaxOrderByAggregateInput
-    _min?: stakeholderTypesTableMinOrderByAggregateInput
-  }
-
-  export type stakeholderTypesTableScalarWhereWithAggregatesInput = {
-    AND?: stakeholderTypesTableScalarWhereWithAggregatesInput | stakeholderTypesTableScalarWhereWithAggregatesInput[]
-    OR?: stakeholderTypesTableScalarWhereWithAggregatesInput[]
-    NOT?: stakeholderTypesTableScalarWhereWithAggregatesInput | stakeholderTypesTableScalarWhereWithAggregatesInput[]
-    stakeholderType?: StringWithAggregatesFilter<"stakeholderTypesTable"> | string
-    createdAt?: DateTimeNullableWithAggregatesFilter<"stakeholderTypesTable"> | Date | string | null
-    lastEditedAt?: DateTimeNullableWithAggregatesFilter<"stakeholderTypesTable"> | Date | string | null
-    deleted?: BoolNullableWithAggregatesFilter<"stakeholderTypesTable"> | boolean | null
-    stakeholderTypeId?: UuidWithAggregatesFilter<"stakeholderTypesTable"> | string
-  }
-
   export type stakeholderTableWhereInput = {
     AND?: stakeholderTableWhereInput | stakeholderTableWhereInput[]
     OR?: stakeholderTableWhereInput[]
@@ -40089,6 +40031,64 @@ export namespace Prisma {
     stakeholderTypeId?: UuidWithAggregatesFilter<"stakeholderTable"> | string
     tableId?: UuidWithAggregatesFilter<"stakeholderTable"> | string
     stakeholderChildId?: UuidWithAggregatesFilter<"stakeholderTable"> | string
+  }
+
+  export type stakeholderTypesTableWhereInput = {
+    AND?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
+    OR?: stakeholderTypesTableWhereInput[]
+    NOT?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
+    stakeholderType?: StringFilter<"stakeholderTypesTable"> | string
+    createdAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
+    lastEditedAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
+    deleted?: BoolNullableFilter<"stakeholderTypesTable"> | boolean | null
+    stakeholderTypeId?: UuidFilter<"stakeholderTypesTable"> | string
+    organizationsTable?: OrganizationsTableListRelationFilter
+    stakeholderTable?: StakeholderTableListRelationFilter
+  }
+
+  export type stakeholderTypesTableOrderByWithRelationInput = {
+    stakeholderType?: SortOrder
+    createdAt?: SortOrderInput | SortOrder
+    lastEditedAt?: SortOrderInput | SortOrder
+    deleted?: SortOrderInput | SortOrder
+    stakeholderTypeId?: SortOrder
+    organizationsTable?: organizationsTableOrderByRelationAggregateInput
+    stakeholderTable?: stakeholderTableOrderByRelationAggregateInput
+  }
+
+  export type stakeholderTypesTableWhereUniqueInput = Prisma.AtLeast<{
+    stakeholderTypeId?: string
+    AND?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
+    OR?: stakeholderTypesTableWhereInput[]
+    NOT?: stakeholderTypesTableWhereInput | stakeholderTypesTableWhereInput[]
+    stakeholderType?: StringFilter<"stakeholderTypesTable"> | string
+    createdAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
+    lastEditedAt?: DateTimeNullableFilter<"stakeholderTypesTable"> | Date | string | null
+    deleted?: BoolNullableFilter<"stakeholderTypesTable"> | boolean | null
+    organizationsTable?: OrganizationsTableListRelationFilter
+    stakeholderTable?: StakeholderTableListRelationFilter
+  }, "stakeholderTypeId">
+
+  export type stakeholderTypesTableOrderByWithAggregationInput = {
+    stakeholderType?: SortOrder
+    createdAt?: SortOrderInput | SortOrder
+    lastEditedAt?: SortOrderInput | SortOrder
+    deleted?: SortOrderInput | SortOrder
+    stakeholderTypeId?: SortOrder
+    _count?: stakeholderTypesTableCountOrderByAggregateInput
+    _max?: stakeholderTypesTableMaxOrderByAggregateInput
+    _min?: stakeholderTypesTableMinOrderByAggregateInput
+  }
+
+  export type stakeholderTypesTableScalarWhereWithAggregatesInput = {
+    AND?: stakeholderTypesTableScalarWhereWithAggregatesInput | stakeholderTypesTableScalarWhereWithAggregatesInput[]
+    OR?: stakeholderTypesTableScalarWhereWithAggregatesInput[]
+    NOT?: stakeholderTypesTableScalarWhereWithAggregatesInput | stakeholderTypesTableScalarWhereWithAggregatesInput[]
+    stakeholderType?: StringWithAggregatesFilter<"stakeholderTypesTable"> | string
+    createdAt?: DateTimeNullableWithAggregatesFilter<"stakeholderTypesTable"> | Date | string | null
+    lastEditedAt?: DateTimeNullableWithAggregatesFilter<"stakeholderTypesTable"> | Date | string | null
+    deleted?: BoolNullableWithAggregatesFilter<"stakeholderTypesTable"> | boolean | null
+    stakeholderTypeId?: UuidWithAggregatesFilter<"stakeholderTypesTable"> | string
   }
 
   export type tableTableWhereInput = {
@@ -42492,6 +42492,59 @@ export namespace Prisma {
     deleted?: NullableBoolFieldUpdateOperationsInput | boolean | null
   }
 
+  export type stakeholderTableCreateInput = {
+    stakeholderTableId?: string
+    stakeholderChildId: string
+    organizationsTable: organizationsTableCreateNestedOneWithoutStakeholderTableInput
+    stakeholderTypesTable: stakeholderTypesTableCreateNestedOneWithoutStakeholderTableInput
+    tableTable: tableTableCreateNestedOneWithoutStakeholderTableInput
+  }
+
+  export type stakeholderTableUncheckedCreateInput = {
+    stakeholderTableId?: string
+    organizationId: string
+    stakeholderTypeId: string
+    tableId: string
+    stakeholderChildId: string
+  }
+
+  export type stakeholderTableUpdateInput = {
+    stakeholderTableId?: StringFieldUpdateOperationsInput | string
+    stakeholderChildId?: StringFieldUpdateOperationsInput | string
+    organizationsTable?: organizationsTableUpdateOneRequiredWithoutStakeholderTableNestedInput
+    stakeholderTypesTable?: stakeholderTypesTableUpdateOneRequiredWithoutStakeholderTableNestedInput
+    tableTable?: tableTableUpdateOneRequiredWithoutStakeholderTableNestedInput
+  }
+
+  export type stakeholderTableUncheckedUpdateInput = {
+    stakeholderTableId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    stakeholderTypeId?: StringFieldUpdateOperationsInput | string
+    tableId?: StringFieldUpdateOperationsInput | string
+    stakeholderChildId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type stakeholderTableCreateManyInput = {
+    stakeholderTableId?: string
+    organizationId: string
+    stakeholderTypeId: string
+    tableId: string
+    stakeholderChildId: string
+  }
+
+  export type stakeholderTableUpdateManyMutationInput = {
+    stakeholderTableId?: StringFieldUpdateOperationsInput | string
+    stakeholderChildId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type stakeholderTableUncheckedUpdateManyInput = {
+    stakeholderTableId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    stakeholderTypeId?: StringFieldUpdateOperationsInput | string
+    tableId?: StringFieldUpdateOperationsInput | string
+    stakeholderChildId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type stakeholderTypesTableCreateInput = {
     stakeholderType: string
     createdAt?: Date | string | null
@@ -42554,59 +42607,6 @@ export namespace Prisma {
     lastEditedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deleted?: NullableBoolFieldUpdateOperationsInput | boolean | null
     stakeholderTypeId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type stakeholderTableCreateInput = {
-    stakeholderTableId?: string
-    stakeholderChildId: string
-    organizationsTable: organizationsTableCreateNestedOneWithoutStakeholderTableInput
-    stakeholderTypesTable: stakeholderTypesTableCreateNestedOneWithoutStakeholderTableInput
-    tableTable: tableTableCreateNestedOneWithoutStakeholderTableInput
-  }
-
-  export type stakeholderTableUncheckedCreateInput = {
-    stakeholderTableId?: string
-    organizationId: string
-    stakeholderTypeId: string
-    tableId: string
-    stakeholderChildId: string
-  }
-
-  export type stakeholderTableUpdateInput = {
-    stakeholderTableId?: StringFieldUpdateOperationsInput | string
-    stakeholderChildId?: StringFieldUpdateOperationsInput | string
-    organizationsTable?: organizationsTableUpdateOneRequiredWithoutStakeholderTableNestedInput
-    stakeholderTypesTable?: stakeholderTypesTableUpdateOneRequiredWithoutStakeholderTableNestedInput
-    tableTable?: tableTableUpdateOneRequiredWithoutStakeholderTableNestedInput
-  }
-
-  export type stakeholderTableUncheckedUpdateInput = {
-    stakeholderTableId?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
-    stakeholderTypeId?: StringFieldUpdateOperationsInput | string
-    tableId?: StringFieldUpdateOperationsInput | string
-    stakeholderChildId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type stakeholderTableCreateManyInput = {
-    stakeholderTableId?: string
-    organizationId: string
-    stakeholderTypeId: string
-    tableId: string
-    stakeholderChildId: string
-  }
-
-  export type stakeholderTableUpdateManyMutationInput = {
-    stakeholderTableId?: StringFieldUpdateOperationsInput | string
-    stakeholderChildId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type stakeholderTableUncheckedUpdateManyInput = {
-    stakeholderTableId?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
-    stakeholderTypeId?: StringFieldUpdateOperationsInput | string
-    tableId?: StringFieldUpdateOperationsInput | string
-    stakeholderChildId?: StringFieldUpdateOperationsInput | string
   }
 
   export type tableTableCreateInput = {
@@ -44527,40 +44527,6 @@ export namespace Prisma {
     deleted?: SortOrder
   }
 
-  export type OrganizationsTableListRelationFilter = {
-    every?: organizationsTableWhereInput
-    some?: organizationsTableWhereInput
-    none?: organizationsTableWhereInput
-  }
-
-  export type organizationsTableOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type stakeholderTypesTableCountOrderByAggregateInput = {
-    stakeholderType?: SortOrder
-    createdAt?: SortOrder
-    lastEditedAt?: SortOrder
-    deleted?: SortOrder
-    stakeholderTypeId?: SortOrder
-  }
-
-  export type stakeholderTypesTableMaxOrderByAggregateInput = {
-    stakeholderType?: SortOrder
-    createdAt?: SortOrder
-    lastEditedAt?: SortOrder
-    deleted?: SortOrder
-    stakeholderTypeId?: SortOrder
-  }
-
-  export type stakeholderTypesTableMinOrderByAggregateInput = {
-    stakeholderType?: SortOrder
-    createdAt?: SortOrder
-    lastEditedAt?: SortOrder
-    deleted?: SortOrder
-    stakeholderTypeId?: SortOrder
-  }
-
   export type OrganizationsTableScalarRelationFilter = {
     is?: organizationsTableWhereInput
     isNot?: organizationsTableWhereInput
@@ -44598,6 +44564,40 @@ export namespace Prisma {
     stakeholderTypeId?: SortOrder
     tableId?: SortOrder
     stakeholderChildId?: SortOrder
+  }
+
+  export type OrganizationsTableListRelationFilter = {
+    every?: organizationsTableWhereInput
+    some?: organizationsTableWhereInput
+    none?: organizationsTableWhereInput
+  }
+
+  export type organizationsTableOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type stakeholderTypesTableCountOrderByAggregateInput = {
+    stakeholderType?: SortOrder
+    createdAt?: SortOrder
+    lastEditedAt?: SortOrder
+    deleted?: SortOrder
+    stakeholderTypeId?: SortOrder
+  }
+
+  export type stakeholderTypesTableMaxOrderByAggregateInput = {
+    stakeholderType?: SortOrder
+    createdAt?: SortOrder
+    lastEditedAt?: SortOrder
+    deleted?: SortOrder
+    stakeholderTypeId?: SortOrder
+  }
+
+  export type stakeholderTypesTableMinOrderByAggregateInput = {
+    stakeholderType?: SortOrder
+    createdAt?: SortOrder
+    lastEditedAt?: SortOrder
+    deleted?: SortOrder
+    stakeholderTypeId?: SortOrder
   }
 
   export type tableTableCountOrderByAggregateInput = {
@@ -46075,6 +46075,48 @@ export namespace Prisma {
     deleteMany?: cropTableScalarWhereInput | cropTableScalarWhereInput[]
   }
 
+  export type organizationsTableCreateNestedOneWithoutStakeholderTableInput = {
+    create?: XOR<organizationsTableCreateWithoutStakeholderTableInput, organizationsTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: organizationsTableCreateOrConnectWithoutStakeholderTableInput
+    connect?: organizationsTableWhereUniqueInput
+  }
+
+  export type stakeholderTypesTableCreateNestedOneWithoutStakeholderTableInput = {
+    create?: XOR<stakeholderTypesTableCreateWithoutStakeholderTableInput, stakeholderTypesTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: stakeholderTypesTableCreateOrConnectWithoutStakeholderTableInput
+    connect?: stakeholderTypesTableWhereUniqueInput
+  }
+
+  export type tableTableCreateNestedOneWithoutStakeholderTableInput = {
+    create?: XOR<tableTableCreateWithoutStakeholderTableInput, tableTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: tableTableCreateOrConnectWithoutStakeholderTableInput
+    connect?: tableTableWhereUniqueInput
+  }
+
+  export type organizationsTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
+    create?: XOR<organizationsTableCreateWithoutStakeholderTableInput, organizationsTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: organizationsTableCreateOrConnectWithoutStakeholderTableInput
+    upsert?: organizationsTableUpsertWithoutStakeholderTableInput
+    connect?: organizationsTableWhereUniqueInput
+    update?: XOR<XOR<organizationsTableUpdateToOneWithWhereWithoutStakeholderTableInput, organizationsTableUpdateWithoutStakeholderTableInput>, organizationsTableUncheckedUpdateWithoutStakeholderTableInput>
+  }
+
+  export type stakeholderTypesTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
+    create?: XOR<stakeholderTypesTableCreateWithoutStakeholderTableInput, stakeholderTypesTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: stakeholderTypesTableCreateOrConnectWithoutStakeholderTableInput
+    upsert?: stakeholderTypesTableUpsertWithoutStakeholderTableInput
+    connect?: stakeholderTypesTableWhereUniqueInput
+    update?: XOR<XOR<stakeholderTypesTableUpdateToOneWithWhereWithoutStakeholderTableInput, stakeholderTypesTableUpdateWithoutStakeholderTableInput>, stakeholderTypesTableUncheckedUpdateWithoutStakeholderTableInput>
+  }
+
+  export type tableTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
+    create?: XOR<tableTableCreateWithoutStakeholderTableInput, tableTableUncheckedCreateWithoutStakeholderTableInput>
+    connectOrCreate?: tableTableCreateOrConnectWithoutStakeholderTableInput
+    upsert?: tableTableUpsertWithoutStakeholderTableInput
+    connect?: tableTableWhereUniqueInput
+    update?: XOR<XOR<tableTableUpdateToOneWithWhereWithoutStakeholderTableInput, tableTableUpdateWithoutStakeholderTableInput>, tableTableUncheckedUpdateWithoutStakeholderTableInput>
+  }
+
   export type organizationsTableCreateNestedManyWithoutStakeholderTypesTableInput = {
     create?: XOR<organizationsTableCreateWithoutStakeholderTypesTableInput, organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput> | organizationsTableCreateWithoutStakeholderTypesTableInput[] | organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput[]
     connectOrCreate?: organizationsTableCreateOrConnectWithoutStakeholderTypesTableInput | organizationsTableCreateOrConnectWithoutStakeholderTypesTableInput[]
@@ -46157,48 +46199,6 @@ export namespace Prisma {
     update?: stakeholderTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput | stakeholderTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput[]
     updateMany?: stakeholderTableUpdateManyWithWhereWithoutStakeholderTypesTableInput | stakeholderTableUpdateManyWithWhereWithoutStakeholderTypesTableInput[]
     deleteMany?: stakeholderTableScalarWhereInput | stakeholderTableScalarWhereInput[]
-  }
-
-  export type organizationsTableCreateNestedOneWithoutStakeholderTableInput = {
-    create?: XOR<organizationsTableCreateWithoutStakeholderTableInput, organizationsTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: organizationsTableCreateOrConnectWithoutStakeholderTableInput
-    connect?: organizationsTableWhereUniqueInput
-  }
-
-  export type stakeholderTypesTableCreateNestedOneWithoutStakeholderTableInput = {
-    create?: XOR<stakeholderTypesTableCreateWithoutStakeholderTableInput, stakeholderTypesTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: stakeholderTypesTableCreateOrConnectWithoutStakeholderTableInput
-    connect?: stakeholderTypesTableWhereUniqueInput
-  }
-
-  export type tableTableCreateNestedOneWithoutStakeholderTableInput = {
-    create?: XOR<tableTableCreateWithoutStakeholderTableInput, tableTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: tableTableCreateOrConnectWithoutStakeholderTableInput
-    connect?: tableTableWhereUniqueInput
-  }
-
-  export type organizationsTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
-    create?: XOR<organizationsTableCreateWithoutStakeholderTableInput, organizationsTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: organizationsTableCreateOrConnectWithoutStakeholderTableInput
-    upsert?: organizationsTableUpsertWithoutStakeholderTableInput
-    connect?: organizationsTableWhereUniqueInput
-    update?: XOR<XOR<organizationsTableUpdateToOneWithWhereWithoutStakeholderTableInput, organizationsTableUpdateWithoutStakeholderTableInput>, organizationsTableUncheckedUpdateWithoutStakeholderTableInput>
-  }
-
-  export type stakeholderTypesTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
-    create?: XOR<stakeholderTypesTableCreateWithoutStakeholderTableInput, stakeholderTypesTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: stakeholderTypesTableCreateOrConnectWithoutStakeholderTableInput
-    upsert?: stakeholderTypesTableUpsertWithoutStakeholderTableInput
-    connect?: stakeholderTypesTableWhereUniqueInput
-    update?: XOR<XOR<stakeholderTypesTableUpdateToOneWithWhereWithoutStakeholderTableInput, stakeholderTypesTableUpdateWithoutStakeholderTableInput>, stakeholderTypesTableUncheckedUpdateWithoutStakeholderTableInput>
-  }
-
-  export type tableTableUpdateOneRequiredWithoutStakeholderTableNestedInput = {
-    create?: XOR<tableTableCreateWithoutStakeholderTableInput, tableTableUncheckedCreateWithoutStakeholderTableInput>
-    connectOrCreate?: tableTableCreateOrConnectWithoutStakeholderTableInput
-    upsert?: tableTableUpsertWithoutStakeholderTableInput
-    connect?: tableTableWhereUniqueInput
-    update?: XOR<XOR<tableTableUpdateToOneWithWhereWithoutStakeholderTableInput, tableTableUpdateWithoutStakeholderTableInput>, tableTableUncheckedUpdateWithoutStakeholderTableInput>
   }
 
   export type stakeholderTableCreateNestedManyWithoutTableTableInput = {
@@ -50479,133 +50479,6 @@ export namespace Prisma {
     data: XOR<cropTableUpdateManyMutationInput, cropTableUncheckedUpdateManyWithoutSpeciesTableInput>
   }
 
-  export type organizationsTableCreateWithoutStakeholderTypesTableInput = {
-    organizationId?: string
-    organizationName: string
-    contactName?: string | null
-    contactEmail?: string | null
-    contactPhone?: string | null
-    address?: string | null
-    website?: string | null
-    organizationNotes?: string | null
-    createdAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editedBy?: string | null
-    deleted?: boolean | null
-    gpsLat?: number | null
-    gpsLon?: number | null
-    cropTable?: cropTableCreateNestedManyWithoutOrganizationsTableInput
-    profilesTable?: profilesTableCreateNestedManyWithoutOrganizationsTableInput
-    stakeholderTable?: stakeholderTableCreateNestedManyWithoutOrganizationsTableInput
-  }
-
-  export type organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput = {
-    organizationId?: string
-    organizationName: string
-    contactName?: string | null
-    contactEmail?: string | null
-    contactPhone?: string | null
-    address?: string | null
-    website?: string | null
-    organizationNotes?: string | null
-    createdAt?: Date | string | null
-    lastEditedAt?: Date | string | null
-    editedBy?: string | null
-    deleted?: boolean | null
-    gpsLat?: number | null
-    gpsLon?: number | null
-    cropTable?: cropTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
-    profilesTable?: profilesTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
-    stakeholderTable?: stakeholderTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
-  }
-
-  export type organizationsTableCreateOrConnectWithoutStakeholderTypesTableInput = {
-    where: organizationsTableWhereUniqueInput
-    create: XOR<organizationsTableCreateWithoutStakeholderTypesTableInput, organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput>
-  }
-
-  export type organizationsTableCreateManyStakeholderTypesTableInputEnvelope = {
-    data: organizationsTableCreateManyStakeholderTypesTableInput | organizationsTableCreateManyStakeholderTypesTableInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type stakeholderTableCreateWithoutStakeholderTypesTableInput = {
-    stakeholderTableId?: string
-    stakeholderChildId: string
-    organizationsTable: organizationsTableCreateNestedOneWithoutStakeholderTableInput
-    tableTable: tableTableCreateNestedOneWithoutStakeholderTableInput
-  }
-
-  export type stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput = {
-    stakeholderTableId?: string
-    organizationId: string
-    tableId: string
-    stakeholderChildId: string
-  }
-
-  export type stakeholderTableCreateOrConnectWithoutStakeholderTypesTableInput = {
-    where: stakeholderTableWhereUniqueInput
-    create: XOR<stakeholderTableCreateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput>
-  }
-
-  export type stakeholderTableCreateManyStakeholderTypesTableInputEnvelope = {
-    data: stakeholderTableCreateManyStakeholderTypesTableInput | stakeholderTableCreateManyStakeholderTypesTableInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type organizationsTableUpsertWithWhereUniqueWithoutStakeholderTypesTableInput = {
-    where: organizationsTableWhereUniqueInput
-    update: XOR<organizationsTableUpdateWithoutStakeholderTypesTableInput, organizationsTableUncheckedUpdateWithoutStakeholderTypesTableInput>
-    create: XOR<organizationsTableCreateWithoutStakeholderTypesTableInput, organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput>
-  }
-
-  export type organizationsTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput = {
-    where: organizationsTableWhereUniqueInput
-    data: XOR<organizationsTableUpdateWithoutStakeholderTypesTableInput, organizationsTableUncheckedUpdateWithoutStakeholderTypesTableInput>
-  }
-
-  export type organizationsTableUpdateManyWithWhereWithoutStakeholderTypesTableInput = {
-    where: organizationsTableScalarWhereInput
-    data: XOR<organizationsTableUpdateManyMutationInput, organizationsTableUncheckedUpdateManyWithoutStakeholderTypesTableInput>
-  }
-
-  export type organizationsTableScalarWhereInput = {
-    AND?: organizationsTableScalarWhereInput | organizationsTableScalarWhereInput[]
-    OR?: organizationsTableScalarWhereInput[]
-    NOT?: organizationsTableScalarWhereInput | organizationsTableScalarWhereInput[]
-    organizationId?: UuidFilter<"organizationsTable"> | string
-    organizationName?: StringFilter<"organizationsTable"> | string
-    contactName?: StringNullableFilter<"organizationsTable"> | string | null
-    contactEmail?: StringNullableFilter<"organizationsTable"> | string | null
-    contactPhone?: StringNullableFilter<"organizationsTable"> | string | null
-    address?: StringNullableFilter<"organizationsTable"> | string | null
-    website?: StringNullableFilter<"organizationsTable"> | string | null
-    organizationNotes?: StringNullableFilter<"organizationsTable"> | string | null
-    createdAt?: DateTimeNullableFilter<"organizationsTable"> | Date | string | null
-    lastEditedAt?: DateTimeNullableFilter<"organizationsTable"> | Date | string | null
-    editedBy?: UuidNullableFilter<"organizationsTable"> | string | null
-    deleted?: BoolNullableFilter<"organizationsTable"> | boolean | null
-    gpsLat?: FloatNullableFilter<"organizationsTable"> | number | null
-    gpsLon?: FloatNullableFilter<"organizationsTable"> | number | null
-    stakeholderTypeId?: UuidNullableFilter<"organizationsTable"> | string | null
-  }
-
-  export type stakeholderTableUpsertWithWhereUniqueWithoutStakeholderTypesTableInput = {
-    where: stakeholderTableWhereUniqueInput
-    update: XOR<stakeholderTableUpdateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedUpdateWithoutStakeholderTypesTableInput>
-    create: XOR<stakeholderTableCreateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput>
-  }
-
-  export type stakeholderTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput = {
-    where: stakeholderTableWhereUniqueInput
-    data: XOR<stakeholderTableUpdateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedUpdateWithoutStakeholderTypesTableInput>
-  }
-
-  export type stakeholderTableUpdateManyWithWhereWithoutStakeholderTypesTableInput = {
-    where: stakeholderTableScalarWhereInput
-    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyWithoutStakeholderTypesTableInput>
-  }
-
   export type organizationsTableCreateWithoutStakeholderTableInput = {
     organizationId?: string
     organizationName: string
@@ -50788,6 +50661,133 @@ export namespace Prisma {
   export type tableTableUncheckedUpdateWithoutStakeholderTableInput = {
     tableId?: StringFieldUpdateOperationsInput | string
     tableName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type organizationsTableCreateWithoutStakeholderTypesTableInput = {
+    organizationId?: string
+    organizationName: string
+    contactName?: string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    address?: string | null
+    website?: string | null
+    organizationNotes?: string | null
+    createdAt?: Date | string | null
+    lastEditedAt?: Date | string | null
+    editedBy?: string | null
+    deleted?: boolean | null
+    gpsLat?: number | null
+    gpsLon?: number | null
+    cropTable?: cropTableCreateNestedManyWithoutOrganizationsTableInput
+    profilesTable?: profilesTableCreateNestedManyWithoutOrganizationsTableInput
+    stakeholderTable?: stakeholderTableCreateNestedManyWithoutOrganizationsTableInput
+  }
+
+  export type organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput = {
+    organizationId?: string
+    organizationName: string
+    contactName?: string | null
+    contactEmail?: string | null
+    contactPhone?: string | null
+    address?: string | null
+    website?: string | null
+    organizationNotes?: string | null
+    createdAt?: Date | string | null
+    lastEditedAt?: Date | string | null
+    editedBy?: string | null
+    deleted?: boolean | null
+    gpsLat?: number | null
+    gpsLon?: number | null
+    cropTable?: cropTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
+    profilesTable?: profilesTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
+    stakeholderTable?: stakeholderTableUncheckedCreateNestedManyWithoutOrganizationsTableInput
+  }
+
+  export type organizationsTableCreateOrConnectWithoutStakeholderTypesTableInput = {
+    where: organizationsTableWhereUniqueInput
+    create: XOR<organizationsTableCreateWithoutStakeholderTypesTableInput, organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput>
+  }
+
+  export type organizationsTableCreateManyStakeholderTypesTableInputEnvelope = {
+    data: organizationsTableCreateManyStakeholderTypesTableInput | organizationsTableCreateManyStakeholderTypesTableInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type stakeholderTableCreateWithoutStakeholderTypesTableInput = {
+    stakeholderTableId?: string
+    stakeholderChildId: string
+    organizationsTable: organizationsTableCreateNestedOneWithoutStakeholderTableInput
+    tableTable: tableTableCreateNestedOneWithoutStakeholderTableInput
+  }
+
+  export type stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput = {
+    stakeholderTableId?: string
+    organizationId: string
+    tableId: string
+    stakeholderChildId: string
+  }
+
+  export type stakeholderTableCreateOrConnectWithoutStakeholderTypesTableInput = {
+    where: stakeholderTableWhereUniqueInput
+    create: XOR<stakeholderTableCreateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput>
+  }
+
+  export type stakeholderTableCreateManyStakeholderTypesTableInputEnvelope = {
+    data: stakeholderTableCreateManyStakeholderTypesTableInput | stakeholderTableCreateManyStakeholderTypesTableInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type organizationsTableUpsertWithWhereUniqueWithoutStakeholderTypesTableInput = {
+    where: organizationsTableWhereUniqueInput
+    update: XOR<organizationsTableUpdateWithoutStakeholderTypesTableInput, organizationsTableUncheckedUpdateWithoutStakeholderTypesTableInput>
+    create: XOR<organizationsTableCreateWithoutStakeholderTypesTableInput, organizationsTableUncheckedCreateWithoutStakeholderTypesTableInput>
+  }
+
+  export type organizationsTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput = {
+    where: organizationsTableWhereUniqueInput
+    data: XOR<organizationsTableUpdateWithoutStakeholderTypesTableInput, organizationsTableUncheckedUpdateWithoutStakeholderTypesTableInput>
+  }
+
+  export type organizationsTableUpdateManyWithWhereWithoutStakeholderTypesTableInput = {
+    where: organizationsTableScalarWhereInput
+    data: XOR<organizationsTableUpdateManyMutationInput, organizationsTableUncheckedUpdateManyWithoutStakeholderTypesTableInput>
+  }
+
+  export type organizationsTableScalarWhereInput = {
+    AND?: organizationsTableScalarWhereInput | organizationsTableScalarWhereInput[]
+    OR?: organizationsTableScalarWhereInput[]
+    NOT?: organizationsTableScalarWhereInput | organizationsTableScalarWhereInput[]
+    organizationId?: UuidFilter<"organizationsTable"> | string
+    organizationName?: StringFilter<"organizationsTable"> | string
+    contactName?: StringNullableFilter<"organizationsTable"> | string | null
+    contactEmail?: StringNullableFilter<"organizationsTable"> | string | null
+    contactPhone?: StringNullableFilter<"organizationsTable"> | string | null
+    address?: StringNullableFilter<"organizationsTable"> | string | null
+    website?: StringNullableFilter<"organizationsTable"> | string | null
+    organizationNotes?: StringNullableFilter<"organizationsTable"> | string | null
+    createdAt?: DateTimeNullableFilter<"organizationsTable"> | Date | string | null
+    lastEditedAt?: DateTimeNullableFilter<"organizationsTable"> | Date | string | null
+    editedBy?: UuidNullableFilter<"organizationsTable"> | string | null
+    deleted?: BoolNullableFilter<"organizationsTable"> | boolean | null
+    gpsLat?: FloatNullableFilter<"organizationsTable"> | number | null
+    gpsLon?: FloatNullableFilter<"organizationsTable"> | number | null
+    stakeholderTypeId?: UuidNullableFilter<"organizationsTable"> | string | null
+  }
+
+  export type stakeholderTableUpsertWithWhereUniqueWithoutStakeholderTypesTableInput = {
+    where: stakeholderTableWhereUniqueInput
+    update: XOR<stakeholderTableUpdateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedUpdateWithoutStakeholderTypesTableInput>
+    create: XOR<stakeholderTableCreateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedCreateWithoutStakeholderTypesTableInput>
+  }
+
+  export type stakeholderTableUpdateWithWhereUniqueWithoutStakeholderTypesTableInput = {
+    where: stakeholderTableWhereUniqueInput
+    data: XOR<stakeholderTableUpdateWithoutStakeholderTypesTableInput, stakeholderTableUncheckedUpdateWithoutStakeholderTypesTableInput>
+  }
+
+  export type stakeholderTableUpdateManyWithWhereWithoutStakeholderTypesTableInput = {
+    where: stakeholderTableScalarWhereInput
+    data: XOR<stakeholderTableUpdateManyMutationInput, stakeholderTableUncheckedUpdateManyWithoutStakeholderTypesTableInput>
   }
 
   export type stakeholderTableCreateWithoutTableTableInput = {

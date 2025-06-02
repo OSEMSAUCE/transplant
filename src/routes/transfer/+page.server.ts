@@ -119,9 +119,9 @@ export async function load() {
 	};
 
 	// Fetch data from Prisma
-	const rawLandsDbTable = await prisma.land.findMany({ take: 3 });
-	const rawPlantingDbTable = await prisma.planting.findMany({ take: 3 });
-	const rawCropDbTable = await prisma.crop.findMany({ take: 3 });
+	const rawLandsDbTable = await prisma.landTable.findMany({ take: 3 });
+	const rawPlantingDbTable = await prisma.plantingTable.findMany({ take: 3 });
+	const rawCropDbTable = await prisma.cropTable.findMany({ take: 3 });
 	
 	// Serialize and filter the data to only include selected attributes
 	const landsDbTable = serializeForSvelteKit(rawLandsDbTable)

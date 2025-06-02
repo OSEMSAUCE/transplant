@@ -529,18 +529,6 @@ model speciesTable {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model stakeholderTypesTable {
-  stakeholderType    String
-  createdAt          DateTime?            @default(now()) @db.Timestamptz(6)
-  lastEditedAt       DateTime?            @default(now()) @db.Timestamptz(6)
-  deleted            Boolean?             @default(false)
-  stakeholderTypeId  String               @id(map: "StakeholderTypes_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationsTable organizationsTable[]
-  stakeholderTable   stakeholderTable[]
-
-  @@schema("public")
-}
-
 model stakeholderTable {
   stakeholderTableId    String                @id(map: "stakeholdertable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId        String                @db.Uuid
@@ -554,22 +542,24 @@ model stakeholderTable {
   @@schema("public")
 }
 
-model tableTable {
-  tableId          String             @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tableName        String             @unique
-  stakeholderTable stakeholderTable[]
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model stakeholderTypesTable {
+  stakeholderType    String
+  createdAt          DateTime?            @default(now()) @db.Timestamptz(6)
+  lastEditedAt       DateTime?            @default(now()) @db.Timestamptz(6)
+  deleted            Boolean?             @default(false)
+  stakeholderTypeId  String               @id(map: "StakeholderTypes_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationsTable organizationsTable[]
+  stakeholderTable   stakeholderTable[]
 
   @@schema("public")
 }
 
-/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-enum Preparation {
-  raw
-  mechanical
-  chemical
-  burned
-  grass_seed @map("grass seed")
-  landscaped
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tableTable {
+  tableId          String             @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tableName        String             @unique
+  stakeholderTable stakeholderTable[]
 
   @@schema("public")
 }
@@ -613,6 +603,18 @@ enum one_time_token_type {
   phone_change_token
 
   @@schema("auth")
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum Preparation {
+  raw
+  mechanical
+  chemical
+  burned
+  grass_seed @map("grass seed")
+  landscaped
+
+  @@schema("public")
 }
 
 enum user_role {
