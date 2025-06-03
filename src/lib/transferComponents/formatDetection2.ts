@@ -339,14 +339,22 @@ export function isLongitude(val: string | number | null): boolean {
 	return false;
 }
 
+// prob need to fix this.
+function numbersInStringFinder(str: string): string[] {
+	const regex = /[-+]?\d+(\.\d+)?/g;
+	const matches = str.match(regex);
+	return matches || [];
+}
+
 // =============================================
 // SILO 5: POLYGON VALIDATION
 // =============================================
 // Validates longitude values in various formats:
-// - option 1: detect as valid json
-// - option 2: Firest write a rough regex to say "find possible lats lons, things that are numbers basically, include minus sign and decimal point.
+
+// - use numbersInStringFinder to find all numbers in string
+// - Write regex to say "find possible lats lons, things that are numbers basically, include minus sign and decimal point.
 // - THEN pass to isLongitude and isLatitude and count for number of coordinates. More than 2 is porbably polygon.
-// - then send to formatting below.
+// - If true send below. to "case polygon".
 
 // =============================================
 
@@ -870,36 +878,13 @@ export function formatValue(
 		case 'gps':
 		case 'latitude':
 		case 'longitude': {
-			let num: number;
-			if (typeof value === 'number') {
-				num = value;
-			} else if (typeof value === 'string') {
-				// For GPS coordinates, we need special handling
-				if (format === 'gps' && value.includes(',')) {
-					// For full GPS coordinates (lat,long)
-					const parts = value.split(',').map((p) => p.trim());
-					if (parts.length === 2) {
-						const lat = Number(parts[0]);
-						const long = Number(parts[1]);
-						if (!isNaN(lat) && !isNaN(long)) {
-							return `${lat.toFixed(7)},${long.toFixed(7)}`;
-						}
-					}
-					return value; // Return original if parsing fails
-				}
-				// For single coordinate values
-				const cleanVal = value.replace(/,/g, '').trim();
-				num = Number(cleanVal);
-			} else {
-				return value;
-			}
-			if (isNaN(num)) return value;
-			return Number(num.toFixed(7));
+			return formatAllGpsTypes(value, format);
 		}
 		//  POLYGON FORMATTING =========
 		// Reuse the lat and lon formatting
 		// add begining and end to polygon Type, coordinates - make proper geojson
-		// Maybe put @formatDetection2.ts#L796-824  in a helper function outside this formatValue function and then reuse for polygon and gps
+		// use formatAllGpsTypes from case gps lat lon etc.
+		// SO - after return
 		case 'polygon': {
 		}
 
@@ -907,6 +892,37 @@ export function formatValue(
 		default:
 			return value;
 	}
+}
+
+function formatAllGpsTypes(
+	value: string | number | null,
+	format: ColumnFormat
+): string | number | null {
+	let num: number;
+	if (typeof value === 'number') {
+		num = value;
+	} else if (typeof value === 'string') {
+		// For GPS coordinates, we need special handling
+		if (format === 'gps' && value.includes(',')) {
+			// For full GPS coordinates (lat,long)
+			const parts = value.split(',').map((p) => p.trim());
+			if (parts.length === 2) {
+				const lat = Number(parts[0]);
+				const long = Number(parts[1]);
+				if (!isNaN(lat) && !isNaN(long)) {
+					return `${lat.toFixed(7)},${long.toFixed(7)}`;
+				}
+			}
+			return value; // Return original if parsing fails
+		}
+		// For single coordinate values
+		const cleanVal = value.replace(/,/g, '').trim();
+		num = Number(cleanVal);
+	} else {
+		return value;
+	}
+	if (isNaN(num)) return value;
+	return Number(num.toFixed(7));
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
