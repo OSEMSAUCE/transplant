@@ -1,6 +1,5 @@
 generator client {
   provider        = "prisma-client-js"
-  // output          = "../lib/generated/prisma"
   previewFeatures = ["multiSchema"]
   moduleFormat    = "esm"
 }
@@ -385,12 +384,15 @@ model landTable {
   preparation   Preparation?
   csvobjId      String?         @db.Uuid
   polygon       Json?
+  polygonId     BigInt?
   csvObjTable   csvObjTable?    @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
+  polygonTable  polygonTable?   @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
   projectsTable projectsTable?  @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
   plantingTable plantingTable[]
 
   @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
   @@index([projectId], map: "idx_land_project_id")
+  @@index([polygonId], map: "idx_land_polygon_id")
   @@schema("public")
 }
 
@@ -561,6 +563,16 @@ model tableTable {
   tableId          String             @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tableName        String             @unique
   stakeholderTable stakeholderTable[]
+
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model polygonTable {
+  polygonId    BigInt                 @id @default(autoincrement())
+  polygon      Unsupported("polygon")
+  polygonNotes String?
+  landTable    landTable[]
 
   @@schema("public")
 }

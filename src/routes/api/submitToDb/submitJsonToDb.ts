@@ -49,7 +49,7 @@ export async function submitGeoJsonToDb(filePath?: string) {
                 // Process each land in the project
                 for (const landItem of proj.lands) {
                     // Create a polygon entry for the GeoJSON data
-                    const polygon = await prisma.polygonsTable.create({
+                    const polygon = await prisma.polygonTable.create({
                         data: {
                             geojson: landItem.geojson,
                             polyNotes: landItem.land_notes
