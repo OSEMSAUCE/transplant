@@ -28,7 +28,7 @@ export async function POST({ request }) {
 
 	try {
 		// Create a new project
-		const project = await prisma.projects.upsert({
+		const project = await prisma.projectsTable.upsert({
 			where: { projectName: data.projectName },
 			create: {
 				projectName: data.projectName,
@@ -46,7 +46,7 @@ export async function POST({ request }) {
 				? parseFloat(String(landItem.hectares).replace(',', '.'))
 				: null;
 
-			await prisma.land.upsert({
+			await prisma.landTable.upsert({
 				where: {
 					projectId_landName: {
 						projectId: project.projectId,
@@ -56,7 +56,6 @@ export async function POST({ request }) {
 				create: {
 					landName: landItem.landName,
 					hectares: hectaresValue || null,
-					landHolder: landItem.landHolder || null,
 					gpsLat: landItem.gpsLat || null,
 					gpsLon: landItem.gpsLon || null,
 					// polygon: landItem.polygonId || null,
@@ -65,7 +64,6 @@ export async function POST({ request }) {
 				update: {
 					landName: landItem.landName,
 					hectares: hectaresValue,
-					landHolder: landItem.landHolder,
 					// polygon: landItem.polygonId,
 					gpsLat: landItem.gpsLat,
 					gpsLon: landItem.gpsLon,
@@ -76,7 +74,7 @@ export async function POST({ request }) {
 
 		// Create crop entries
 		for (const cropItem of data.crops) {
-			await prisma.crop.upsert({
+			await prisma.cropTable.upsert({
 				where: {
 					projectId_cropName: {
 						cropName: cropItem.cropName,
@@ -103,14 +101,14 @@ export async function POST({ request }) {
 		// Create planting entries
 		for (const plantingItem of data.plantings) {
 			// First, find the land and crop IDs
-			const land = await prisma.land.findFirst({
+			const land = await prisma.landTable.findFirst({
 				where: {
 					landName: plantingItem.landName,
 					projectId: project.projectId
 				}
 			});
 
-			const crop = await prisma.crop.findFirst({
+			const crop = await prisma.cropTable.findFirst({
 				where: {
 					cropName: plantingItem.cropName,
 					projectId: project.projectId
@@ -118,7 +116,7 @@ export async function POST({ request }) {
 			});
 
 			if (land && crop) {
-				await prisma.planting.upsert({
+				await prisma.plantingTable.upsert({
 					where: {
 						landId_cropId: {
 							landId: land.landId,

@@ -32,7 +32,6 @@
 	const landColumns = [
 		'landName',
 		'hectares',
-		'landHolder',
 		'gpsLat',
 		'gpsLon',
 		'landNotes'

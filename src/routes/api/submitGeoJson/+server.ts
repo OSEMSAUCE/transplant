@@ -26,12 +26,12 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
         // Process each organization
         for (const org of geoJsonData.organizations) {
             // Create or find the organization
-            let organization = await prisma.organizations.findFirst({
+            let organization = await prisma.organizationsTable.findFirst({
                 where: { organizationName: org.organization_name }
             });
             
             if (!organization) {
-                organization = await prisma.organizations.create({
+                organization = await prisma.organizationsTable.create({
                     data: {
                         organizationName: org.organization_name,
                         contactName: org.contact_name,
@@ -45,7 +45,7 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
             // Process each project in the organization
             for (const proj of org.projects) {
                 // Create a new project
-                const project = await prisma.projects.create({
+                const project = await prisma.projectsTable.create({
                     data: {
                         projectName: proj.project_name,
                         projectNotes: proj.project_notes
@@ -65,9 +65,9 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
                     
                     // Create a polygon entry for the GeoJSON data
                     try {
-                        const polygon = await prisma.polygons.create({
+                        const polygon = await prisma.polygonsTable.create({
                             data: {
-                                geojson: landItem.geojson,
+                                geojson: landItem.geojson,  
                                 polyNotes: landItem.land_notes
                             }
                         });
@@ -80,11 +80,10 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
                     
                         // Create the land entry
                         try {
-                            const land = await prisma.land.create({
+                            const land = await prisma.landTable.create({
                                 data: {
                                     landName: landItem.land_name,
                                     hectares: landItem.hectares ? parseFloat(String(landItem.hectares)) : null,
-                                    landHolder: landItem.landHolder,
                                     polygonId: polygon.polygonId,
                                     projectId: project.projectId,
                                     gpsLat: landItem.gpsLat ? parseFloat(String(landItem.gpsLat)) : null,
@@ -106,7 +105,7 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
                     
                         // Update the polygon with the land reference
                         try {
-                            await prisma.polygons.update({
+                            await prisma.polygonsTable.update({
                                 where: { polygonId: polygon.polygonId },
                                 data: { land_id: land.landId }
                             });
@@ -129,7 +128,7 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
         const verificationResults = [];
         for (const polygon of polygonsCreated) {
             try {
-                const verifiedPolygon = await prisma.polygons.findUnique({
+                const verifiedPolygon = await prisma.polygonsTable.findUnique({
                     where: { polygonId: polygon.polygonId }
                 });
                 
