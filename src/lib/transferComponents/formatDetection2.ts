@@ -1,3 +1,5 @@
+import { json } from '@sveltejs/kit';
+import type { ColumnFormat } from '../types/columnModel';
 // ============================================
 // COLUMN TYPE DETECTION RULES
 // ============================================
@@ -17,7 +19,7 @@
 // ============================================
 
 // Type definitions
-export type ColumnFormat = 'gps' | 'latitude' | 'longitude' | 'date' | 'number' | 'string';
+// export type ColumnFormat = 'gps' | 'latitude' | 'longitude' | 'date' | 'number' | 'string' | 'polygon';
 
 // ============================================
 // DETECTION CONFIGURATION
@@ -122,11 +124,11 @@ export function detectFormat(
 		// Check actual values directly but with more relaxed validation
 		let validCount = 0;
 		let totalCount = 0;
-		
+
 		for (const val of columnData) {
 			if (val === null || val === '') continue;
 			totalCount++;
-			
+
 			// Simple validation for latitude: number in range -90 to 90
 			if (typeof val === 'number') {
 				if (val >= -90 && val <= 90) validCount++;
@@ -134,11 +136,11 @@ export function detectFormat(
 				const num = Number(val);
 				if (!isNaN(num) && num >= -90 && num <= 90) validCount++;
 			}
-			
+
 			// Only check a few samples for performance
 			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
 		}
-		
+
 		// If enough valid latitude values, return lat format
 		if (totalCount > 0 && validCount / totalCount >= 0.6) {
 			return 'latitude';
@@ -157,11 +159,11 @@ export function detectFormat(
 		// Check actual values directly but with more relaxed validation
 		let validCount = 0;
 		let totalCount = 0;
-		
+
 		for (const val of columnData) {
 			if (val === null || val === '') continue;
 			totalCount++;
-			
+
 			// Simple validation for longitude: number in range -180 to 180
 			if (typeof val === 'number') {
 				if (val >= -180 && val <= 180) validCount++;
@@ -169,11 +171,11 @@ export function detectFormat(
 				const num = Number(val);
 				if (!isNaN(num) && num >= -180 && num <= 180) validCount++;
 			}
-			
+
 			// Only check a few samples for performance
 			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
 		}
-		
+
 		// If enough valid longitude values, return lon format
 		if (totalCount > 0 && validCount / totalCount >= 0.6) {
 			return 'longitude';
@@ -263,21 +265,19 @@ export function isGps(value: any): boolean {
 		// Allows any number of decimal places and various separators
 		const ddRegex = /^\s*([+-]?\d{1,3}(?:\.\d{1,})?)[\s,]*([+-]?\d{1,3}(?:\.\d{1,})?)\s*$/;
 		const ddMatch = value.match(ddRegex);
-		
+
 		if (ddMatch) {
 			const lat = parseFloat(ddMatch[1]);
 			const lon = parseFloat(ddMatch[2]);
 			return isLatitude(lat) && isLongitude(lon);
 		}
-		
+
 		// Try other common formats like "lat, long" or "lat long"
-		const parts = value.split(/[,\s]+/).filter(part => part.trim() !== '');
+		const parts = value.split(/[,\s]+/).filter((part) => part.trim() !== '');
 		if (parts.length === 2) {
 			const lat = parseFloat(parts[0]);
 			const lon = parseFloat(parts[1]);
-			if (!isNaN(lat) && !isNaN(lon) && 
-				lat >= -90 && lat <= 90 && 
-				lon >= -180 && lon <= 180) {
+			if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
 				return true;
 			}
 		}
@@ -340,6 +340,21 @@ export function isLongitude(val: string | number | null): boolean {
 }
 
 // =============================================
+// SILO 5: POLYGON VALIDATION
+// =============================================
+// Validates longitude values in various formats:
+// - option 1: detect as valid json
+// - option 2: Firest write a rough regex to say "find possible lats lons, things that are numbers basically, include minus sign and decimal point.
+// - THEN pass to isLongitude and isLatitude and count for number of coordinates. More than 2 is porbably polygon.
+// - then send to formatting below.
+
+// =============================================
+
+export function isPolygon(val: string | number | null): boolean {
+	return false;
+}
+
+// =============================================
 // SILO 4: DATE VALIDATION
 // =============================================
 // Supports multiple date formats including:
@@ -351,17 +366,43 @@ export function isLongitude(val: string | number | null): boolean {
 // =============================================
 
 // Define month names for matching (used by both isDate and formatValue)
-const monthNamesLong = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-const monthNamesShort = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const monthNamesLong = [
+	'january',
+	'february',
+	'march',
+	'april',
+	'may',
+	'june',
+	'july',
+	'august',
+	'september',
+	'october',
+	'november',
+	'december'
+];
+const monthNamesShort = [
+	'jan',
+	'feb',
+	'mar',
+	'apr',
+	'may',
+	'jun',
+	'jul',
+	'aug',
+	'sep',
+	'oct',
+	'nov',
+	'dec'
+];
 
 export function isDate(value: any): boolean {
 	if (value === null || value === undefined || value === '') return false;
-	
+
 	if (typeof value === 'number') {
 		// Check if it's a valid year
 		return 1900 < value && value < 2040;
 	}
-	
+
 	if (typeof value === 'string') {
 		// Check if it's a standalone year
 		if (/^\d{4}$/.test(value)) {
@@ -382,8 +423,9 @@ export function isDate(value: any): boolean {
 		}
 
 		// Check for month-year combinations in any order
-		const monthYearMatch = value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) || 
-							 value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
+		const monthYearMatch =
+			value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) ||
+			value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
 		if (monthYearMatch) {
 			let monthStr;
 			if (isNaN(Number(monthYearMatch[1]))) {
@@ -391,7 +433,7 @@ export function isDate(value: any): boolean {
 			} else {
 				monthStr = monthYearMatch[2].toLowerCase();
 			}
-			
+
 			// Check if it's a valid month name
 			for (const month of [...monthNamesLong, ...monthNamesShort]) {
 				if (monthStr.startsWith(month) || month.startsWith(monthStr)) {
@@ -411,31 +453,31 @@ export function isDate(value: any): boolean {
 			/^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD (ISO)
 			/^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
 			/^\d{4}\.\d{2}\.\d{2}$/, // YYYY.MM.DD
-			
+
 			// US/UK formats
 			/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}$/, // MM/DD/YYYY or DD/MM/YYYY
 			/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2}$/, // MM/DD/YY or DD/MM/YY
-			
+
 			// Text month formats
 			/^(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}$/i, // Month DD, YYYY
 			/^\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // DD Month YYYY
 			/^\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // D(st|nd|rd|th) Month YYYY
-			
+
 			// Short date formats with month abbreviations
 			/^\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{4}$/i, // DD-MMM-YYYY
 			/^\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // DD MMM YYYY
-			
+
 			// With day of week
 			/^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // ddd, DD MMM YYYY
-			
+
 			// Year first formats
 			/^\d{4}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i, // YYYY MMM DD
 			/^\d{4}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}$/i, // YYYY Month DD
-			
+
 			// Just month and year
 			/^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}$/i, // Month YYYY
 			/^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}$/i, // MMM YYYY
-			
+
 			// Other formats
 			/^\d{4}-(?:Q[1-4])$/, // YYYY-Q[1-4] (Quarter)
 			/^\d{4}-W(?:0[1-9]|[1-4][0-9]|5[0-3])$/, // YYYY-W[01-53] (ISO week)
@@ -539,7 +581,7 @@ export function formatValue(
 				}
 				return value;
 			}
-			
+
 			if (typeof value === 'string') {
 				// If it's a year only, convert to January 1st at midnight
 				if (/^\d{4}$/.test(value)) {
@@ -551,7 +593,7 @@ export function formatValue(
 				}
 
 				let dateObj: Date | null = null;
-				
+
 				// ISO format: YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
 				const isoMatch = value.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
 				if (isoMatch) {
@@ -576,29 +618,51 @@ export function formatValue(
 
 				// Month name formats
 				const monthNamesLong = [
-					'january', 'february', 'march', 'april', 'may', 'june', 
-					'july', 'august', 'september', 'october', 'november', 'december'
+					'january',
+					'february',
+					'march',
+					'april',
+					'may',
+					'june',
+					'july',
+					'august',
+					'september',
+					'october',
+					'november',
+					'december'
 				];
 				const monthNamesShort = [
-					'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-					'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+					'jan',
+					'feb',
+					'mar',
+					'apr',
+					'may',
+					'jun',
+					'jul',
+					'aug',
+					'sep',
+					'oct',
+					'nov',
+					'dec'
 				];
 
 				// Format: DD Mon YYYY (e.g., "22 Mar 2024") or 14th Mar 2025
 				if (!dateObj) {
 					// First check for the ordinal format (1st, 2nd, 3rd, 4th, etc)
-					const ordinalMatch = value.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,})\s+(\d{4})$/);
+					const ordinalMatch = value.match(
+						/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,})\s+(\d{4})$/
+					);
 					if (ordinalMatch) {
 						const day = parseInt(ordinalMatch[1]);
 						const monthStr = ordinalMatch[2].toLowerCase();
 						const year = parseInt(ordinalMatch[3]);
-						
+
 						// Find month number
-						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						let monthNum = monthNamesLong.findIndex((m) => monthStr.startsWith(m));
 						if (monthNum === -1) {
-							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+							monthNum = monthNamesShort.findIndex((m) => monthStr.startsWith(m));
 						}
-						
+
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, day);
 						}
@@ -612,13 +676,13 @@ export function formatValue(
 						const monthStr = monthDayYearMatch[1].toLowerCase();
 						const day = parseInt(monthDayYearMatch[2]);
 						const year = parseInt(monthDayYearMatch[3]);
-						
+
 						// Find month number
-						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						let monthNum = monthNamesLong.findIndex((m) => monthStr.startsWith(m));
 						if (monthNum === -1) {
-							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+							monthNum = monthNamesShort.findIndex((m) => monthStr.startsWith(m));
 						}
-						
+
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, day);
 						}
@@ -632,13 +696,13 @@ export function formatValue(
 						const year = parseInt(yearMonthDayMatch[1]);
 						const monthStr = yearMonthDayMatch[2].toLowerCase();
 						const day = parseInt(yearMonthDayMatch[3]);
-						
+
 						// Find month number
-						let monthNum = monthNamesLong.findIndex(m => monthStr.startsWith(m));
+						let monthNum = monthNamesLong.findIndex((m) => monthStr.startsWith(m));
 						if (monthNum === -1) {
-							monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
+							monthNum = monthNamesShort.findIndex((m) => monthStr.startsWith(m));
 						}
-						
+
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, day);
 						}
@@ -647,15 +711,17 @@ export function formatValue(
 
 				// Format: DD-MMM-YYYY (e.g., "01-Dec-2024")
 				if (!dateObj) {
-					const ddMmmYyyyMatch = value.match(/^(\d{1,2})[\-\s]((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))[\-\s](\d{4})$/i);
+					const ddMmmYyyyMatch = value.match(
+						/^(\d{1,2})[\-\s]((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))[\-\s](\d{4})$/i
+					);
 					if (ddMmmYyyyMatch) {
 						const day = parseInt(ddMmmYyyyMatch[1]);
 						const monthStr = ddMmmYyyyMatch[2].toLowerCase();
 						const year = parseInt(ddMmmYyyyMatch[3]);
 
 						// Find month number
-						const monthNum = monthNamesShort.findIndex(m => monthStr.toLowerCase().startsWith(m));
-						
+						const monthNum = monthNamesShort.findIndex((m) => monthStr.toLowerCase().startsWith(m));
+
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, day);
 						}
@@ -664,15 +730,17 @@ export function formatValue(
 
 				// Format: ddd, DD MMM YYYY (e.g., "Tue, 14 Mar 2023")
 				if (!dateObj) {
-					const dayOfWeekMatch = value.match(/^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/i);
+					const dayOfWeekMatch = value.match(
+						/^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/i
+					);
 					if (dayOfWeekMatch) {
 						const day = parseInt(dayOfWeekMatch[1]);
 						const monthStr = dayOfWeekMatch[2].toLowerCase();
 						const year = parseInt(dayOfWeekMatch[3]);
 
 						// Find month number
-						const monthNum = monthNamesShort.findIndex(m => monthStr.startsWith(m));
-						
+						const monthNum = monthNamesShort.findIndex((m) => monthStr.startsWith(m));
+
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, day);
 						}
@@ -680,90 +748,113 @@ export function formatValue(
 				}
 
 				// --- Robust month-year and standalone month parsing ---
-if (!dateObj) {
-  // Try: "Month YYYY", "YYYY Month", "Month, YYYY", "YYYY, Month", any order, any punctuation
-  const flex = value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) || 
-               value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
-  
-  console.log(`DEBUG DATE PARSING [FLEX_MATCH] for '${value}': ${flex ? 'matched' : 'no match'}`);
-  
-  if (flex) {
-    let monthStr, year;
-    if (isNaN(Number(flex[1]))) {
-      monthStr = flex[1].toLowerCase();
-      year = parseInt(flex[2]);
-    } else {
-      year = parseInt(flex[1]);
-      monthStr = flex[2].toLowerCase();
-    }
-    
-    console.log(`DEBUG DATE PARSING [EXTRACTED] for '${value}': month='${monthStr}', year=${year}`);
-    
-    // More robust month matching
-    let monthNum = -1;
-    for (let i = 0; i < monthNamesLong.length; i++) {
-      if (monthStr.startsWith(monthNamesLong[i]) || monthNamesLong[i].startsWith(monthStr)) {
-        monthNum = i;
-        break;
-      }
-    }
-    
-    if (monthNum === -1) {
-      for (let i = 0; i < monthNamesShort.length; i++) {
-        if (monthStr.startsWith(monthNamesShort[i]) || monthNamesShort[i].startsWith(monthStr)) {
-          monthNum = i;
-          break;
-        }
-      }
-    }
-    
-    console.log(`DEBUG DATE PARSING [MONTH_NUM] for '${value}': ${monthNum}`);
-    
-    if (monthNum !== -1) {
-      dateObj = new Date(year, monthNum, 1, 0, 0, 0);
-      console.log(`DEBUG DATE PARSING [CREATED_DATE] for '${value}': ${dateObj.toISOString()}`);
-    }
-  }
-}
+				if (!dateObj) {
+					// Try: "Month YYYY", "YYYY Month", "Month, YYYY", "YYYY, Month", any order, any punctuation
+					const flex =
+						value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) ||
+						value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
 
-// Standalone month ("August", "Aug")
-if (!dateObj) {
-  const m = value.match(/^\s*([A-Za-z]{3,})\s*$/i);
-  
-  console.log(`DEBUG DATE PARSING [STANDALONE_MATCH] for '${value}': ${m ? 'matched' : 'no match'}`);
-  
-  if (m) {
-    const monthStr = m[1].toLowerCase();
-    const now = new Date();
-    const year = now.getFullYear() - 1;
-    
-    // More robust month matching
-    let monthNum = -1;
-    for (let i = 0; i < monthNamesLong.length; i++) {
-      if (monthStr.startsWith(monthNamesLong[i]) || monthNamesLong[i].startsWith(monthStr)) {
-        monthNum = i;
-        break;
-      }
-    }
-    
-    if (monthNum === -1) {
-      for (let i = 0; i < monthNamesShort.length; i++) {
-        if (monthStr.startsWith(monthNamesShort[i]) || monthNamesShort[i].startsWith(monthStr)) {
-          monthNum = i;
-          break;
-        }
-      }
-    }
-    
-    console.log(`DEBUG DATE PARSING [STANDALONE_MONTH_NUM] for '${value}': ${monthNum}`);
-    
-    if (monthNum !== -1) {
-      dateObj = new Date(year, monthNum, 1, 0, 0, 0);
-      console.log(`DEBUG DATE PARSING [STANDALONE_DATE] for '${value}': ${dateObj.toISOString()}`);
-    }
-  }
-}
-// --- END robust month-year and standalone month parsing ---
+					console.log(
+						`DEBUG DATE PARSING [FLEX_MATCH] for '${value}': ${flex ? 'matched' : 'no match'}`
+					);
+
+					if (flex) {
+						let monthStr, year;
+						if (isNaN(Number(flex[1]))) {
+							monthStr = flex[1].toLowerCase();
+							year = parseInt(flex[2]);
+						} else {
+							year = parseInt(flex[1]);
+							monthStr = flex[2].toLowerCase();
+						}
+
+						console.log(
+							`DEBUG DATE PARSING [EXTRACTED] for '${value}': month='${monthStr}', year=${year}`
+						);
+
+						// More robust month matching
+						let monthNum = -1;
+						for (let i = 0; i < monthNamesLong.length; i++) {
+							if (
+								monthStr.startsWith(monthNamesLong[i]) ||
+								monthNamesLong[i].startsWith(monthStr)
+							) {
+								monthNum = i;
+								break;
+							}
+						}
+
+						if (monthNum === -1) {
+							for (let i = 0; i < monthNamesShort.length; i++) {
+								if (
+									monthStr.startsWith(monthNamesShort[i]) ||
+									monthNamesShort[i].startsWith(monthStr)
+								) {
+									monthNum = i;
+									break;
+								}
+							}
+						}
+
+						console.log(`DEBUG DATE PARSING [MONTH_NUM] for '${value}': ${monthNum}`);
+
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
+							console.log(
+								`DEBUG DATE PARSING [CREATED_DATE] for '${value}': ${dateObj.toISOString()}`
+							);
+						}
+					}
+				}
+
+				// Standalone month ("August", "Aug")
+				if (!dateObj) {
+					const m = value.match(/^\s*([A-Za-z]{3,})\s*$/i);
+
+					console.log(
+						`DEBUG DATE PARSING [STANDALONE_MATCH] for '${value}': ${m ? 'matched' : 'no match'}`
+					);
+
+					if (m) {
+						const monthStr = m[1].toLowerCase();
+						const now = new Date();
+						const year = now.getFullYear() - 1;
+
+						// More robust month matching
+						let monthNum = -1;
+						for (let i = 0; i < monthNamesLong.length; i++) {
+							if (
+								monthStr.startsWith(monthNamesLong[i]) ||
+								monthNamesLong[i].startsWith(monthStr)
+							) {
+								monthNum = i;
+								break;
+							}
+						}
+
+						if (monthNum === -1) {
+							for (let i = 0; i < monthNamesShort.length; i++) {
+								if (
+									monthStr.startsWith(monthNamesShort[i]) ||
+									monthNamesShort[i].startsWith(monthStr)
+								) {
+									monthNum = i;
+									break;
+								}
+							}
+						}
+
+						console.log(`DEBUG DATE PARSING [STANDALONE_MONTH_NUM] for '${value}': ${monthNum}`);
+
+						if (monthNum !== -1) {
+							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
+							console.log(
+								`DEBUG DATE PARSING [STANDALONE_DATE] for '${value}': ${dateObj.toISOString()}`
+							);
+						}
+					}
+				}
+				// --- END robust month-year and standalone month parsing ---
 
 				// If we successfully parsed the date, return as ISO string
 				if (dateObj && !isNaN(dateObj.getTime())) {
@@ -786,7 +877,7 @@ if (!dateObj) {
 				// For GPS coordinates, we need special handling
 				if (format === 'gps' && value.includes(',')) {
 					// For full GPS coordinates (lat,long)
-					const parts = value.split(',').map(p => p.trim());
+					const parts = value.split(',').map((p) => p.trim());
 					if (parts.length === 2) {
 						const lat = Number(parts[0]);
 						const long = Number(parts[1]);
@@ -805,6 +896,13 @@ if (!dateObj) {
 			if (isNaN(num)) return value;
 			return Number(num.toFixed(7));
 		}
+		//  POLYGON FORMATTING =========
+		// Reuse the lat and lon formatting
+		// add begining and end to polygon Type, coordinates - make proper geojson
+		// Maybe put @formatDetection2.ts#L796-824  in a helper function outside this formatValue function and then reuse for polygon and gps
+		case 'polygon': {
+		}
+
 		case 'string':
 		default:
 			return value;
@@ -827,6 +925,8 @@ export function matchesFormat(value: string | number | null, format: ColumnForma
 			return isLatitude(value);
 		case 'longitude':
 			return isLongitude(value);
+		case 'polygon':
+			return isPolygon(value);
 		default:
 			return false;
 	}

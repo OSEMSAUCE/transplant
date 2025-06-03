@@ -20,7 +20,7 @@
 		isToggled?: boolean;
 	}>();
 
-	const formats = ['string', 'number', 'date', 'gps', 'latitude', 'longitude'];
+	const formats = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'polygon'];
 
 	let selectedFormat = $state(currentFormat);
 	let hasUserSelectedFormat = $state(false);
