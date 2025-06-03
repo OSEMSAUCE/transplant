@@ -62,7 +62,7 @@
 		console.log(`Processing column: ${column.headerName}`);
 		// Return the values array directly since it's already part of ColumnRep
 		return column.values ?? [];
-	}
+	} 
 	// Whenever select dropdown changes, this updates. Handle format changes
 	export function formatEvent(
 		column: ColumnRep,

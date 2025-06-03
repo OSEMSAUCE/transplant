@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  output          = "../lib/generated/prisma"
+  // output          = "../lib/generated/prisma"
   previewFeatures = ["multiSchema"]
   moduleFormat    = "esm"
 }
