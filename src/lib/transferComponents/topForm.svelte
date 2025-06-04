@@ -176,10 +176,11 @@
 
 <form action="" onsubmit={handleSubmit} autocomplete="off">
 	<h1>Top Form</h1>
-
-	<!-- Project Name Input with dropdown -->
-	<div style="position: relative;">
-		<input
+	
+	<div class="topform-row">
+		<!-- Project Name Input with dropdown -->
+		<div class="input-block">
+		  <input
 			type="text"
 			bind:value={projectName}
 			placeholder="Project Name"
@@ -188,26 +189,26 @@
 			onblur={handleProjectBlur}
 			onkeydown={handleProjectKeydown}
 			autocomplete="off"
-		/>
-		{#if inputFocusedProject && filteredProjects.length > 0}
+		  />
+		  {#if inputFocusedProject && filteredProjects.length > 0}
 			<ul id="autocomplete-items-list" role="listbox">
-				{#each filteredProjects as project, i}
-					<li
-						role="option"
-						onmousedown={() => selectProjectSuggestion(project.projectName)}
-						class:selected={i === highlightedIndex}
-						style="cursor:pointer"
-					>
-						{project.projectName}
-					</li>
-				{/each}
+			  {#each filteredProjects as project, i}
+				<li
+				  role="option"
+				  onmousedown={() => selectProjectSuggestion(project.projectName)}
+				  class:selected={i === highlightedIndex}
+				  style="cursor:pointer"
+				>
+				  {project.projectName}
+				</li>
+			  {/each}
 			</ul>
-		{/if}
-	</div>
-
-	<!-- Organization Input with dropdown -->
-	<div style="position: relative;">
-		<input
+		  {/if}
+		</div>
+	  
+		<!-- Organization Input with dropdown -->
+		<div class="input-block">
+		  <input
 			type="text"
 			bind:value={organizationName}
 			placeholder="Organization Name"
@@ -216,22 +217,23 @@
 			onblur={handleOrganizationBlur}
 			onkeydown={handleOrganizationKeydown}
 			autocomplete="off"
-		/>
-		{#if inputFocusedOrganization && filteredOrganizations.length > 0}
+		  />
+		  {#if inputFocusedOrganization && filteredOrganizations.length > 0}
 			<ul id="autocomplete-items-list" role="listbox">
-				{#each filteredOrganizations as organization, i}
-					<li
-						role="option"
-						onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
-						class:selected={i === organizationHighlighted}
-						style="cursor:pointer"
-					>
-						{organization.organizationName}
-					</li>
-				{/each}
+			  {#each filteredOrganizations as organization, i}
+				<li
+				  role="option"
+				  onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
+				  class:selected={i === organizationHighlighted}
+				  style="cursor:pointer"
+				>
+				  {organization.organizationName}
+				</li>
+			  {/each}
 			</ul>
-		{/if}
-	</div>
+		  {/if}
+		</div>
+	  </div>
 
 	<!-- Organization Input
 	<div style="margin-top: 1.5rem; position: relative;">

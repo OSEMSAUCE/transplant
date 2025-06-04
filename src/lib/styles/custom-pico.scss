@@ -348,6 +348,20 @@ td {
 	// font-size: 1rem !important;
 }
 
+.topform-row {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+	margin-bottom: 0.5rem;
+	max-width: 45rem;
+}
+
+.input-block {
+	flex: 0 0 auto; // don't stretch, just fit content
+	min-width: 12rem;
+	position: relative;
+}
+
 tbody td.legal-droptarget {
 	border-color: greenyellow;
 }
