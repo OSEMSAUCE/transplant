@@ -359,9 +359,17 @@ function numbersInStringFinder(str: string): string[] {
 // =============================================
 
 export function isPolygon(val: string | number | null): boolean {
-	return false;
+	if (typeof val !== 'string') return false;
+	
+	// Regex to match coordinate pairs [number, number]
+	const regex = /\[\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\]/g;
+	
+	// Find all matches
+	const matches = val.match(regex);
+	
+	// Return true if we have at least 4 coordinate pairs (minimum for a polygon)
+	return Boolean(matches && matches.length >= 4);
 }
-
 // =============================================
 // SILO 4: DATE VALIDATION
 // =============================================
@@ -898,6 +906,40 @@ export function formatValue(
 		// 8. Ensure the matchesFormat function properly validates polygon strings (e.g., checks for at least 4 coordinate pairs, correct delimiters, valid numbers).
 		// 9. Document the expected input format for users in the UI (tooltip or help text).
 		case 'polygon': {
+			if (typeof value !== 'string') return null;
+			
+			// Regex to match coordinate pairs [number, number]
+			const regex = /\[\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*\]/g;
+			const matches = [];
+			let match;
+			
+			// Extract all coordinate pairs
+			while ((match = regex.exec(value)) !== null) {
+				if (match[1] && match[3]) {
+					const lat = Number(match[1]);
+					const lon = Number(match[3]);
+					
+					// Validate lat/lon ranges
+					if (!isNaN(lat) && !isNaN(lon) && 
+						lat >= -90 && lat <= 90 && 
+						lon >= -180 && lon <= 180) {
+						matches.push([lat, lon]);
+					}
+				}
+			}
+			
+			// If we have at least 4 valid coordinates, format as GeoJSON
+			if (matches.length >= 4) {
+				// Format each coordinate pair with 7 decimal places
+				const formattedCoords = matches.map(([lat, lon]) => 
+					`[${Number(lat.toFixed(7))}, ${Number(lon.toFixed(7))}]`
+				).join(', ');
+				
+				// Return as a simple polygon array
+				return `[${formattedCoords}]`;
+			}
+			
+			return null;
 		}
 
 		case 'string':
