@@ -19,7 +19,7 @@ export async function GET() {
       orderBy: { organizationName: 'asc' }
     });
 		// Map to array of strings
-		console.log(projects, organizations);
+
 		return json({ projects, organizations });
 	} catch (error) {
 		console.error('Failed to fetch project names:', error);
