@@ -139,7 +139,7 @@
 				<div class="column-header">
 					<span class="format-label">GPS</span>
 				</div>
-				<div class="header-name">GPS</div>
+				<div class="header-name"></div>
 			</th>
 			<!-- Iterate over actual data columns -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
