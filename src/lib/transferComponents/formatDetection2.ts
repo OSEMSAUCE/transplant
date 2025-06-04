@@ -885,6 +885,18 @@ export function formatValue(
 		// add begining and end to polygon Type, coordinates - make proper geojson
 		// use formatAllGpsTypes from case gps lat lon etc.
 		// SO - after return
+
+		//  AI version of plant for POLYGON FORMATTING =========
+		// To support polygon data (e.g., GeoJSON polygons or WKT), implement the following:
+		// 1. Accept a string or array representing polygon coordinates. The input should be a string of comma-separated lat/lon pairs (e.g., "lat1,lon1;lat2,lon2;...") or a GeoJSON-style array.
+		// 2. Parse and validate each coordinate pair, ensuring valid lat/lon values (with at least 5 decimal places for precision).
+		// 3. Optionally, auto-close the polygon by repeating the first point at the end if not already closed.
+		// 4. Output should be a valid GeoJSON Polygon string or a standardized string format suitable for your backend.
+		// 5. Use the formatAllGpsTypes utility to format each lat/lon pair to the required precision.
+		// 6. Add type guards and error handling for malformed input (e.g., missing pairs, invalid numbers).
+		// 7. Integrate this logic into the FormatSelectorComponent by adding 'polygon' to the formats array and updating the rendering logic to allow polygon-specific UI (e.g., textarea for multi-line input, preview of parsed polygon).
+		// 8. Ensure the matchesFormat function properly validates polygon strings (e.g., checks for at least 4 coordinate pairs, correct delimiters, valid numbers).
+		// 9. Document the expected input format for users in the UI (tooltip or help text).
 		case 'polygon': {
 		}
 
