@@ -130,13 +130,13 @@ thead {
 	}
 }
 input:not([type='checkbox'], [type='radio'], [type='range'], [type='file']) {
-	font-family: 'Roboto Mono', monospace; // Or your preferred font
-	font-size: 0.95rem; // Or your preferred size
+	font-family: 'Roboto Mono', monospace;
+	font-size: 0.95rem;
 	height: 2rem;
 	padding: 0.25rem 0.5rem;
 	border-radius: 0.25rem;
-	width: auto;
-	max-width: 18rem;
+	width: 22rem;
+	max-width: 100%;
 	box-sizing: border-box;
 }
 
