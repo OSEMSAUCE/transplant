@@ -35,7 +35,19 @@ td,
 select {
 	background-color: var(--color-black);
 }
+// nav .container-fluid {
+//   padding: 0.15rem 0; // slightly less vertical padding
+//   margin: 0;
+// }
+
+nav {
+	padding: -0.15rem 0;
+	margin: -1rem 0 0 0;
+}
+
 nav a {
+	padding: 0.15rem 0.2rem; // slightly less vertical padding
+	margin: 0 0.2rem 0 0;
 	text-decoration-color: var(--color-purple);
 	&:hover {
 		color: var(--color-purple);
