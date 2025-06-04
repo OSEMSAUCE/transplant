@@ -9,7 +9,7 @@
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
 		"db:generate:dev": "prisma generate",
 		"dev:dev": "dotenv -e .env.dev -- vite dev",
-		"dev:prod": "dotenv -e .env.production -- vite dev",
+		"dev:prod": "concurrently \"npm run dev\" \"dotenv -e .env.production vite dev --watch\"",
 		"dev:prod_db": "dotenv -e .env.production -- vite dev",
 		"import:dev": "dotenv -e .env.dev -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
 		"import:prod": "dotenv -e .env.production -- node src/routes/api/submitGeoJson/importGeoJson.cjs",
@@ -24,7 +24,6 @@
 		"lint": "prettier --check . && eslint .",
 		"db:reset:dev": "dotenv -e .env.dev -- prisma migrate reset",
 		"deploy": "gh-pages -d build"
-		
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -34,6 +33,7 @@
 		"@sveltejs/kit": "^2.17.2",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0-next.0",
 		"@types/papaparse": "^5.3.15",
+		"concurrently": "^9.1.2",
 		"dotenv-cli": "^8.0.0",
 		"esbuild": "^0.25.0",
 		"eslint": "^9.18.0",
