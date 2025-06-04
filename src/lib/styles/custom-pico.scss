@@ -27,6 +27,7 @@
 body,
 html {
 	background-color: var(--color-black);
+	margin: 0rem;
 }
 .container,
 table,
@@ -144,7 +145,7 @@ div.container {
 	margin: 0;
 	margin-left: 0;
 	margin-right: 0;
-	padding: 1rem;
+	padding: 0rem;
 }
 
 .table-container table {
@@ -474,7 +475,7 @@ button {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 1rem;
+	// margin-bottom: 1rem;
 	width: 100%;
 }
 
