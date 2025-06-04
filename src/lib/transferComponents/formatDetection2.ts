@@ -217,7 +217,19 @@ export function detectFormat(
 	}
 
 	// =============================================
-	// SILO 6: STRING (DEFAULT FALLBACK)
+	// SILO 6: POLYGON
+	// =============================================
+	// RULES:
+	// 1. Check for polygon data patterns - arrays of coordinate pairs or GeoJSON-like structures
+	// 2. Header detection - Check if header contains 'polygon' keyword
+	// 3. Requires at least 4 coordinate pairs to be considered a polygon
+	if (lowerHeader.includes('polygon') || 
+		isColumnOfType(columnData, (val) => isPolygon(val))) {
+		return 'polygon';
+	}
+
+	// =============================================
+	// SILO 7: STRING (DEFAULT FALLBACK)
 	// =============================================
 	// RULES:
 	// 1. DEFAULT FALLBACK - Any values that don't match other patterns default to string
