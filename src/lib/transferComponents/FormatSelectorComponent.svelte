@@ -72,9 +72,9 @@
 					: selectedFormat === 'gps'
 						? 'rgba(76, 175, 80, 0.4)' // green for gps
 						: selectedFormat === 'polygon'
-							? 'rgba(121, 85, 72, 0.4)' // brown for polygon
+							? 'rgba(219,43,155,0.4)' // brown for polygon
 							: selectedFormat === 'latitude' || selectedFormat === 'longitude'
-								? 'rgba(0, 150, 136, 0.4)' // teal for lat/lon
+								? 'rgba(35,160,42, 0.4)' // teal for lat/lon
 								: 'rgba(158, 158, 158, 0.4)'}"
 		>
 			{#each formats as format}
