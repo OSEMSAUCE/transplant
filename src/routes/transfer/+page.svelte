@@ -33,12 +33,12 @@
 		});
 	}
 
-	import NewTableData from '$lib/transferComponents/newTableData.svelte';
+	import TpCsvTable from '$lib/transferComponents/TpCsvTable.svelte';
 	import TransferCSVImporter from '$lib/transferComponents/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { importedData, setImportedData } from '$lib/transferComponents/modelState.svelte';
 	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
-	import NewDbTables from '$lib/transferComponents/newDbTables.svelte';
+	import TpDbTables from '$lib/transferComponents/TpDbTables.svelte';
 	import { submitToDB } from '$lib/transferComponents/dbButton';
 	let isSubmitting = $state(false);
 	let submitResponse = $state<{ success: boolean; error?: string; result?: any } | null>(null);
@@ -159,11 +159,11 @@
 
 		</div>
 
-		<NewTableData {pageIs} />
+		<TpCsvTable {pageIs} />
 	</div>
 
 	{#if pageIs === 'transplant'}
-	<NewDbTables
+	<TpDbTables
   {landUserTable}
   {plantingUserTable}
   {cropUserTable}

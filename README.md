@@ -63,7 +63,7 @@ You can preview the production build with `npm run preview`.
 	// add org and project name.
 
 ## 20 May 2025 GPS Stuff
-	// There are two issues, detection @formatDetection.ts and one with GPS column. @newDbTables.svelte
+	// There are two issues, detection @formatDetection.ts and one with GPS column. @tpDbTables.svelte
 	### Detection: 	
 	1.	There are three GPS types, not one: GPS, latitude, longitude. We need better detection for them, This might need to take another context for example. They are awful close to numbers. But if you look at the rest of the row, you could probably see that their latitude and longitude rather than numbers becuase they all share the paramterss between - 90 and 90 for latitude and -180 and 180 for longitude.
 	2.  We could go as far as to say, do these gps points all land on lnad and not water via something like :
@@ -89,7 +89,7 @@ GOTCHA: when you run `npm run db:pull` two issues happen:
 
 Filter DB Attributes:
 - +page.server.ts filters all the attributes from the db.
-- newDbTables.svelte filters all the attributes shown on the front end.
+- TpDbTables.svelte filters all the attributes shown on the front end.
 
 ## Format Detection
 
