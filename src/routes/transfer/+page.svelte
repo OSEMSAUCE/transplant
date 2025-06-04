@@ -3,8 +3,8 @@
 	import TopForm from '$lib/transferComponents/topForm.svelte';
 
 	const addProjectName = (projectName: string) => {
-		console.log('projectName', projectName)
-	}
+		console.log('projectName', projectName);
+	};
 
 	let copied = $state(false);
 	function copyColumnModelJson() {
@@ -42,7 +42,6 @@
 	import { submitToDB } from '$lib/transferComponents/dbButton';
 	let isSubmitting = $state(false);
 	let submitResponse = $state<{ success: boolean; error?: string; result?: any } | null>(null);
-	
 
 	const { data } = $props();
 
@@ -62,7 +61,7 @@
 		console.log(`Processing column: ${column.headerName}`);
 		// Return the values array directly since it's already part of ColumnRep
 		return column.values ?? [];
-	} 
+	}
 	// Whenever select dropdown changes, this updates. Handle format changes
 	export function formatEvent(
 		column: ColumnRep,
@@ -103,7 +102,7 @@
 	}
 </script>
 
-<TopForm addProjectName={addProjectName} />
+<TopForm {addProjectName} />
 
 <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
 	<div>
@@ -114,7 +113,7 @@
 			<button onclick={changeView}>Send to TransPlant</button>
 		{/if}
 		{#if pageIs === 'transplant'}
-			<button 
+			<button
 				onclick={async () => {
 					isSubmitting = true;
 					submitResponse = null;
@@ -138,12 +137,9 @@
 	</div>
 </div>
 
-
-
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
-
 			{#if pageIs === 'transfer'}
 				<div class="toggle-row">
 					<!-- Empty placeholder for GPS column alignment -->
@@ -156,46 +152,41 @@
 					{/each}
 				</div>
 			{/if}
-
 		</div>
 
 		<TpCsvTable {pageIs} />
 	</div>
 
 	{#if pageIs === 'transplant'}
-	<TpDbTables
-  {landUserTable}
-  {plantingUserTable}
-  {cropUserTable}
-  {landDbFormat}
-  {plantingDbFormat}
-  {cropDbFormat}
-  
-/>
+		<TpDbTables
+			{landUserTable}
+			{plantingUserTable}
+			{cropUserTable}
+			{landDbFormat}
+			{plantingDbFormat}
+			{cropDbFormat}
+		/>
 	{/if}
-	{/if}
+{/if}
 
 {#if importedData.columns}
-	<div style="display: flex; align-items: center; gap: 0.5rem;">
-	<button
-		aria-label="Copy column model JSON"
-		style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1.2rem;"
-		onclick={copyColumnModelJson}
-		title="Copy JSON to clipboard"
-	>
-		📋
-	</button>
-	<h2 style="margin: 0;">Current Column Model State</h2>
-	{#if copied}
-		<span style="color: green; font-size: 0.9rem; margin-left: 0.5rem;">Copied!</span>
-	{/if}
-</div>
+	<div style="display: flex; align-items: center; gap: 1.5rem; margin-top: 1.5rem;">
+		<button
+			aria-label="Copy column model JSON"
+			style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1.2rem;"
+			onclick={copyColumnModelJson}
+			title="Copy JSON to clipboard"
+		>
+			📋
+		</button>
+		<h3 style="margin: 0;">Current Column Model State</h3>
+	</div>
 	<pre>
 		{JSON.stringify(
 			importedData.columns.map((col) => ({
 				headerName: col.headerName,
 				type: col.type,
-				currentFormat: col.currentFormat, // Add this
+				currentFormat: col.currentFormat,
 				isToggled: col.isToggled,
 				isGreyed: col.isGreyed.slice(0, 3),
 				formattedValues: col.formattedValues.slice(0, 3),
@@ -203,7 +194,7 @@
 				mappedTo: col.mappedTo,
 				isFormatted: col.isFormatted,
 				selectFormatCoercion: col.selectFormatCoercion, // Updated name
-				wasFormatCoerced: col.wasFormatCoerced, // Updated name
+				wasFormatCoerced: col.wasFormatCoerced // Updated name
 			})),
 			null,
 			2
@@ -224,7 +215,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.success-message {
