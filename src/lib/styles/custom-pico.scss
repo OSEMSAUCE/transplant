@@ -452,17 +452,13 @@ tbody td.drag-over {
 /* ============================================================================
    BREAKPOINTS 
    ============================================================================ */
-
-
 @media (max-width: 768px) {
 	th,
 	td {
 		width: 9rem;
 		max-width: 9rem;
 	}
-}
-/* Media query adjustments for mobile */
-@media (max-width: 768px) {
+
 	.table-container {
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
