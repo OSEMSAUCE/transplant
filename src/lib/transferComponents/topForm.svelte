@@ -18,8 +18,9 @@
 	let inputFocused = $state(false);
 	
 	// Project autocomplete state	
-	let { addProjectName } = $props<{ addProjectName?: (projectName: string) => void }>();
+	let { addProjectName } = $props<{ addProjectName?: (projectName: string, projectNotes?: string) => void }>();
 	let projectName = $state('');
+	let projectNotes = $state('');
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
 	let highlightedIndex = $state<number | null>(null);
@@ -169,7 +170,7 @@
 
 	function handleSubmit(event: Event) {
 		event.preventDefault();
-		addProjectName?.(projectName);
+		addProjectName?.(projectName, projectNotes);
 		filteredProjects = [];
 	}
 </script>
@@ -232,6 +233,16 @@
 			  {/each}
 			</ul>
 		  {/if}
+		</div>
+		<!-- Project Notes Input -->
+		<div class="input-block">
+		  <input
+			type="text"
+			bind:value={projectNotes}
+			placeholder="Project Notes"
+			autocomplete="off"
+			style="min-width: 200px;"
+		  />
 		</div>
 	  </div>
 
