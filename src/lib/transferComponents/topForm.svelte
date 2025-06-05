@@ -217,7 +217,7 @@
 	<div class="topform-row">
 		<!-- Project Name Input with dropdown -->
 		<div class="input-block">
-			<div class="input-wrapper">
+			<div class="input-container">
 				<input
 					type="text"
 					bind:value={localProjectName}
@@ -228,7 +228,7 @@
 					onkeydown={handleProjectKeydown}
 					autocomplete="off"
 				/>
-				<span class="required-indicator">*</span>
+				<span class="red-asterisk">*</span>
 			</div>
 			{#if inputFocusedProject && filteredProjects.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
@@ -238,7 +238,6 @@
 							onmousedown={() => selectProjectSuggestion(project.projectName)}
 							class:selected={i === highlightedIndex}
 							style="cursor:pointer"
-							aria-selected={i === highlightedIndex}
 						>
 							{project.projectName}
 						</li>
@@ -249,7 +248,7 @@
 
 		<!-- Organization Input with dropdown -->
 		<div class="input-block">
-			<div class="input-wrapper">
+			<div class="input-container">
 				<input
 					type="text"
 					bind:value={localOrgName}
@@ -260,7 +259,7 @@
 					onkeydown={handleOrganizationKeydown}
 					autocomplete="off"
 				/>
-				<span class="required-indicator">*</span>
+				<span class="red-asterisk">*</span>
 			</div>
 			{#if inputFocusedOrganization && filteredOrganizations.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
@@ -270,7 +269,6 @@
 							onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
 							class:selected={i === organizationHighlighted}
 							style="cursor:pointer"
-							aria-selected={i === organizationHighlighted}
 						>
 							{organization.organizationName}
 						</li>
@@ -292,13 +290,12 @@
 </form>
 
 <style>
-	.input-wrapper {
+	.input-container {
 		position: relative;
-		display: inline-block;
 		width: 100%;
 	}
 
-	.required-indicator {
+	.red-asterisk {
 		position: absolute;
 		right: 10px;
 		top: 50%;
