@@ -15,12 +15,12 @@ export let dragColumnState = $state<{
 export function setImportedData(data: ColumnRep[]) {
 	// First completely clear out the existing state
 	importedData.columns = [];
-	
+
 	// Force a browser reflow to ensure components are properly destroyed
 	setTimeout(() => {
 		// Then set the new data
 		importedData.columns = data;
-		
+
 		// Log state reset for debugging
 		console.log(`State reset: Loaded ${data.length} columns with fresh state`);
 	}, 0);
@@ -34,7 +34,7 @@ export function formatGreyedStatus(
 	columnData[index].currentFormat = detectedFormat;
 	// Set the isFormatted flag to true to indicate this column has been formatted
 	columnData[index].isFormatted = true;
-	
+
 	for (let k = 0; k < columnData[index].values.length; ++k) {
 		columnData[index].formattedValues[k] = formatValue(detectedFormat, columnData[index].values[k]);
 		columnData[index].isGreyed[k] = columnData[index].formattedValues[k] === null;

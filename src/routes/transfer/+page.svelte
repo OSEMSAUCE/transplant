@@ -2,8 +2,22 @@
 	import { tick } from 'svelte';
 	import TopForm from '$lib/transferComponents/topForm.svelte';
 
-	const addProjectName = (projectName: string) => {
+	// let projectName = $state('');
+	// let organizationName = $state('');
+	// let projectNotes = $state('');
+	let projectName = $state('');
+	let projectNotes = $state('');
+	let organizationName = $state('');
+
+	// Effect to monitor changes to project metadata
+	$effect(() => {
+		console.log('Project metadata changed in +page.svelte:', { projectName, organizationName, projectNotes });
+	});
+
+	const addProjectName = (projectName: string, organizationName: string, projectNotes?: string) => {
 		console.log('projectName', projectName);
+		console.log('organizationName', organizationName);
+		console.log('projectNotes', projectNotes);
 	};
 
 	let copied = $state(false);
@@ -102,7 +116,17 @@
 	}
 </script>
 
-<TopForm {addProjectName} />
+<TopForm 
+	{projectName} 
+	{organizationName} 
+	{projectNotes} 
+	updateProjectData={(data) => {
+		console.log('updateProjectData called with:', data);
+		projectName = data.projectName;
+		organizationName = data.organizationName;
+		projectNotes = data.projectNotes;
+	}}
+/>
 
 <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
 	<div>
@@ -115,9 +139,11 @@
 		{#if pageIs === 'transplant'}
 			<button
 				onclick={async () => {
+					console.log('submitting to DB');
+					console.log(projectName, organizationName, projectNotes);
 					isSubmitting = true;
 					submitResponse = null;
-					submitResponse = await submitToDB();
+					submitResponse = await submitToDB(projectName, organizationName, projectNotes);
 					isSubmitting = false;
 				}}
 				disabled={isSubmitting}
@@ -127,6 +153,7 @@
 				{/if}
 				Submit to DB
 			</button>
+
 			<button onclick={changeView}>Back to Transfer</button>
 			{#if submitResponse}
 				<div class={submitResponse.success ? 'success-message' : 'error-message'}>

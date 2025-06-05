@@ -30,6 +30,11 @@ export async function GET() {
 	}
 }
 
+export async function POST({request}) {
+	const data = await request.json();
+	return json({ message: 'Project added successfully' });
+}
+
 // export async function GET() {
 //   try {
 //     // Query only projectName from Projects

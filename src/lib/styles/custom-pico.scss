@@ -135,8 +135,8 @@ input:not([type='checkbox'], [type='radio'], [type='range'], [type='file']) {
 	height: 2rem;
 	padding: 0.25rem 0.5rem;
 	border-radius: 0.25rem;
-	width: 22rem;
-	max-width: 100%;
+	width: auto;
+	max-width: 18rem;
 	box-sizing: border-box;
 }
 

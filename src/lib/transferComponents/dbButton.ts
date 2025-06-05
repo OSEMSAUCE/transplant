@@ -1,7 +1,7 @@
 // src/lib/transferComponents/dbButton.ts
 import { importedData } from './modelState.svelte';
 
-export async function submitToDB() {
+export async function submitToDB(projectName?: string, organizationName?: string, projectNotes?: string) {
 	try {
 		const columns = importedData.columns;
 
@@ -109,8 +109,9 @@ export async function submitToDB() {
 		}
 
 		const data = {
-			projectName: 'TransPlant Import ' + new Date().toISOString().split('T')[0],
-			projectNotes: 'Imported via TransPlant application',
+			projectName: projectName || 'TransPlant Import ' + new Date().toISOString().split('T')[0],
+			organizationName: organizationName || '',
+			projectNotes: projectNotes || 'Imported via TransPlant application',
 			land,
 			crops,
 			plantings

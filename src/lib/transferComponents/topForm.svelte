@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+
 	// Debounce helper (inside main script)
 	function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
 		let timeout: ReturnType<typeof setTimeout>;
@@ -10,35 +11,56 @@
 	}
 
 	// Existing project name logic
-	type ApiResponse = { projects: Project[], organizations: Organization[] };
+	type ApiResponse = { projects: Project[]; organizations: Organization[] };
 	type Project = { projectName: string; projectId: string };
 	type Organization = { organizationName: string; organizationId: string };
-	
+	let inputFocusedProject = $state(false);
+
 	// Generic autocomplete state
 	let inputFocused = $state(false);
+
+	// Project autocomplete state
+
+	let { projectName, organizationName, projectNotes, updateProjectData } = $props<{
+		projectName: string;
+		organizationName: string;
+		projectNotes: string;
+		updateProjectData?: (data: { projectName: string; organizationName: string; projectNotes: string }) => void;
+	}>();
 	
-	// Project autocomplete state	
-	let { addProjectName } = $props<{ addProjectName?: (projectName: string, projectNotes?: string) => void }>();
-	let projectName = $state('');
-	let projectNotes = $state('');
+	// Create local bindings that will update the parent values
+	let localProjectName = $state(projectName || '');
+	let localOrgName = $state(organizationName || '');
+	let localProjectNotes = $state(projectNotes || '');
+	
+	// Effect to propagate changes back to parent
+	$effect(() => {
+		console.log('Effect running in topForm with values:', { localProjectName, localOrgName, localProjectNotes });
+		// Use the updateProjectData callback to update the parent component
+		if (updateProjectData) {
+			updateProjectData({
+				projectName: localProjectName,
+				organizationName: localOrgName,
+				projectNotes: localProjectNotes
+			});
+			console.log('Called updateProjectData with:', { localProjectName, localOrgName, localProjectNotes });
+		}
+	});
+
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
 	let highlightedIndex = $state<number | null>(null);
-	let inputFocusedProject = $state(false);
 
-	// Organization autocomplete state	
-	let organizationName = $state('');
+	// Organization autocomplete state
 	let allOrganizations = $state<Organization[]>([]);
 	let filteredOrganizations = $state<Organization[]>([]);
 	let organizationHighlighted = $state<number | null>(null);
 	let inputFocusedOrganization = $state(false);
-	
-	// FIX THIS 30 May 2025 
-	// NOT generic OrgnaisationName , allOrganizations, filteredOrganizations, 
+
+	// FIX THIS 30 May 2025
+	// NOT generic OrgnaisationName , allOrganizations, filteredOrganizations,
 	// GENERIC organizationHighlighted, inputFocusedOrganization
 	//
-	
-	
 
 	// Fetch all projects on mount
 	onMount(async () => {
@@ -52,39 +74,43 @@
 
 	// Filter projects as you type
 	function filterProjects() {
-		if (!projectName) {
+		if (!localProjectName) {
 			filteredProjects = [];
 			highlightedIndex = null;
 			return;
 		}
 		filteredProjects = allProjects.filter((p) =>
-			p.projectName.toLowerCase().includes(projectName.toLowerCase())
+			p.projectName.toLowerCase().includes(localProjectName.toLowerCase())
 		);
 		highlightedIndex = filteredProjects.length > 0 ? 0 : null;
 	}
 
 	function filterOrganizations() {
-		if (!organizationName) {
+		if (!localOrgName) {
 			filteredOrganizations = [];
 			organizationHighlighted = null;
 			return;
 		}
 		filteredOrganizations = allOrganizations.filter((o) =>
-			o.organizationName.toLowerCase().includes(organizationName.toLowerCase())
+			o.organizationName.toLowerCase().includes(localOrgName.toLowerCase())
 		);
 		organizationHighlighted = filteredOrganizations.length > 0 ? 0 : null;
 	}
 
 	function selectProjectSuggestion(name: string) {
-		projectName = name;
+		console.log('selectProjectSuggestion called with:', name);
+		localProjectName = name;
 		filteredProjects = [];
 		inputFocused = false;
+		console.log('localProjectName set to:', localProjectName);
 	}
 
 	function selectOrganizationSuggestion(name: string) {
-		organizationName = name;
+		console.log('selectOrganizationSuggestion called with:', name);
+		localOrgName = name;
 		filteredOrganizations = [];
 		inputFocused = false;
+		console.log('localOrgName set to:', localOrgName);
 	}
 
 	function handleProjectFocus() {
@@ -112,7 +138,6 @@
 			organizationHighlighted = null;
 		}, 100);
 	}
-
 
 	function handleProjectKeydown(e: KeyboardEvent) {
 		if (!filteredProjects.length) return;
@@ -145,7 +170,10 @@
 		if (!filteredOrganizations.length) return;
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			if (organizationHighlighted === null || organizationHighlighted === filteredOrganizations.length - 1) {
+			if (
+				organizationHighlighted === null ||
+				organizationHighlighted === filteredOrganizations.length - 1
+			) {
 				organizationHighlighted = 0;
 			} else {
 				organizationHighlighted!++;
@@ -159,7 +187,9 @@
 			}
 		} else if (e.key === 'Enter' || e.key === 'Tab') {
 			if (organizationHighlighted !== null && filteredOrganizations[organizationHighlighted]) {
-				selectOrganizationSuggestion(filteredOrganizations[organizationHighlighted].organizationName);
+				selectOrganizationSuggestion(
+					filteredOrganizations[organizationHighlighted].organizationName
+				);
 				e.preventDefault();
 			}
 		} else if (e.key === 'Escape') {
@@ -168,126 +198,79 @@
 		}
 	}
 
-	function handleSubmit(event: Event) {
-		event.preventDefault();
-		addProjectName?.(projectName, projectNotes);
-		filteredProjects = [];
-	}
+	
 </script>
 
-<form action="" onsubmit={handleSubmit} autocomplete="off">
+<form action="" autocomplete="off">
 	<h3>Top Form</h3>
 
 	<div class="topform-row">
 		<!-- Project Name Input with dropdown -->
 		<div class="input-block">
-		  <input
-			type="text"
-			bind:value={projectName}
-			placeholder="Project Name"
-			oninput={filterProjects}
-			onfocus={handleProjectFocus}
-			onblur={handleProjectBlur}
-			onkeydown={handleProjectKeydown}
-			autocomplete="off"
-		  />
-		  {#if inputFocusedProject && filteredProjects.length > 0}
-			<ul id="autocomplete-items-list" role="listbox">
-			  {#each filteredProjects as project, i}
-				<li
-				  role="option"
-				  onmousedown={() => selectProjectSuggestion(project.projectName)}
-				  class:selected={i === highlightedIndex}
-				  style="cursor:pointer"
-				>
-				  {project.projectName}
-				</li>
-			  {/each}
-			</ul>
-		  {/if}
+			<input
+				type="text"
+				bind:value={localProjectName}
+				placeholder="Project Name"
+				oninput={filterProjects}
+				onfocus={handleProjectFocus}
+				onblur={handleProjectBlur}
+				onkeydown={handleProjectKeydown}
+				autocomplete="off"
+			/>
+			{#if inputFocusedProject && filteredProjects.length > 0}
+				<ul id="autocomplete-items-list" role="listbox">
+					{#each filteredProjects as project, i}
+						<li
+							role="option"
+							onmousedown={() => selectProjectSuggestion(project.projectName)}
+							class:selected={i === highlightedIndex}
+							style="cursor:pointer"
+						>
+							{project.projectName}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</div>
-	  
+
 		<!-- Organization Input with dropdown -->
 		<div class="input-block">
-		  <input
-			type="text"
-			bind:value={organizationName}
-			placeholder="Organization Name"
-			oninput={filterOrganizations}
-			onfocus={handleOrganizationFocus}
-			onblur={handleOrganizationBlur}
-			onkeydown={handleOrganizationKeydown}
-			autocomplete="off"
-		  />
-		  {#if inputFocusedOrganization && filteredOrganizations.length > 0}
-			<ul id="autocomplete-items-list" role="listbox">
-			  {#each filteredOrganizations as organization, i}
-				<li
-				  role="option"
-				  onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
-				  class:selected={i === organizationHighlighted}
-				  style="cursor:pointer"
-				>
-				  {organization.organizationName}
-				</li>
-			  {/each}
-			</ul>
-		  {/if}
+			<input
+				type="text"
+				bind:value={localOrgName}
+				placeholder="Organization Name"
+				oninput={filterOrganizations}
+				onfocus={handleOrganizationFocus}
+				onblur={handleOrganizationBlur}
+				onkeydown={handleOrganizationKeydown}
+				autocomplete="off"
+			/>
+			{#if inputFocusedOrganization && filteredOrganizations.length > 0}
+				<ul id="autocomplete-items-list" role="listbox">
+					{#each filteredOrganizations as organization, i}
+						<li
+							role="option"
+							onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
+							class:selected={i === organizationHighlighted}
+							style="cursor:pointer"
+						>
+							{organization.organizationName}
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</div>
 		<!-- Project Notes Input -->
 		<div class="input-block">
-		  <input
-			type="text"
-			bind:value={projectNotes}
-			placeholder="Project Notes"
-			autocomplete="off"
-			style="min-width: 200px;"
-		  />
+			<input
+				type="text"
+				bind:value={localProjectNotes}
+				placeholder="Project Notes"
+				autocomplete="off"
+				style="min-width: 200px;"
+			/>
 		</div>
-	  </div>
-
-	<!-- Organization Input
-	<div style="margin-top: 1.5rem; position: relative;">
-		<label for="stakeholder-input">Organizations</label>
-		<input
-			id="stakeholder-input"
-			type="text"
-			bind:value={stakeholderInput}
-			placeholder="Organization Name"
-			oninput={onStakeholderInput}
-			onfocus={() => (stakeholderFocused = true)}
-			onblur={() => setTimeout(() => (stakeholderFocused = false), 200)}
-			autocomplete="off"
-		/>
-		{#if stakeholderFocused && stakeholderInput.length >= 2}
-			<ul id="stakeholder-autocomplete-list" role="listbox">
-				{#if stakeholderLoading}
-					<li style="color: #888;">Searching...</li>
-				{:else if stakeholderSuggestions.length > 0}
-					{#each stakeholderSuggestions as org, i}
-						<li
-							role="option"
-							class:selected={i === stakeholderHighlighted}
-							onmousedown={() => selectStakeholder(org)}
-							style="cursor:pointer"
-						>
-							{org}
-						</li>
-					{/each}
-				{:else}
-					<li style="color: #888;">
-						No results found. <span
-							role="button"
-							tabindex="0"
-							style="cursor:pointer; color:#2196f3;"
-							onmousedown={() => createNewStakeholder(stakeholderInput)}
-							><b>Create new organization: "{stakeholderInput}"</b></span
-						>
-					</li>
-				{/if}
-			</ul>
-		{/if}
-	</div> -->
+	</div>
 </form>
 
 <style>
