@@ -3,6 +3,18 @@ import { importedData } from './modelState.svelte';
 
 export async function submitToDB(projectName?: string, organizationName?: string, projectNotes?: string) {
 	try {
+		// HERE is where we can insert the project name, organization name, and project notes
+		// And do validations
+		if (!projectName) {
+			console.error('No project name provided');
+			return { success: false, error: 'No project name provided' };
+		}
+
+		if (!organizationName) {
+			console.error('No organization name provided');
+			return { success: false, error: 'No organization name provided' };
+		}
+		
 		const columns = importedData.columns;
 
 		if (!columns || columns.length === 0) {

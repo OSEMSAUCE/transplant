@@ -444,6 +444,7 @@ model organizationsTable {
   cropTable             cropTable[]
   stakeholderTypesTable stakeholderTypesTable? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onUpdate: NoAction, map: "fk_organizations_stakeholdertypeid")
   profilesTable         profilesTable[]
+  projectsTable         projectsTable[]
   stakeholderTable      stakeholderTable[]
 
   @@schema("public")
@@ -501,20 +502,23 @@ model profilesTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model projectsTable {
-  projectId     String          @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectName   String          @unique(map: "unique_project_name")
-  projectNotes  String?
-  createdAt     DateTime?       @default(now()) @db.Timestamptz(6)
-  lastEditedAt  DateTime?       @default(now()) @db.Timestamptz(6)
-  editedBy      String?         @db.Uuid
-  deleted       Boolean?        @default(false)
-  csvobjId      String?         @db.Uuid
-  source        String?
-  cropTable     cropTable[]
-  landTable     landTable[]
-  plantingTable plantingTable[]
-  csvObjTable   csvObjTable?    @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Projects_csvobjId_fkey")
+  projectId          String              @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectName        String              @unique(map: "unique_project_name")
+  projectNotes       String?
+  createdAt          DateTime?           @default(now()) @db.Timestamptz(6)
+  lastEditedAt       DateTime?           @default(now()) @db.Timestamptz(6)
+  editedBy           String?             @db.Uuid
+  deleted            Boolean?            @default(false)
+  csvobjId           String?             @db.Uuid
+  source             String?
+  organizationId     String?             @db.Uuid
+  cropTable          cropTable[]
+  landTable          landTable[]
+  plantingTable      plantingTable[]
+  csvObjTable        csvObjTable?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Projects_csvobjId_fkey")
+  organizationsTable organizationsTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
 
+  @@index([organizationId], map: "idx_projects_organization_id")
   @@schema("public")
 }
 

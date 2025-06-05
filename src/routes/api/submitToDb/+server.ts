@@ -59,15 +59,30 @@ export async function POST({ request }) {
 	};
 
 	try {
-		// Create a new project
+
+		// Create or find the organization
+		const organization = await prisma.organizationsTable.upsert({
+			where: { organizationName: data.organizationName },
+			create: {
+				organizationName: data.organizationName,
+				organizationNotes: data.organizationNotes
+			},
+			update: {
+				organizationNotes: data.organizationNotes
+			}
+		});
+		
+		// Create or find the project
 		const project = await prisma.projectsTable.upsert({
 			where: { projectName: data.projectName },
 			create: {
 				projectName: data.projectName,
-				projectNotes: data.projectNotes
+				projectNotes: data.projectNotes,
+				organizationId: organization.organizationId
 			},
 			update: {
-				projectNotes: data.projectNotes
+				projectNotes: data.projectNotes,
+				organizationId: organization.organizationId
 			}
 		});
 
