@@ -375,6 +375,92 @@ tbody td.drag-over {
 	background-color: rgba(76, 175, 80, 0.2) !important;
 	cursor: pointer !important;
 }
+
+
+
+/* ============================================================================
+   AUTOCOMPLETE LISTS
+   ============================================================================ */
+   #autocomplete-items-list {
+	/* Override Pico's variable and fallback background */
+	--pico-background-color: #a7c0cc44 !important;
+	background: #a7c0cc55 !important;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #2196f355;
+	border-radius: 0.25rem;
+	min-width: 200px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#autocomplete-items-list li,
+#autocomplete-items-list li.selected,
+#autocomplete-items-list li:hover {
+	background: transparent !important;
+}
+
+#autocomplete-items-list li.selected {
+	background-color: #21f35625 !important;
+	color: #2196f3 !important;
+	border: 2px solid #21f35655;
+	border-radius: 0.25rem;
+	font-weight: bold;
+}
+
+#autocomplete-items-list li:hover {
+	background: #6b7980 !important;
+}
+
+#stakeholder-autocomplete-list {
+	--pico-background-color: #a7c0cc44 !important;
+	background: #a7c0cc55 !important;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #2196f355;
+	border-radius: 0.25rem;
+	min-width: 200px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	position: absolute;
+	z-index: 10;
+}
+
+#stakeholder-autocomplete-list li,
+#stakeholder-autocomplete-list li.selected,
+#stakeholder-autocomplete-list li:hover {
+	background: transparent !important;
+}
+
+#stakeholder-autocomplete-list li.selected {
+	background-color: #2196f355 !important;
+	color: #2196f3 !important;
+	border: 2px solid #2196f355;
+	border-radius: 0.25rem;
+	font-weight: bold;
+}
+
+#stakeholder-autocomplete-list li:hover {
+	background: #6b7980 !important;
+}
+
+
+/* ============================================================================
+   BREAKPOINTS 
+   ============================================================================ */
+
+
+@media (max-width: 768px) {
+	th,
+	td {
+		width: 9rem;
+		max-width: 9rem;
+	}
+}
 /* Media query adjustments for mobile */
 @media (max-width: 768px) {
 	.table-container {
@@ -599,13 +685,3 @@ th.required-field span:not([class^='format-']):after {
 	cursor: pointer;
 }
 
-/* ============================================================================
-   BREAKPOINTS
-   ============================================================================ */
-@media (max-width: 768px) {
-	th,
-	td {
-		width: 9rem;
-		max-width: 9rem;
-	}
-}
