@@ -61,28 +61,33 @@ export async function POST({ request }) {
 	try {
 
 		// Create or find the organization
-		const organization = await prisma.organizationsTable.upsert({
-			where: { organizationName: data.organizationName },
-			create: {
-				organizationName: data.organizationName,
-				organizationNotes: data.organizationNotes
-			},
-			update: {
-				organizationNotes: data.organizationNotes
-			}
-		});
+		let organizationId = null;
+		
+		if (data.organizationName) {
+			const organization = await prisma.organizationsTable.upsert({
+				where: { organizationName: data.organizationName },
+				create: {
+					organizationName: data.organizationName,
+					organizationNotes: data.organizationNotes || ''
+				},
+				update: {
+					organizationNotes: data.organizationNotes || ''
+				}
+			});
+			organizationId = organization.organizationId;
+		}
 		
 		// Create or find the project
 		const project = await prisma.projectsTable.upsert({
 			where: { projectName: data.projectName },
 			create: {
 				projectName: data.projectName,
-				projectNotes: data.projectNotes,
-				organizationId: organization.organizationId
+				projectNotes: data.projectNotes || '',
+				...(organizationId ? { organizationId } : {})
 			},
 			update: {
-				projectNotes: data.projectNotes,
-				organizationId: organization.organizationId
+				projectNotes: data.projectNotes || '',
+				...(organizationId ? { organizationId } : {})
 			}
 		});
 
