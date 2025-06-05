@@ -25,17 +25,25 @@
 		projectName: string;
 		organizationName: string;
 		projectNotes: string;
-		updateProjectData?: (data: { projectName: string; organizationName: string; projectNotes: string }) => void;
+		updateProjectData?: (data: {
+			projectName: string;
+			organizationName: string;
+			projectNotes: string;
+		}) => void;
 	}>();
-	
+
 	// Create local bindings that will update the parent values
 	let localProjectName = $state(projectName || '');
 	let localOrgName = $state(organizationName || '');
 	let localProjectNotes = $state(projectNotes || '');
-	
+
 	// Effect to propagate changes back to parent
 	$effect(() => {
-		console.log('Effect running in topForm with values:', { localProjectName, localOrgName, localProjectNotes });
+		console.log('Effect running in topForm with values:', {
+			localProjectName,
+			localOrgName,
+			localProjectNotes
+		});
 		// Use the updateProjectData callback to update the parent component
 		if (updateProjectData) {
 			updateProjectData({
@@ -43,7 +51,11 @@
 				organizationName: localOrgName,
 				projectNotes: localProjectNotes
 			});
-			console.log('Called updateProjectData with:', { localProjectName, localOrgName, localProjectNotes });
+			console.log('Called updateProjectData with:', {
+				localProjectName,
+				localOrgName,
+				localProjectNotes
+			});
 		}
 	});
 
@@ -197,8 +209,6 @@
 			organizationHighlighted = null;
 		}
 	}
-
-	
 </script>
 
 <form action="" autocomplete="off">
@@ -207,16 +217,19 @@
 	<div class="topform-row">
 		<!-- Project Name Input with dropdown -->
 		<div class="input-block">
-			<input
-				type="text"
-				bind:value={localProjectName}
-				placeholder="Project Name"
-				oninput={filterProjects}
-				onfocus={handleProjectFocus}
-				onblur={handleProjectBlur}
-				onkeydown={handleProjectKeydown}
-				autocomplete="off"
-			/>
+			<div class="input-wrapper">
+				<input
+					type="text"
+					bind:value={localProjectName}
+					placeholder="Project Name"
+					oninput={filterProjects}
+					onfocus={handleProjectFocus}
+					onblur={handleProjectBlur}
+					onkeydown={handleProjectKeydown}
+					autocomplete="off"
+				/>
+				<span class="required-indicator">*</span>
+			</div>
 			{#if inputFocusedProject && filteredProjects.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredProjects as project, i}
@@ -225,6 +238,7 @@
 							onmousedown={() => selectProjectSuggestion(project.projectName)}
 							class:selected={i === highlightedIndex}
 							style="cursor:pointer"
+							aria-selected={i === highlightedIndex}
 						>
 							{project.projectName}
 						</li>
@@ -235,16 +249,19 @@
 
 		<!-- Organization Input with dropdown -->
 		<div class="input-block">
-			<input
-				type="text"
-				bind:value={localOrgName}
-				placeholder="Organization Name"
-				oninput={filterOrganizations}
-				onfocus={handleOrganizationFocus}
-				onblur={handleOrganizationBlur}
-				onkeydown={handleOrganizationKeydown}
-				autocomplete="off"
-			/>
+			<div class="input-wrapper">
+				<input
+					type="text"
+					bind:value={localOrgName}
+					placeholder="Organization Name"
+					oninput={filterOrganizations}
+					onfocus={handleOrganizationFocus}
+					onblur={handleOrganizationBlur}
+					onkeydown={handleOrganizationKeydown}
+					autocomplete="off"
+				/>
+				<span class="required-indicator">*</span>
+			</div>
 			{#if inputFocusedOrganization && filteredOrganizations.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredOrganizations as organization, i}
@@ -253,6 +270,7 @@
 							onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
 							class:selected={i === organizationHighlighted}
 							style="cursor:pointer"
+							aria-selected={i === organizationHighlighted}
 						>
 							{organization.organizationName}
 						</li>
@@ -273,4 +291,22 @@
 	</div>
 </form>
 
-<!-- Styles moved to src/lib/styles/custom-pico.scss -->
+<style>
+	.input-wrapper {
+		position: relative;
+		display: inline-block;
+		width: 100%;
+	}
+
+	.required-indicator {
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: #e53935;
+		font-weight: bold;
+		pointer-events: none;
+	}
+
+	/* Other styles moved to src/lib/styles/custom-pico.scss */
+</style>
