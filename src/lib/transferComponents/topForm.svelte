@@ -217,19 +217,17 @@
 	<div class="topform-row">
 		<!-- Project Name Input with dropdown -->
 		<div class="input-block">
-			<div class="input-container">
-				<input
-					type="text"
-					bind:value={localProjectName}
-					placeholder="Project Name"
-					oninput={filterProjects}
-					onfocus={handleProjectFocus}
-					onblur={handleProjectBlur}
-					onkeydown={handleProjectKeydown}
-					autocomplete="off"
-				/>
-				<span class="red-asterisk">*</span>
-			</div>
+			<input
+				type="text"
+				bind:value={localProjectName}
+				placeholder="Project Name*"
+				oninput={filterProjects}
+				onfocus={handleProjectFocus}
+				onblur={handleProjectBlur}
+				onkeydown={handleProjectKeydown}
+				autocomplete="off"
+				class="required-field"
+			/>
 			{#if inputFocusedProject && filteredProjects.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredProjects as project, i}
@@ -248,19 +246,17 @@
 
 		<!-- Organization Input with dropdown -->
 		<div class="input-block">
-			<div class="input-container">
-				<input
-					type="text"
-					bind:value={localOrgName}
-					placeholder="Organization Name"
-					oninput={filterOrganizations}
-					onfocus={handleOrganizationFocus}
-					onblur={handleOrganizationBlur}
-					onkeydown={handleOrganizationKeydown}
-					autocomplete="off"
-				/>
-				<span class="red-asterisk">*</span>
-			</div>
+			<input
+				type="text"
+				bind:value={localOrgName}
+				placeholder="Organization Name*"
+				oninput={filterOrganizations}
+				onfocus={handleOrganizationFocus}
+				onblur={handleOrganizationBlur}
+				onkeydown={handleOrganizationKeydown}
+				autocomplete="off"
+				class="required-field"
+			/>
 			{#if inputFocusedOrganization && filteredOrganizations.length > 0}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredOrganizations as organization, i}
@@ -288,22 +284,27 @@
 		</div>
 	</div>
 </form>
-
+<!-- 
 <style>
-	.input-container {
-		position: relative;
-		width: 100%;
+	/* Add this to custom-pico.scss if you want it to apply globally */
+	.required-field::placeholder {
+		color: inherit;
 	}
 
-	.red-asterisk {
+	/* Use a pseudo-element to create the red asterisk effect */
+	.required-field {
+		position: relative;
+	}
+
+	.required-field::after {
+		content: '*';
 		position: absolute;
 		right: 10px;
 		top: 50%;
 		transform: translateY(-50%);
 		color: #e53935;
 		font-weight: bold;
-		pointer-events: none;
 	}
 
 	/* Other styles moved to src/lib/styles/custom-pico.scss */
-</style>
+</style> -->
