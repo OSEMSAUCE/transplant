@@ -42,28 +42,28 @@
 
 	// Effect to propagate changes back to parent
 	$effect(() => {
-	console.log('Effect running in topForm with values:', {
-		localProjectName,
-		localOrgName,
-		localProjectNotes,
-		localSource
-	});
-	// Use the updateProjectData callback to update the parent component
-	if (updateProjectData) {
-		updateProjectData({
-			projectName: localProjectName,
-			organizationName: localOrgName,
-			projectNotes: localProjectNotes,
-			source: localSource
-		});
-		console.log('Called updateProjectData with:', {
+		console.log('Effect running in topForm with values:', {
 			localProjectName,
 			localOrgName,
 			localProjectNotes,
 			localSource
 		});
-	}
-});
+		// Use the updateProjectData callback to update the parent component
+		if (updateProjectData) {
+			updateProjectData({
+				projectName: localProjectName,
+				organizationName: localOrgName,
+				projectNotes: localProjectNotes,
+				source: localSource
+			});
+			console.log('Called updateProjectData with:', {
+				localProjectName,
+				localOrgName,
+				localProjectNotes,
+				localSource
+			});
+		}
+	});
 
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
@@ -215,6 +215,16 @@
 			organizationHighlighted = null;
 		}
 	}
+
+	let sourceError = $state('');
+
+	$effect(() => {
+		if (localSource && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(localSource)) {
+			sourceError = 'Please enter a valid URL (starting with http:// or https://)';
+		} else {
+			sourceError = '';
+		}
+	});
 </script>
 
 <form action="" autocomplete="off">
@@ -289,7 +299,10 @@
 		</div>
 		<!-- Source Input -->
 		<div class="input-block">
-			<input type="text" bind:value={localSource} placeholder="Source" autocomplete="off" />
+			<input type="url" bind:value={localSource} placeholder="Source (URL)" autocomplete="off" />
+			{#if sourceError}
+			<div class="error">{sourceError}</div>
+		{/if}
 		</div>
 	</div>
 </form>
