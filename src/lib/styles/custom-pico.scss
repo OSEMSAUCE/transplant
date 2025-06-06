@@ -453,6 +453,13 @@ tbody td.drag-over {
 input[placeholder="Project name *"]::placeholder,
 input[placeholder="Organization name *"]::placeholder {
 	color: #e53935 !important;
+	opacity: 0.6; /* Ensures full color in some browsers */
+	font-family: 'IBM Plex Mono', !important;
+	font-weight: 100; /* thinnest weight */
+	letter-spacing: 0.05em; /* subtle spacing enhances thinness */
+}
+input[placeholder="Project Notes"]::placeholder {
+	color: var(--color-grey) !important;
 	opacity: 0.5; /* Ensures full color in some browsers */
 	font-family: 'IBM Plex Mono', !important;
 	font-weight: 100; /* thinnest weight */
