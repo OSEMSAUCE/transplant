@@ -1,4 +1,5 @@
 <script lang="ts">
+let localSource = $state('');
 	import { onMount } from 'svelte';
 
 	// Debounce helper (inside main script)
@@ -242,6 +243,16 @@
 					{/each}
 				</ul>
 			{/if}
+		</div>
+
+		<!-- Source Input -->
+		<div class="input-block">
+			<input
+				type="text"
+				bind:value={localSource}
+				placeholder="Source"
+				autocomplete="off"
+			/>
 		</div>
 
 		<!-- Organization Input with dropdown -->
