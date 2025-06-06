@@ -118,7 +118,7 @@
 	>
 		Load CSV
 	</button>
-	<span style="color: grey">{fileName}</span>
+	<span style="color: grey; font-size: 0.7rem">{fileName}</span>
 	<input
 		id="hidden-file-input"
 		type="file"
