@@ -10,10 +10,13 @@
 	let organizationName = $state('');
 	let source = $state('');
 
-
 	// Effect to monitor changes to project metadata
 	$effect(() => {
-		console.log('Project metadata changed in +page.svelte:', { projectName, organizationName, projectNotes });
+		console.log('Project metadata changed in +page.svelte:', {
+			projectName,
+			organizationName,
+			projectNotes
+		});
 	});
 
 	const addProjectName = (projectName: string, organizationName: string, projectNotes?: string) => {
@@ -118,19 +121,19 @@
 	}
 </script>
 
-<TopForm 
-  {projectName} 
-  {organizationName} 
-  {projectNotes} 
-  source={source}
-  updateProjectData={(data) => {
-    console.log('updateProjectData called with:', data);
-    projectName = data.projectName;
-    organizationName = data.organizationName;
-    projectNotes = data.projectNotes;
-    source = data.source ?? ''; // Add this line!
-    console.log('Project metadata changed in +page.svelte:', data);
-  }}
+<TopForm
+	{projectName}
+	{organizationName}
+	{projectNotes}
+	{source}
+	updateProjectData={(data) => {
+		console.log('updateProjectData called with:', data);
+		projectName = data.projectName;
+		organizationName = data.organizationName;
+		projectNotes = data.projectNotes;
+		source = data.source ?? ''; // Add this line!
+		console.log('Project metadata changed in +page.svelte:', data);
+	}}
 />
 
 <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
@@ -169,6 +172,10 @@
 	</div>
 </div>
 
+{#if pageIs === 'transplant'}
+	<h5 style="text-align: center">~~~~~~~~~~~~~~~~~~~~~ CSV Import ~~~~~~~~~~~~~~~~~~~~~</h5>
+{/if}
+
 {#if importedData.columns.length > 0}
 	<div class="table-container">
 		<div class="table-header">
@@ -188,6 +195,10 @@
 
 		<TpCsvTable {pageIs} />
 	</div>
+
+	{#if pageIs === 'transplant'}
+		<h5 style="text-align: center">~~~~~~~~~~~~~~~~~~~~~ Database Tables ~~~~~~~~~~~~~~~~~~~~~</h5>
+	{/if}
 
 	{#if pageIs === 'transplant'}
 		<TpDbTables

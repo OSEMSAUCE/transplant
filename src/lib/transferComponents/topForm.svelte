@@ -228,8 +228,6 @@
 </script>
 
 <form action="" autocomplete="off">
-	<h3>Top Form</h3>
-
 	<div class="topform-row">
 		<!-- Project Name Input with dropdown -->
 		<div class="input-block">
