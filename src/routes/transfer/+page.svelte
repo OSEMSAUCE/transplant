@@ -117,15 +117,17 @@
 </script>
 
 <TopForm 
-	{projectName} 
-	{organizationName} 
-	{projectNotes} 
-	updateProjectData={(data) => {
-		console.log('updateProjectData called with:', data);
-		projectName = data.projectName;
-		organizationName = data.organizationName;
-		projectNotes = data.projectNotes;
-	}}
+  {projectName} 
+  {organizationName} 
+  {projectNotes} 
+  
+  updateProjectData={(data) => {
+    console.log('updateProjectData called with:', data);
+    projectName = data.projectName;
+    organizationName = data.organizationName;
+    projectNotes = data.projectNotes;
+    console.log('Project metadata changed in +page.svelte:', data);
+  }}
 />
 
 <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">

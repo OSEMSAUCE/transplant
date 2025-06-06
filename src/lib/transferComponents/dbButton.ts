@@ -1,7 +1,11 @@
 // src/lib/transferComponents/dbButton.ts
 import { importedData } from './modelState.svelte';
 
-export async function submitToDB(projectName?: string, organizationName?: string, projectNotes?: string) {
+export async function submitToDB(
+	projectName?: string,
+	organizationName?: string,
+	projectNotes?: string
+) {
 	try {
 		// HERE is where we can insert the project name, organization name, and project notes
 		// And do validations
@@ -14,7 +18,7 @@ export async function submitToDB(projectName?: string, organizationName?: string
 			console.error('No organization name provided');
 			return { success: false, error: 'No organization name provided' };
 		}
-		
+
 		const columns = importedData.columns;
 
 		if (!columns || columns.length === 0) {
@@ -30,19 +34,19 @@ export async function submitToDB(projectName?: string, organizationName?: string
 
 		// Key debug: show what is mapped where
 		console.log('landColumns:');
-		landColumns.forEach(col => console.log('  land col.mappedTo:', col.mappedTo));
+		landColumns.forEach((col) => console.log('  land col.mappedTo:', col.mappedTo));
 		console.log('plantingColumns:');
-		plantingColumns.forEach(col => console.log('  planting col.mappedTo:', col.mappedTo));
+		plantingColumns.forEach((col) => console.log('  planting col.mappedTo:', col.mappedTo));
 
 		// Find the land_name and crop_name columns
 		// Look for these columns in both the land/crop tables AND the planting table
-		const landNameColumn = mappedColumns.find((col) => 
-			col.mappedTo === 'land.landName' || col.mappedTo === 'planting.landName'
+		const landNameColumn = mappedColumns.find(
+			(col) => col.mappedTo === 'land.landName' || col.mappedTo === 'planting.landName'
 		);
-		const cropNameColumn = mappedColumns.find((col) => 
-			col.mappedTo === 'crop.cropName' || col.mappedTo === 'planting.cropName'
+		const cropNameColumn = mappedColumns.find(
+			(col) => col.mappedTo === 'crop.cropName' || col.mappedTo === 'planting.cropName'
 		);
-		
+
 		console.log('DEBUG: Found landNameColumn:', landNameColumn);
 		console.log('DEBUG: Found cropNameColumn:', cropNameColumn);
 
@@ -50,7 +54,7 @@ export async function submitToDB(projectName?: string, organizationName?: string
 		const cropNames = new Set();
 
 		if (landNameColumn) {
-			landNameColumn.values.forEach((value) => {	
+			landNameColumn.values.forEach((value) => {
 				if (value) landNames.add(value);
 			});
 		}

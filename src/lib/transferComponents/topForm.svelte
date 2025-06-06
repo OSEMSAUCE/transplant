@@ -1,5 +1,4 @@
 <script lang="ts">
-let localSource = $state('');
 	import { onMount } from 'svelte';
 
 	// Debounce helper (inside main script)
@@ -22,14 +21,16 @@ let localSource = $state('');
 
 	// Project autocomplete state
 
-	let { projectName, organizationName, projectNotes, updateProjectData } = $props<{
+	let { projectName, organizationName, projectNotes, source, updateProjectData } = $props<{
 		projectName: string;
 		organizationName: string;
 		projectNotes: string;
+		source?: string;
 		updateProjectData?: (data: {
 			projectName: string;
 			organizationName: string;
 			projectNotes: string;
+			source?: string;
 		}) => void;
 	}>();
 
@@ -37,28 +38,32 @@ let localSource = $state('');
 	let localProjectName = $state(projectName || '');
 	let localOrgName = $state(organizationName || '');
 	let localProjectNotes = $state(projectNotes || '');
+	let localSource = $state(source || '');
 
 	// Effect to propagate changes back to parent
 	$effect(() => {
-		console.log('Effect running in topForm with values:', {
+	console.log('Effect running in topForm with values:', {
+		localProjectName,
+		localOrgName,
+		localProjectNotes,
+		localSource
+	});
+	// Use the updateProjectData callback to update the parent component
+	if (updateProjectData) {
+		updateProjectData({
+			projectName: localProjectName,
+			organizationName: localOrgName,
+			projectNotes: localProjectNotes,
+			source: localSource
+		});
+		console.log('Called updateProjectData with:', {
 			localProjectName,
 			localOrgName,
-			localProjectNotes
+			localProjectNotes,
+			localSource
 		});
-		// Use the updateProjectData callback to update the parent component
-		if (updateProjectData) {
-			updateProjectData({
-				projectName: localProjectName,
-				organizationName: localOrgName,
-				projectNotes: localProjectNotes
-			});
-			console.log('Called updateProjectData with:', {
-				localProjectName,
-				localOrgName,
-				localProjectNotes
-			});
-		}
-	});
+	}
+});
 
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
@@ -245,16 +250,6 @@ let localSource = $state('');
 			{/if}
 		</div>
 
-		<!-- Source Input -->
-		<div class="input-block">
-			<input
-				type="text"
-				bind:value={localSource}
-				placeholder="Source"
-				autocomplete="off"
-			/>
-		</div>
-
 		<!-- Organization Input with dropdown -->
 		<div class="input-block">
 			<input
@@ -273,7 +268,7 @@ let localSource = $state('');
 					{#each filteredOrganizations as organization, i}
 						<li
 							role="option"
-				placeholder="Organization name *"
+							placeholder="Organization name *"
 							class:selected={i === organizationHighlighted}
 							style="cursor:pointer"
 						>
@@ -292,6 +287,10 @@ let localSource = $state('');
 				autocomplete="off"
 			/>
 		</div>
+	</div>
+	<!-- Source Input -->
+	<div class="input-block">
+		<input type="text" bind:value={localSource} placeholder="Source" autocomplete="off" />
 	</div>
 </form>
 <!-- 
