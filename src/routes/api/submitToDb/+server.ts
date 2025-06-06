@@ -1,13 +1,13 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
 
-// 
-// this is going to post projectName and projectStatus along with 
+//
+// this is going to post projectName and projectStatus along with
 // the rest of the posts on this page. Upsert, like the rest of it.
 // export async function POST() {
 // 	// add new projects
 // 	}
-	
+
 // select projectName and looking ProjectStakeholders,
 
 export async function GET() {
@@ -18,11 +18,11 @@ export async function GET() {
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { projectName: 'asc' }
 		});
-    const organizations = await prisma.organizationsTable.findMany({
-      select: { organizationName: true, organizationId: true },
-      where: { deleted: false }, // Only non-deleted projects
-      orderBy: { organizationName: 'asc' }
-    });
+		const organizations = await prisma.organizationsTable.findMany({
+			select: { organizationName: true, organizationId: true },
+			where: { deleted: false }, // Only non-deleted projects
+			orderBy: { organizationName: 'asc' }
+		});
 		// Map to array of strings
 
 		return json({ projects, organizations });
@@ -39,7 +39,6 @@ export async function GET() {
 // 	const data = await request.json();
 // 	return json({ message: 'Project added successfully' });
 // }
-
 
 export async function POST({ request }) {
 	const data = await request.json();
@@ -59,10 +58,9 @@ export async function POST({ request }) {
 	};
 
 	try {
-
 		// Create or find the organization
 		let organizationId = null;
-		
+
 		if (data.organizationName) {
 			const organization = await prisma.organizationsTable.upsert({
 				where: { organizationName: data.organizationName },
@@ -76,7 +74,7 @@ export async function POST({ request }) {
 			});
 			organizationId = organization.organizationId;
 		}
-		
+
 		// Create or find the project
 		const project = await prisma.projectsTable.upsert({
 			where: { projectName: data.projectName },
@@ -110,6 +108,7 @@ export async function POST({ request }) {
 					hectares: hectaresValue || null,
 					gpsLat: landItem.gpsLat || null,
 					gpsLon: landItem.gpsLon || null,
+					projectId: project.projectId,
 					// polygon: landItem.polygonId || null,
 					landNotes: landItem.landNotes || null
 				},
@@ -153,6 +152,7 @@ export async function POST({ request }) {
 		// Create planting entries
 		for (const plantingItem of data.plantings) {
 			// First, find the land and crop IDs
+		
 			const land = await prisma.landTable.findFirst({
 				where: {
 					landName: plantingItem.landName,
@@ -166,8 +166,11 @@ export async function POST({ request }) {
 					projectId: project.projectId
 				}
 			});
-
+			console.log('TEST land', land);
+			console.log('TEST crop', crop);
 			if (land && crop) {
+				console.log('land', land);
+				console.log('crop', crop);
 				await prisma.plantingTable.upsert({
 					where: {
 						landId_cropId: {
@@ -179,6 +182,7 @@ export async function POST({ request }) {
 					create: {
 						landId: land.landId,
 						cropId: crop.cropId,
+						projectId: project.projectId,
 						plantingDate: plantingItem.plantingDate,
 						planted: plantingItem.planted,
 						plantingNotes: plantingItem.plantingNotes

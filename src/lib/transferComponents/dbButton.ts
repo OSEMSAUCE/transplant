@@ -103,7 +103,7 @@ export async function submitToDB(
 			return cropEntry;
 		});
 
-		const plantings: Record<string, any>[] = [];
+		const plantings: Record<string, any>[] = []; 
 		if (landNameColumn && cropNameColumn) {
 			for (let i = 0; i < landNameColumn.values.length; i++) {
 				const landName = landNameColumn.values[i];

@@ -338,14 +338,14 @@ model cropTable {
   lastEditedAt       DateTime?           @default(now()) @db.Timestamptz(6)
   editedBy           String?             @db.Uuid
   deleted            Boolean?            @default(false)
-  projectId          String?             @db.Uuid
+  projectId          String              @db.Uuid
   organizationId     String?             @db.Uuid
   cropNotes          String?
   csvobjId           String?             @db.Uuid
   speciesTemp        String?
   csvObjTable        csvObjTable?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
   organizationsTable organizationsTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
-  projectsTable      projectsTable?      @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
+  projectsTable      projectsTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
   speciesTable       speciesTable?       @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
   plantingTable      plantingTable[]
 
@@ -372,7 +372,7 @@ model csvObjTable {
 model landTable {
   landId        String          @id(map: "Land_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   landName      String
-  projectId     String?         @db.Uuid
+  projectId     String          @db.Uuid
   hectares      Decimal?        @db.Decimal
   gpsLat        Decimal?        @db.Decimal
   gpsLon        Decimal?        @db.Decimal
@@ -387,7 +387,7 @@ model landTable {
   polygonId     BigInt?
   csvObjTable   csvObjTable?    @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
   polygonTable  polygonTable?   @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
-  projectsTable projectsTable?  @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
+  projectsTable projectsTable   @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
   plantingTable plantingTable[]
 
   @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
