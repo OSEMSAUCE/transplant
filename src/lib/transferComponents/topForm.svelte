@@ -279,7 +279,6 @@
 				bind:value={localProjectNotes}
 				placeholder="Project Notes"
 				autocomplete="off"
-				style="min-width: 200px;"
 			/>
 		</div>
 	</div>
