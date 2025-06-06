@@ -449,6 +449,16 @@ tbody td.drag-over {
 }
 
 
+/* Make just the Project and Organization name placeholders red */
+input[placeholder="Project name *"]::placeholder,
+input[placeholder="Organization name *"]::placeholder {
+	color: #e53935 !important;
+	opacity: 0.5; /* Ensures full color in some browsers */
+	font-family: 'IBM Plex Mono', !important;
+	font-weight: 100; /* thinnest weight */
+	letter-spacing: 0.05em; /* subtle spacing enhances thinness */
+}
+
 /* ============================================================================
    BREAKPOINTS 
    ============================================================================ */
@@ -680,4 +690,3 @@ th.required-field span:not([class^='format-']):after {
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer;
 }
-

@@ -220,7 +220,7 @@
 			<input
 				type="text"
 				bind:value={localProjectName}
-				placeholder="Project Name*"
+				placeholder="Project name *"
 				oninput={filterProjects}
 				onfocus={handleProjectFocus}
 				onblur={handleProjectBlur}
@@ -249,7 +249,7 @@
 			<input
 				type="text"
 				bind:value={localOrgName}
-				placeholder="Organization Name*"
+				placeholder="Organization name *"
 				oninput={filterOrganizations}
 				onfocus={handleOrganizationFocus}
 				onblur={handleOrganizationBlur}
@@ -262,7 +262,7 @@
 					{#each filteredOrganizations as organization, i}
 						<li
 							role="option"
-							onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
+				placeholder="Organization name *"
 							class:selected={i === organizationHighlighted}
 							style="cursor:pointer"
 						>
