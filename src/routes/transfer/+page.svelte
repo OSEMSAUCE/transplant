@@ -8,6 +8,8 @@
 	let projectName = $state('');
 	let projectNotes = $state('');
 	let organizationName = $state('');
+	let source = $state('');
+
 
 	// Effect to monitor changes to project metadata
 	$effect(() => {
@@ -120,12 +122,13 @@
   {projectName} 
   {organizationName} 
   {projectNotes} 
-  
+  source={source}
   updateProjectData={(data) => {
     console.log('updateProjectData called with:', data);
     projectName = data.projectName;
     organizationName = data.organizationName;
     projectNotes = data.projectNotes;
+    source = data.source ?? ''; // Add this line!
     console.log('Project metadata changed in +page.svelte:', data);
   }}
 />
