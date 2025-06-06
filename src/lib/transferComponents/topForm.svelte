@@ -287,10 +287,10 @@
 				autocomplete="off"
 			/>
 		</div>
-	</div>
-	<!-- Source Input -->
-	<div class="input-block">
-		<input type="text" bind:value={localSource} placeholder="Source" autocomplete="off" />
+		<!-- Source Input -->
+		<div class="input-block">
+			<input type="text" bind:value={localSource} placeholder="Source" autocomplete="off" />
+		</div>
 	</div>
 </form>
 <!-- 
