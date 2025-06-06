@@ -137,14 +137,16 @@ export async function POST({ request }) {
 					speciesId: cropItem.speciesId,
 					seedInfo: cropItem.seed_info,
 					cropStock: cropItem.cropStock,
-					cropNotes: cropItem.cropNotes
+					cropNotes: cropItem.cropNotes,
+					projectId: project.projectId
 				},
 				update: {
 					cropName: cropItem.cropName,
 					speciesId: cropItem.speciesId,
 					seedInfo: cropItem.seed_info,
 					cropStock: cropItem.cropStock,
-					cropNotes: cropItem.cropNotes
+					cropNotes: cropItem.cropNotes,
+					projectId: project.projectId
 				}
 			});
 		}
@@ -184,14 +186,18 @@ export async function POST({ request }) {
 						cropId: crop.cropId,
 						projectId: project.projectId,
 						plantingDate: plantingItem.plantingDate,
-						planted: plantingItem.planted,
+						planted: plantingItem.planted
+							? parseInt(String(plantingItem.planted).replace(/,/g, ''), 10)
+							: null,
 						plantingNotes: plantingItem.plantingNotes
 					},
 					update: {
 						landId: land.landId,
 						cropId: crop.cropId,
 						plantingDate: plantingItem.plantingDate,
-						planted: plantingItem.planted,
+						planted: plantingItem.planted
+							? parseInt(String(plantingItem.planted).replace(/,/g, ''), 10)
+							: null,
 						plantingNotes: plantingItem.plantingNotes
 					}
 				});
