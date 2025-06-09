@@ -402,10 +402,7 @@
 </script>
 
 <h3 class="table-title">Planting Table</h3>
-<table
-	class="no-table-bottom-margin planting-table"
-	class:greyed-out={false}
->
+<table class="no-table-bottom-margin planting-table" class:greyed-out={false}>
 	<thead>
 		<tr>
 			{#each plantingTable as column, index}
@@ -886,22 +883,19 @@
 		margin-bottom: 0rem;
 	}
 
+	/* Table border color rules grouped for clarity */
+	.land-table {
+		border: 1px solid #2196f3;
+	}
+	.crop-table {
+		border: 1px solid #4caf50;
+	}
 	.planting-table {
-		border: 1px solid #f38e1b; 
+		border: 1px solid #f38e1b;
 	}
 
 	.gps-column {
 		background-color: var(--header-background) !important;
 		color: white;
 	}
-
-	/* Add colored borders to tables */
-	.land-table {
-		border: 1px solid #2196f3; 
-	}
-
-	.crop-table {
-		border: 1px solid #4caf50; 
-	}
 </style>
- 

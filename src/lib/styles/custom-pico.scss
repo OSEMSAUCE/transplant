@@ -481,11 +481,111 @@ input[placeholder="Project Notes"]::placeholder {
 	font-weight: 100; /* thinnest weight */
 	letter-spacing: 0.05em; /* subtle spacing enhances thinness */
 }
+/* =====================
+   Drag-and-Drop Table Compatibility Styles
+   ===================== */
+
+/*
+Outline/Indication: Shows when a target is compatible (legal drop target)
+Active/Drag-Over: Shows when a target is being hovered (drag-over)
+*/
+
+/* Outline/Indication Styles (legal drop targets) */
+th.legal-droptarget {
+	border: 2px solid #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer !important;
+}
+.land-table th.legal-droptarget {
+	border: 2px solid #2196f3 !important;
+	background-color: rgba(33, 150, 243, 0.10) !important;
+}
+.crop-table th.legal-droptarget {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.10) !important;
+}
+.planting-table th.legal-droptarget {
+	border: 2px solid #f38e1b !important;
+	background-color: rgba(243, 142, 27, 0.10) !important;
+}
+
+/* Compatible target outline for table cells */
+.compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer !important;
+}
+.land-table .compatible-target {
+	border: 2px dashed #2196f3;
+	background-color: rgba(33, 150, 243, 0.08);
+}
+.crop-table .compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.08);
+}
+.planting-table .compatible-target {
+	border: 2px dashed #f38e1b;
+	background-color: rgba(243, 142, 27, 0.08);
+}
+
+/* Active/Drag-Over Styles */
+.drag-over {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.2) !important;
+	cursor: pointer !important;
+}
+.land-table .drag-over, .land-table.drag-over {
+	border: 2px solid #2196f3 !important;
+	background-color: rgba(33, 150, 243, 0.20) !important;
+}
+.crop-table .drag-over, .crop-table.drag-over {
+	border: 2px solid #4caf50 !important;
+	background-color: rgba(76, 175, 80, 0.20) !important;
+}
+.planting-table .drag-over, .planting-table.drag-over {
+	border: 2px solid #f38e1b !important;
+	background-color: rgba(243, 142, 27, 0.20) !important;
+}
+
+/* =====================
+   End Drag-and-Drop Table Compatibility Styles
+   ===================== */
+
+
+/* Required field styling that works with the actual HTML structure */
+
+/* Style for the th element with required-field class */
+th.required-field {
+	position: relative;
+}
+
+/* Style for the span inside th that has required-mapped or required-unmapped class */
+th span.required-mapped {
+	position: relative;
+	display: block;
+	border-left: 3px solid #4caf50;
+	padding-left: 5px;
+	font-weight: bold;
+}
+
+/* Remove global asterisk styling to avoid conflicts */
+th.required-field span:not([class^='format-']):after {
+	content: none; /* Completely remove the global asterisk */
+}
+
+/* Existing compatible target styles */
+.compatible-target {
+	border: 2px dashed #4caf50;
+	background-color: rgba(76, 175, 80, 0.1);
+	cursor: pointer;
+}
+
+
 
 /* ============================================================================
    BREAKPOINTS 
    ============================================================================ */
-@media (max-width: 768px) {
+   @media (max-width: 768px) {
 	th,
 	td {
 		width: 9rem;
@@ -652,70 +752,4 @@ button {
 /* Make all cells in the source table appear draggable */
 .table-container table tbody td {
 	cursor: grab;
-}
-
-/* Style for drop targets */
-.compatible-target {
-	border: 2px dashed #4caf50;
-	background-color: rgba(76, 175, 80, 0.1);
-	cursor: pointer !important;
-}
-
-.drag-over {
-	border: 2px solid #4caf50 !important;
-	background-color: rgba(76, 175, 80, 0.2) !important;
-	cursor: pointer !important;
-}
-
-/* Default style for legal-droptarget */
-th.legal-droptarget {
-	border: 2px solid #4caf50;
-	background-color: rgba(76, 175, 80, 0.1);
-	cursor: pointer !important;
-}
-
-.planting-table th.legal-droptarget {
-	border: 1px solid #4caf50;
-	background-color: rgba(76, 175, 80, 0.2) !important;
-
-}
-
-/* Override for Land table */
-.land-table th.legal-droptarget {
-	border: 2px solid #4caf50 !important;
-	background-color: rgba(76, 175, 80, 0.2) !important;
-}
-
-/* Override for Crop table - EXACTLY the same as Land table */
-.crop-table th.legal-droptarget {
-	border: 2px solid #4caf50 !important;
-	background-color: rgba(76, 175, 80, 0.2) !important;
-}
-
-/* Required field styling that works with the actual HTML structure */
-
-/* Style for the th element with required-field class */
-th.required-field {
-	position: relative;
-}
-
-/* Style for the span inside th that has required-mapped or required-unmapped class */
-th span.required-mapped {
-	position: relative;
-	display: block;
-	border-left: 3px solid #4caf50;
-	padding-left: 5px;
-	font-weight: bold;
-}
-
-/* Remove global asterisk styling to avoid conflicts */
-th.required-field span:not([class^='format-']):after {
-	content: none; /* Completely remove the global asterisk */
-}
-
-/* Existing compatible target styles */
-.compatible-target {
-	border: 2px dashed #4caf50;
-	background-color: rgba(76, 175, 80, 0.1);
-	cursor: pointer;
 }
