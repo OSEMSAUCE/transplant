@@ -450,7 +450,6 @@
 						class:legal-droptarget={!column.viewOnly &&
 							dragColumnState.currentFormat === plantingDbFormat[column.name] &&
 							column.modelRepColumnIndex === -1}
-						
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
@@ -533,9 +532,6 @@
 								const isNormalized = isColumnNormalizedByLand(landCol.values, draggedCol.values);
 								return isNormalized;
 							})()}
-					class:view-only={column.viewOnly ||
-						(!landTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
-							column.name !== 'landName')}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -630,11 +626,6 @@
 										);
 										return isNormalized;
 									})()}
-							class:view-only={column.viewOnly ||
-								(!landTable.some(
-									(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
-								) &&
-									column.name !== 'landName')}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
@@ -659,7 +650,6 @@
 								column.name === 'landName' &&
 								dragColumnState.currentFormat === landDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
-							class:view-only={column.viewOnly || column.name !== 'landName'}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
@@ -735,9 +725,6 @@
 								const isNormalized = isColumnNormalizedByLand(cropCol.values, draggedCol.values);
 								return isNormalized;
 							})()}
-					class:view-only={column.viewOnly ||
-						(!cropTable.some((col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1) &&
-							column.name !== 'cropName')}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -817,11 +804,6 @@
 										);
 										return isNormalized;
 									})()}
-							class:view-only={column.viewOnly ||
-								(!cropTable.some(
-									(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
-								) &&
-									column.name !== 'cropName')}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[uniqueRowIndex]}
@@ -845,7 +827,6 @@
 								!column.viewOnly &&
 								dragColumnState.currentFormat === cropDbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
-							class:view-only={column.viewOnly || column.name !== 'cropName'}
 						>
 							{#if column.modelRepColumnIndex !== -1}
 								{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
