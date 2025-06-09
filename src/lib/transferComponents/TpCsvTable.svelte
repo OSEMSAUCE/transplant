@@ -149,17 +149,22 @@
 					column.mappedTo?.includes('landName') || column.mappedTo?.includes('cropName')}
 				{@const isLandCompatible =
 					!column.isMapped && !isPrimaryColumn && landCol
-						? // Don't show compatibility for date columns, number columns, or parcelOwnership
-							column.currentFormat !== 'date' &&
+							? column.currentFormat !== 'date' &&
 							column.currentFormat !== 'number' &&
+							column.currentFormat !== 'latitude' &&
+							column.currentFormat !== 'longitude' &&
+							column.currentFormat !== 'polygon' &&
 							!column.headerName.toLowerCase().includes('ownership') &&
 							isColumnNormalizedByLand(landCol.values, column.values)
 						: false}
+
 				{@const isCropCompatible =
 					!column.isMapped && !isPrimaryColumn && cropCol
-						? // Don't show compatibility for date columns, number columns, or parcelOwnership
-							column.currentFormat !== 'date' &&
+							? column.currentFormat !== 'date' &&
 							column.currentFormat !== 'number' &&
+							column.currentFormat !== 'latitude' &&
+							column.currentFormat !== 'longitude' &&
+							column.currentFormat !== 'polygon' &&
 							!column.headerName.toLowerCase().includes('ownership') &&
 							isColumnNormalizedByLand(cropCol.values, column.values)
 						: false}
@@ -223,6 +228,9 @@
 							? // Don't show compatibility for date columns or parcelOwnership
 								column.currentFormat !== 'date' &&
 								!column.headerName.toLowerCase().includes('ownership') &&
+								column.currentFormat !== 'latitude' &&
+								column.currentFormat !== 'longitude' &&
+								column.currentFormat !== 'polygon' &&
 								isColumnNormalizedByLand(landCol.values, column.values)
 							: false}
 					{@const isCropCompatible =
@@ -230,6 +238,9 @@
 							? // Don't show compatibility for date columns, number columns, or parcelOwnership
 								column.currentFormat !== 'date' &&
 								column.currentFormat !== 'number' &&
+								column.currentFormat !== 'latitude' &&
+								column.currentFormat !== 'longitude' &&
+								column.currentFormat !== 'polygon' &&
 								!column.headerName.toLowerCase().includes('ownership') &&
 								isColumnNormalizedByLand(cropCol.values, column.values)
 							: false}
