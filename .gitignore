@@ -1,4 +1,9 @@
 node_modules
+.svelte-kit
+./node_modules
+./.svelte-kit
+node_modules/
+.svelte-kit/
 
 # Output
 .output
