@@ -1,4 +1,5 @@
 <script lang="ts">
+console.log('CASCADE TEST: TpCsvTable.svelte loaded');
 	import {
 		getColumnCompatibility,
 		findLandColumn,
@@ -165,6 +166,7 @@ const gpsMatchColumns = $derived(() => {
 
 </script>
 
+<div style="background: #ffecb3; color: #b26a00; padding: 12px; text-align: center; font-weight: bold; font-size: 18px;">CASCADE TEST BANNER: TpCsvTable.svelte is LIVE!</div>
 <table class="data-table" style="table-layout: fixed;">
 	<thead>
 		<tr>

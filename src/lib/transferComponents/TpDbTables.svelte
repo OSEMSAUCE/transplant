@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isGps, isLatitude, isLongitude } from './formatDetection2';
+	import { isGps, isLatitude, isLongitude, formatAllGpsTypes } from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
@@ -569,10 +569,11 @@
 							{#if gpsResult}
 								<span class="gps-coordinates">
 									{#if gpsResult.type === 'full'}
-										{gpsResult.value}
-									{:else if gpsResult.type === 'pair'}
-										{gpsResult.lat}, {gpsResult.lon}
-									{/if}
+									{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
+									CHANGE {formattedGps}
+								{:else if gpsResult.type === 'pair'}
+									CHANGE {gpsResult.lat}, {gpsResult.lon}
+								{/if}
 								</span>
 							{/if}
 						{/key}

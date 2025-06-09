@@ -960,35 +960,46 @@ export function formatValue(
 	}
 }
 
-function formatAllGpsTypes(
-	value: string | number | null,
-	format: ColumnFormat
+export function formatAllGpsTypes(
+  value: string | number | null,
+  format: ColumnFormat
 ): string | number | null {
-	let num: number;
-	if (typeof value === 'number') {
-		num = value;
-	} else if (typeof value === 'string') {
-		// For GPS coordinates, we need special handling
-		if (format === 'gps' && value.includes(',')) {
-			// For full GPS coordinates (lat,long)
-			const parts = value.split(',').map((p) => p.trim());
-			if (parts.length === 2) {
-				const lat = Number(parts[0]);
-				const long = Number(parts[1]);
-				if (!isNaN(lat) && !isNaN(long)) {
-					return `${lat.toFixed(7)},${long.toFixed(7)}`;
-				}
-			}
-			return value; // Return original if parsing fails
-		}
-		// For single coordinate values
-		const cleanVal = value.replace(/,/g, '').trim();
-		num = Number(cleanVal);
-	} else {
-		return value;
-	}
-	if (isNaN(num)) return value;
-	return Number(num.toFixed(7));
+  const originalValue = value;
+
+  let num: number;
+  if (typeof value === 'number') {
+    num = value;
+  } else if (typeof value === 'string') {
+    if (format === 'gps' && value.includes(',')) {
+      // Extract all numbers (lat, lon) from the string, ignoring all spaces and extra commas
+      const parts = value.split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map(Number)
+        .filter((n) => !isNaN(n));
+      if (parts.length >= 2) {
+        // Always print as "<lat>, <lon>"
+        const result = `${parts[0].toFixed(7)}, ${parts[1].toFixed(7)}`;
+        console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
+        return result;
+      }
+      console.log('formatAllGpsTypes input:', originalValue, 'output:', value);
+      return value; // Fallback if parsing fails
+    }
+    // For single coordinate values
+    const cleanVal = value.replace(/,/g, '').trim();
+    num = Number(cleanVal);
+  } else {
+    console.log('formatAllGpsTypes input:', originalValue, 'output:', value);
+    return value;
+  }
+  if (isNaN(num)) {
+    console.log('formatAllGpsTypes input:', originalValue, 'output:', value);
+    return value;
+  }
+  const result = Number(num.toFixed(7));
+  console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
+  return result;
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
