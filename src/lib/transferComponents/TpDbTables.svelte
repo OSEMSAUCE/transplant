@@ -478,6 +478,14 @@
 >
 	<thead>
 		<tr>
+			<!-- The GPS column is always first and separate from the iteration -->
+			<th class="gps-column">
+				<div class="column-header">
+					<span class="format-label">GPS</span>
+				</div>
+				<div class="header-name"></div>
+			</th>
+			<!-- Iterate over land table columns -->
 			{#each landTable as column, index}
 				<th
 					data-header-name={column.name}
@@ -563,19 +571,18 @@
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
-					<td style="position: relative;">
+					<!-- GPS column cell is always first -->
+					<td class="gps-cell">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 							{#if gpsResult}
-								<div class="gps-cell">
-									<span class="gps-coordinates">
-										{#if gpsResult.type === 'full'}
-											{gpsResult.value}
-										{:else if gpsResult.type === 'pair'}
-											{gpsResult.lat}, {gpsResult.lon}
-										{/if}
-									</span>
-								</div>
+								<span class="gps-coordinates">
+									{#if gpsResult.type === 'full'}
+										{gpsResult.value}
+									{:else if gpsResult.type === 'pair'}
+										{gpsResult.lat}, {gpsResult.lon}
+									{/if}
+								</span>
 							{/if}
 						{/key}
 					</td>
