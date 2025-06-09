@@ -7,6 +7,7 @@
 		"db:pull:dev": "dotenv -e .env.dev -- prisma db pull",
 		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
+		"db:sync:prod": "dotenv -e .env.production -- prisma db pull && prisma generate",
 		"db:generate:dev": "prisma generate",
 		"dev:dev": "dotenv -e .env.dev -- vite dev",
 		"dev:prod": "concurrently \"npm run dev\" \"dotenv -e .env.production vite dev --watch\"",

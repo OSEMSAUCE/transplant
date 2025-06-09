@@ -11,6 +11,13 @@ Closed
 Planting Upsert Date Validation
 
 Status: Open.
+#41 In OSEMSAUCE/transplant;· EndlessRecess
+## gpsLat and gpsLon should be validated as GPS. not numbers.
+🟣️good first issue
+Good for newcomers
+🔴️Urgent-ish
+
+Status: Open.
 #40 In OSEMSAUCE/transplant;· EndlessRecess opened 4 minutes ago
 ## Look for opportunities to tighten constraints on the DB
 

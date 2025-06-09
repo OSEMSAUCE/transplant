@@ -472,7 +472,6 @@ model plantingTable {
   @@schema("public")
 }
 
-
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model profilesTable {
   id                 String              @id(map: "profiles_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -594,6 +593,15 @@ model spatial_ref_sys {
   auth_srid Int?
   srtext    String? @db.VarChar(2048)
   proj4text String? @db.VarChar(2048)
+
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model locationTable {
+  id        BigInt @id @default(autoincrement())
+  latitude  Float?
+  longitude Float?
 
   @@schema("public")
 }
