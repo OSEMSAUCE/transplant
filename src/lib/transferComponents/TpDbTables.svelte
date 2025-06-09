@@ -342,7 +342,10 @@
 </script>
 
 <h3 class="table-title">Planting Table</h3>
-<table class="no-table-bottom-margin">
+<table class="no-table-bottom-margin planting-table"
+	class:greyed-out={!plantingTable.some(
+		(col) => col.name === 'plantingName' && col.modelRepColumnIndex !== -1)}
+	>
 	<thead>
 		<tr>
 			{#each plantingTable as column, index}
@@ -799,6 +802,9 @@
 		margin-bottom: 0rem;
 	}
 
+	.planting-table {
+		border: 1px solid #f38e1b; /* Blue border for Land Table */
+	}
 	/* Add colored borders to tables */
 	.land-table {
 		border: 1px solid #2196f3; /* Blue border for Land Table */

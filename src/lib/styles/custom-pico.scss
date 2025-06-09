@@ -674,6 +674,12 @@ th.legal-droptarget {
 	cursor: pointer !important;
 }
 
+.planting-table th.legal-droptarget {
+	border: 1px solid #4caf50;
+	background-color: rgba(76, 175, 80, 0.2) !important;
+
+}
+
 /* Override for Land table */
 .land-table th.legal-droptarget {
 	border: 2px solid #4caf50 !important;
