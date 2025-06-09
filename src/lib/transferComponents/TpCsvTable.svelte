@@ -149,7 +149,7 @@
 					column.mappedTo?.includes('landName') || column.mappedTo?.includes('cropName')}
 				{@const isLandCompatible =
 					!column.isMapped && !isPrimaryColumn && landCol
-							? column.currentFormat !== 'date' &&
+						? column.currentFormat !== 'date' &&
 							column.currentFormat !== 'number' &&
 							column.currentFormat !== 'latitude' &&
 							column.currentFormat !== 'longitude' &&
@@ -160,7 +160,7 @@
 
 				{@const isCropCompatible =
 					!column.isMapped && !isPrimaryColumn && cropCol
-							? column.currentFormat !== 'date' &&
+						? column.currentFormat !== 'date' &&
 							column.currentFormat !== 'number' &&
 							column.currentFormat !== 'latitude' &&
 							column.currentFormat !== 'longitude' &&
@@ -175,7 +175,9 @@
 					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
-					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
+					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} 
+						${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} 
+						${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent

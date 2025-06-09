@@ -1,7 +1,67 @@
 <script lang="ts">
+	import { isGps, isLatitude, isLongitude } from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+
+	// Define the GPS data type
+	type GpsData = 
+		| { type: 'full'; value: string } 
+		| { type: 'pair'; lat: string; lon: string } 
+		| null;
+
+	// Function to pull GPS data for a given row index
+	function pullFirstGpsSelected(rowIndex: number): GpsData {
+		// First try to find a full GPS coordinate pair
+		for (const column of importedData.columns) {
+			if (
+				column.currentFormat === 'gps' &&
+				column.values[rowIndex] !== null &&
+				column.values[rowIndex] !== ''
+			) {
+				const gpsValue = column.values[rowIndex];
+				if (isGps(gpsValue)) {
+					return { type: 'full', value: String(gpsValue) };
+				}
+			}
+		}
+
+		// Try to find a complete latitude/longitude pair
+		let latValue: string | null = null;
+		let lonValue: string | null = null;
+
+		// First pass: look for explicit latitude and longitude columns
+		for (const column of importedData.columns) {
+			const value = column.values[rowIndex];
+
+			if (value === null || value === '') continue;
+
+			// Check for latitude column
+			if (column.currentFormat === 'latitude' && !latValue) {
+				if (isLatitude(value)) {
+					latValue = typeof value === 'number' ? String(value) : value;
+				}
+			}
+			// Check for longitude column
+			else if (column.currentFormat === 'longitude' && !lonValue) {
+				if (isLongitude(value)) {
+					lonValue = typeof value === 'number' ? String(value) : value;
+				}
+			}
+		}
+
+		// If we found both valid lat and lon values, return them
+		if (latValue !== null && lonValue !== null) {
+			return { 
+				type: 'pair', 
+				lat: typeof latValue === 'number' ? String(latValue) : latValue, 
+				lon: typeof lonValue === 'number' ? String(lonValue) : lonValue 
+			};
+		}
+
+		// If we couldn't find a complete pair of valid coordinates, return null
+		return null;
+	}
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
 	import type { asClassComponent } from 'svelte/legacy';
@@ -342,10 +402,12 @@
 </script>
 
 <h3 class="table-title">Planting Table</h3>
-<table class="no-table-bottom-margin planting-table"
+<table
+	class="no-table-bottom-margin planting-table"
 	class:greyed-out={!plantingTable.some(
-		(col) => col.name === 'plantingName' && col.modelRepColumnIndex !== -1)}
-	>
+		(col) => col.name === 'plantingName' && col.modelRepColumnIndex !== -1
+	)}
+>
 	<thead>
 		<tr>
 			{#each plantingTable as column, index}
@@ -501,6 +563,22 @@
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
+					<td style="position: relative;">
+						{#key uniqueRowIndex}
+							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+							{#if gpsResult}
+								<div class="gps-cell">
+									<span class="gps-coordinates">
+										{#if gpsResult.type === 'full'}
+											{gpsResult.value}
+										{:else if gpsResult.type === 'pair'}
+											{gpsResult.lat}, {gpsResult.lon}
+										{/if}
+									</span>
+								</div>
+							{/if}
+						{/key}
+					</td>
 					{#each landTable as column, index}
 						<td
 							data-header-name={column.name}
@@ -568,6 +646,7 @@
 		{:else}
 			{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 				<tr>
+					<td style="position: relative;"></td>
 					{#each landTable as column, index}
 						<td
 							data-header-name={column.name}
