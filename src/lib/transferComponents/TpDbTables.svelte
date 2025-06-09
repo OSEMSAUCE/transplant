@@ -5,9 +5,9 @@
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 
 	// Define the GPS data type
-	type GpsData = 
-		| { type: 'full'; value: string } 
-		| { type: 'pair'; lat: string; lon: string } 
+	type GpsData =
+		| { type: 'full'; value: string }
+		| { type: 'pair'; lat: string; lon: string }
 		| null;
 
 	// Function to pull GPS data for a given row index
@@ -52,10 +52,10 @@
 
 		// If we found both valid lat and lon values, return them
 		if (latValue !== null && lonValue !== null) {
-			return { 
-				type: 'pair', 
-				lat: typeof latValue === 'number' ? String(latValue) : latValue, 
-				lon: typeof lonValue === 'number' ? String(lonValue) : lonValue 
+			return {
+				type: 'pair',
+				lat: typeof latValue === 'number' ? String(latValue) : latValue,
+				lon: typeof lonValue === 'number' ? String(lonValue) : lonValue
 			};
 		}
 
@@ -69,7 +69,7 @@
 	const {
 		// landUserTable,
 		// cropUserTable,
-		plantingUserTable,
+		// plantingUserTable,
 		landDbFormat,
 		plantingDbFormat,
 		cropDbFormat
@@ -185,7 +185,7 @@
 		}));
 	}
 
-	$inspect(plantingTable);
+	// $inspect(plantingTable);
 
 	function dragoverHandler(ev: DragEvent) {
 		// Always prevent default to allow drop
@@ -404,9 +404,7 @@
 <h3 class="table-title">Planting Table</h3>
 <table
 	class="no-table-bottom-margin planting-table"
-	class:greyed-out={!plantingTable.some(
-		(col) => col.name === 'plantingName' && col.modelRepColumnIndex !== -1
-	)}
+	class:greyed-out={false}
 >
 	<thead>
 		<tr>
@@ -900,3 +898,4 @@
 		border: 1px solid #4caf50; /* Green border for Crop Table */
 	}
 </style>
+ 
