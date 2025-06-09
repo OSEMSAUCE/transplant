@@ -887,15 +887,21 @@
 	}
 
 	.planting-table {
-		border: 1px solid #f38e1b; /* Blue border for Land Table */
+		border: 1px solid #f38e1b; 
 	}
+
+	.gps-column {
+		background-color: var(--header-background) !important;
+		color: white;
+	}
+
 	/* Add colored borders to tables */
 	.land-table {
-		border: 1px solid #2196f3; /* Blue border for Land Table */
+		border: 1px solid #2196f3; 
 	}
 
 	.crop-table {
-		border: 1px solid #4caf50; /* Green border for Crop Table */
+		border: 1px solid #4caf50; 
 	}
 </style>
  
