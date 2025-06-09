@@ -32,8 +32,8 @@
 	const landColumns = [
 		'landName',
 		'hectares',
-		'gpsLat',
-		'gpsLon',
+		// 'gpsLat',
+		// 'gpsLon',
 		'landNotes'
 		// "preparation",
 		// "polygon",
