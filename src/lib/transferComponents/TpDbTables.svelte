@@ -861,41 +861,4 @@
 </table>
 
 <style>
-	.view-only {
-		background-color: var(--color-light-grey);
-		cursor: not-allowed;
-		/* margin-bottom: -1rem; */
-	}
-
-	.greyed-out {
-		opacity: 0.7;
-		background-color: rgba(128, 128, 128, 0.2);
-		/* margin-bottom: -1rem; */
-	}
-
-	.greyed-out th:not(.legal-droptarget),
-	.greyed-out td:not(.legal-droptarget) {
-		background-color: var(--color-light-grey);
-		cursor: not-allowed;
-	}
-
-	.no-table-bottom-margin {
-		margin-bottom: 0rem;
-	}
-
-	/* Table border color rules grouped for clarity */
-	.land-table {
-		border: 1px solid #2196f3;
-	}
-	.crop-table {
-		border: 1px solid #4caf50;
-	}
-	.planting-table {
-		border: 1px solid #f38e1b;
-	}
-
-	.gps-column {
-		background-color: var(--header-background) !important;
-		color: white;
-	}
 </style>
