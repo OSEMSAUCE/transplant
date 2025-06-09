@@ -245,7 +245,7 @@ tbody td.greyed-out * {
 }
 
 thead th.greyed-out,
-thead th.view-only,
+// thead th.view-only,
 thead th[class*='view-only'],
 thead th[class*='greyed-out'] {
 	background-color: var(--header-background) !important;

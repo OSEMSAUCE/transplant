@@ -450,7 +450,7 @@
 						class:legal-droptarget={!column.viewOnly &&
 							dragColumnState.currentFormat === plantingDbFormat[column.name] &&
 							column.modelRepColumnIndex === -1}
-						class:view-only={column.viewOnly}
+						
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
