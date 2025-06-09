@@ -129,6 +129,40 @@
 		// If we couldn't find a complete pair of valid coordinates, return null
 		return null;
 	}
+// Utility: Check if mapping between stringCol and gpsCol is consistent (1:1 or repeated-but-consistent)
+function isStringGpsMappingConsistent(stringCol: any, gpsCol: any) {
+	const mapping = new Map();
+	const reverse = new Map();
+	for (let i = 0; i < stringCol.values.length; i++) {
+		const str = stringCol.values[i];
+		const gps = gpsCol.values[i];
+		if (str == null || str === '' || gps == null || gps === '') continue; // Only non-null pairs
+		if (mapping.has(str)) {
+			if (mapping.get(str) !== gps) return false;
+		} else {
+			mapping.set(str, gps);
+		}
+		if (reverse.has(gps)) {
+			if (reverse.get(gps) !== str) return false;
+		} else {
+			reverse.set(gps, str);
+		}
+	}
+	return mapping.size > 0; // At least one mapping
+}
+
+// Memoize which string columns match GPS (Svelte 5 runes mode)
+const gpsMatchColumns = $derived(() => {
+	const gpsCol = (importedData.columns as any[]).find((c: any) => c.currentFormat === 'gps');
+	if (!gpsCol) return {};
+	const result: Record<string, boolean> = {};
+	for (const strCol of importedData.columns as any[]) {
+		if (strCol.currentFormat !== 'string') continue;
+		result[strCol.headerName] = isStringGpsMappingConsistent(strCol, gpsCol);
+	}
+	return result;
+});
+
 </script>
 
 <table class="data-table" style="table-layout: fixed;">
@@ -251,6 +285,7 @@
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
+						class:gps-match-orange={column.currentFormat === 'string' && gpsMatchColumns()?.[column.headerName]}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -279,3 +314,10 @@
 		{/each}
 	</tbody>
 </table>
+
+<style>
+.gps-match-orange {
+	border: 2px solid #f38e1b !important;
+	background-color: rgba(243, 142, 27, 0.20) !important;
+}
+</style>
