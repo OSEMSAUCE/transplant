@@ -1,5 +1,5 @@
 <script lang="ts">
-console.log('CASCADE TEST: TpCsvTable.svelte loaded');
+	console.log('CASCADE TEST: TpCsvTable.svelte loaded');
 	import {
 		getColumnCompatibility,
 		findLandColumn,
@@ -130,43 +130,74 @@ console.log('CASCADE TEST: TpCsvTable.svelte loaded');
 		// If we couldn't find a complete pair of valid coordinates, return null
 		return null;
 	}
-// Utility: Check if mapping between stringCol and gpsCol is consistent (1:1 or repeated-but-consistent)
-function isStringGpsMappingConsistent(stringCol: any, gpsCol: any) {
-	const mapping = new Map();
-	const reverse = new Map();
-	for (let i = 0; i < stringCol.values.length; i++) {
-		const str = stringCol.values[i];
-		const gps = gpsCol.values[i];
-		if (str == null || str === '' || gps == null || gps === '') continue; // Only non-null pairs
-		if (mapping.has(str)) {
-			if (mapping.get(str) !== gps) return false;
-		} else {
-			mapping.set(str, gps);
+	// Utility: Check if mapping between stringCol and gpsCol is consistent (1:1 or repeated-but-consistent)
+	function isStringGpsMappingConsistent(stringCol: any, gpsCol: any) {
+		const mapping = new Map();
+		const reverse = new Map();
+		for (let i = 0; i < stringCol.values.length; i++) {
+			const str = stringCol.values[i];
+			const gps = gpsCol.values[i];
+			if (str == null || str === '' || gps == null || gps === '') continue; // Only non-null pairs
+			if (mapping.has(str)) {
+				if (mapping.get(str) !== gps) return false;
+			} else {
+				mapping.set(str, gps);
+			}
+			if (reverse.has(gps)) {
+				if (reverse.get(gps) !== str) return false;
+			} else {
+				reverse.set(gps, str);
+			}
 		}
-		if (reverse.has(gps)) {
-			if (reverse.get(gps) !== str) return false;
-		} else {
-			reverse.set(gps, str);
-		}
+		return mapping.size > 0; // At least one mapping
 	}
-	return mapping.size > 0; // At least one mapping
-}
 
-// Memoize which string columns match GPS (Svelte 5 runes mode)
-const gpsMatchColumns = $derived(() => {
-	const gpsCol = (importedData.columns as any[]).find((c: any) => c.currentFormat === 'gps');
-	if (!gpsCol) return {};
-	const result: Record<string, boolean> = {};
-	for (const strCol of importedData.columns as any[]) {
-		if (strCol.currentFormat !== 'string') continue;
-		result[strCol.headerName] = isStringGpsMappingConsistent(strCol, gpsCol);
+	// Memoize which string columns match GPS (Svelte 5 runes mode)
+	const gpsMatchColumns = $derived(() => {
+		const gpsCol = (importedData.columns as any[]).find((c: any) => c.currentFormat === 'gps');
+		if (!gpsCol) return {};
+		const result: Record<string, boolean> = {};
+		for (const strCol of importedData.columns as any[]) {
+			if (strCol.currentFormat !== 'string') continue;
+			result[strCol.headerName] = isStringGpsMappingConsistent(strCol, gpsCol);
+		}
+		return result;
+	});
+
+	// Function to check compatibility between CSV and DB table
+	function isCompatible(column: any) {
+		const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'));
+		const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'));
+		const isPrimaryColumn =
+			(landCol && column.headerName === landCol.headerName) ||
+			(cropCol && column.headerName === cropCol.headerName);
+		const isLandCompatible =
+			!column.isMapped && !isPrimaryColumn && landCol
+				? // Don't show compatibility for date columns or parcelOwnership
+					column.currentFormat !== 'date' &&
+					!column.headerName.toLowerCase().includes('ownership') &&
+					column.currentFormat !== 'latitude' &&
+					column.currentFormat !== 'longitude' &&
+					column.currentFormat !== 'polygon' &&
+					isColumnNormalizedByLand(landCol.values, column.values)
+				: false;
+		const isCropCompatible =
+			!column.isMapped && !isPrimaryColumn && cropCol
+				? // Don't show compatibility for date columns, number columns, or parcelOwnership
+					column.currentFormat !== 'date' &&
+					column.currentFormat !== 'number' &&
+					column.currentFormat !== 'latitude' &&
+					column.currentFormat !== 'longitude' &&
+					column.currentFormat !== 'polygon' &&
+					!column.headerName.toLowerCase().includes('ownership') &&
+					isColumnNormalizedByLand(cropCol.values, column.values)
+				: false;
+			
+			return {isLandCompatible, isCropCompatible}
 	}
-	return result;
-});
 
 </script>
 
-<div style="background: #ffecb3; color: #b26a00; padding: 12px; text-align: center; font-weight: bold; font-size: 18px;">CASCADE TEST BANNER: TpCsvTable.svelte is LIVE!</div>
 <table class="data-table" style="table-layout: fixed;">
 	<thead>
 		<tr>
@@ -177,34 +208,10 @@ const gpsMatchColumns = $derived(() => {
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- Iterate over actual data columns -->
+			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-				{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
-				{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
-				{@const isPrimaryColumn =
-					column.mappedTo?.includes('landName') || column.mappedTo?.includes('cropName')}
-				{@const isLandCompatible =
-					!column.isMapped && !isPrimaryColumn && landCol
-						? column.currentFormat !== 'date' &&
-							column.currentFormat !== 'number' &&
-							column.currentFormat !== 'latitude' &&
-							column.currentFormat !== 'longitude' &&
-							column.currentFormat !== 'polygon' &&
-							!column.headerName.toLowerCase().includes('ownership') &&
-							isColumnNormalizedByLand(landCol.values, column.values)
-						: false}
-
-				{@const isCropCompatible =
-					!column.isMapped && !isPrimaryColumn && cropCol
-						? column.currentFormat !== 'date' &&
-							column.currentFormat !== 'number' &&
-							column.currentFormat !== 'latitude' &&
-							column.currentFormat !== 'longitude' &&
-							column.currentFormat !== 'polygon' &&
-							!column.headerName.toLowerCase().includes('ownership') &&
-							isColumnNormalizedByLand(cropCol.values, column.values)
-						: false}
-				<!-- Debugging logs removed -->
+				{@const {isLandCompatible, isCropCompatible} = isCompatible(column)}
+				
 				<th
 					data-header-name={column.headerName}
 					data-column-index={index}
@@ -254,40 +261,16 @@ const gpsMatchColumns = $derived(() => {
 						</div>
 					{/if}
 				</td>
-				<!-- Two new empty data columns for alignment -->
+
+				<!-- BODY isCompatible function between CSVTable and dbTable -->
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-					{@const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'))}
-					{@const cropCol = importedData.columns.find((col) => col.mappedTo?.includes('cropName'))}
-					{@const isPrimaryColumn =
-						(landCol && column.headerName === landCol.headerName) ||
-						(cropCol && column.headerName === cropCol.headerName)}
-					{@const isLandCompatible =
-						!column.isMapped && !isPrimaryColumn && landCol
-							? // Don't show compatibility for date columns or parcelOwnership
-								column.currentFormat !== 'date' &&
-								!column.headerName.toLowerCase().includes('ownership') &&
-								column.currentFormat !== 'latitude' &&
-								column.currentFormat !== 'longitude' &&
-								column.currentFormat !== 'polygon' &&
-								isColumnNormalizedByLand(landCol.values, column.values)
-							: false}
-					{@const isCropCompatible =
-						!column.isMapped && !isPrimaryColumn && cropCol
-							? // Don't show compatibility for date columns, number columns, or parcelOwnership
-								column.currentFormat !== 'date' &&
-								column.currentFormat !== 'number' &&
-								column.currentFormat !== 'latitude' &&
-								column.currentFormat !== 'longitude' &&
-								column.currentFormat !== 'polygon' &&
-								!column.headerName.toLowerCase().includes('ownership') &&
-								isColumnNormalizedByLand(cropCol.values, column.values)
-							: false}
-					<!-- Debugging logs removed -->
+					{@const {isLandCompatible, isCropCompatible} = isCompatible(column)}
 					<td
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
-						class:gps-match-orange={column.currentFormat === 'string' && gpsMatchColumns()?.[column.headerName]}
+						class:gps-match-orange={column.currentFormat === 'string' &&
+							gpsMatchColumns()?.[column.headerName]}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -310,8 +293,8 @@ const gpsMatchColumns = $derived(() => {
 </table>
 
 <style>
-.gps-match-orange {
-	border: 2px solid #f38e1b !important;
-	background-color: rgba(243, 142, 27, 0.20) !important;
-}
+	.gps-match-orange {
+		border: 2px solid #f38e1b !important;
+		background-color: rgba(243, 142, 27, 0.2) !important;
+	}
 </style>
