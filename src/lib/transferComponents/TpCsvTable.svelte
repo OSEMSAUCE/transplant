@@ -295,14 +295,6 @@ const gpsMatchColumns = $derived(() => {
 						ondragend={dragEndHandler}
 						style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 					>
-						<!-- Icons commented out for now, can be re-enabled for debugging
-						{#if isLandCompatible}
-							<div style="position: absolute; top: 2px; left: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🗺️️</div>
-						{/if}
-						{#if isCropCompatible}
-							<div style="position: absolute; top: 2px; right: 2px; font-size: 20px; z-index: 100; background-color: rgba(255,255,255,0.7); padding: 2px; border-radius: 4px;">🌳️</div>
-						{/if}
-						-->
 						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
 						{:else}
