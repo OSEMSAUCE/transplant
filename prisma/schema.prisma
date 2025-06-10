@@ -329,25 +329,25 @@ model users {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model cropTable {
-  cropId             String              @id(map: "Trees_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cropName           String
-  speciesId          String?             @db.Uuid
-  seedInfo           String?
-  cropStock          String?
-  createdAt          DateTime?           @default(now()) @db.Timestamptz(6)
-  lastEditedAt       DateTime?           @default(now()) @db.Timestamptz(6)
-  editedBy           String?             @db.Uuid
-  deleted            Boolean?            @default(false)
-  projectId          String              @db.Uuid
-  organizationId     String?             @db.Uuid
-  cropNotes          String?
-  csvobjId           String?             @db.Uuid
-  speciesTemp        String?
-  csvObjTable        csvObjTable?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
-  organizationsTable organizationsTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
-  projectsTable      projectsTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
-  speciesTable       speciesTable?       @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
-  plantingTable      plantingTable[]
+  cropId                String              @id(map: "Trees_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cropName              String
+  speciesId             String?             @db.Uuid
+  seedInfo              String?
+  cropStock             String?
+  createdAt             DateTime?           @default(now()) @db.Timestamptz(6)
+  lastEditedAt          DateTime?           @default(now()) @db.Timestamptz(6)
+  editedBy              String?             @db.Uuid
+  deleted               Boolean?            @default(false)
+  projectId             String              @db.Uuid
+  organizationId        String?             @db.Uuid
+  cropNotes             String?
+  csvobjId              String?             @db.Uuid
+  sourceSpecificSpecies String?
+  csvObjTable           csvObjTable?        @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
+  organizationsTable    organizationsTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
+  projectsTable         projectsTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
+  speciesTable          speciesTable?       @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
+  plantingTable         plantingTable[]
 
   @@unique([projectId, cropName], map: "unique_crop_name_per_project")
   @@index([organizationId], map: "idx_crop_organization_id")
@@ -370,25 +370,26 @@ model csvObjTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model landTable {
-  landId        String          @id(map: "Land_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landName      String
-  projectId     String          @db.Uuid
-  hectares      Decimal?        @db.Decimal
-  gpsLat        Decimal?        @db.Decimal
-  gpsLon        Decimal?        @db.Decimal
-  landNotes     String?
-  createdAt     DateTime?       @default(now()) @db.Timestamptz(6)
-  lastEditedAt  DateTime?       @default(now()) @db.Timestamptz(6)
-  editedBy      String?         @db.Uuid
-  deleted       Boolean?        @default(false)
-  preparation   Preparation?
-  csvobjId      String?         @db.Uuid
-  polygon       Json?
-  polygonId     BigInt?
-  csvObjTable   csvObjTable?    @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
-  polygonTable  polygonTable?   @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
-  projectsTable projectsTable   @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
-  plantingTable plantingTable[]
+  landId         String          @id(map: "Land_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landName       String
+  projectId      String          @db.Uuid
+  hectares       Decimal?        @db.Decimal
+  gpsLat         Decimal?        @db.Decimal
+  gpsLon         Decimal?        @db.Decimal
+  landNotes      String?
+  createdAt      DateTime?       @default(now()) @db.Timestamptz(6)
+  lastEditedAt   DateTime?       @default(now()) @db.Timestamptz(6)
+  editedBy       String?         @db.Uuid
+  deleted        Boolean?        @default(false)
+  preparation    Preparation?
+  csvobjId       String?         @db.Uuid
+  polygon        Json?
+  polygonId      BigInt?
+  sourceSpecifId String?
+  csvObjTable    csvObjTable?    @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
+  polygonTable   polygonTable?   @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
+  projectsTable  projectsTable   @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
+  plantingTable  plantingTable[]
 
   @@unique([projectId, landName], map: "unique_land_name_per_project_constraint")
   @@index([projectId], map: "idx_land_project_id")
