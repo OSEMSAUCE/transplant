@@ -226,7 +226,6 @@
 							currentFormat={column.currentFormat}
 							currentColumnHeader={column.headerName}
 							onformatchange={(event) => {
-								// Update column format directly
 								const selectedFormat = event.detail.destinationFormat;
 								column.currentFormat = selectedFormat;
 								column.isFormatted = true;
