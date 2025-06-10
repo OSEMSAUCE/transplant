@@ -392,12 +392,10 @@ tbody td.drag-over {
 	cursor: pointer !important;
 }
 
-
-
 /* ============================================================================
    AUTOCOMPLETE LISTS
    ============================================================================ */
-   #autocomplete-items-list {
+#autocomplete-items-list {
 	/* Override Pico's variable and fallback background */
 	--pico-background-color: #a7c0cc44 !important;
 	background: #a7c0cc55 !important;
@@ -464,20 +462,19 @@ tbody td.drag-over {
 	background: #6b7980 !important;
 }
 
-
 /* Make just the Project and Organization name placeholders red */
-input[placeholder="Project name *"]::placeholder,
-input[placeholder="Organization name *"]::placeholder {
+input[placeholder='Project name *']::placeholder,
+input[placeholder='Organization name *']::placeholder {
 	color: #e53935 !important;
 	opacity: 0.6; /* Ensures full color in some browsers */
-	font-family: 'IBM Plex Mono', !important;
+	font-family: 'IBM Plex Mono' !important;
 	font-weight: 100; /* thinnest weight */
 	letter-spacing: 0.05em; /* subtle spacing enhances thinness */
 }
-input[placeholder="Project Notes"]::placeholder {
+input[placeholder='Project Notes']::placeholder {
 	color: var(--color-grey) !important;
 	opacity: 0.5; /* Ensures full color in some browsers */
-	font-family: 'IBM Plex Mono', !important;
+	font-family: 'IBM Plex Mono' !important;
 	font-weight: 100; /* thinnest weight */
 	letter-spacing: 0.05em; /* subtle spacing enhances thinness */
 }
@@ -485,11 +482,16 @@ input[placeholder="Project Notes"]::placeholder {
    Drag-and-Drop Table Compatibility Styles
    ===================== */
 
-   
 /*
 Outline/Indication: Shows when a target is compatible (legal drop target)
 Active/Drag-Over: Shows when a target is being hovered (drag-over)
 */
+
+// gps & landName match
+.isGpsMatch {
+	border: 2px solid #f38e1b !important;
+	background-color: rgba(243, 142, 27, 0.2) !important;
+}
 
 /* Outline/Indication Styles (legal drop targets) */
 th.legal-droptarget {
@@ -497,17 +499,18 @@ th.legal-droptarget {
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer !important;
 }
+
 .land-table th.legal-droptarget {
 	border: 2px solid #2196f3 !important;
-	background-color: rgba(33, 150, 243, 0.10) !important;
+	background-color: rgba(33, 150, 243, 0.1) !important;
 }
 .crop-table th.legal-droptarget {
 	border: 2px solid #4caf50 !important;
-	background-color: rgba(76, 175, 80, 0.10) !important;
+	background-color: rgba(76, 175, 80, 0.1) !important;
 }
 .planting-table th.legal-droptarget {
 	border: 2px solid #f38e1b !important;
-	background-color: rgba(243, 142, 27, 0.10) !important;
+	background-color: rgba(243, 142, 27, 0.1) !important;
 }
 
 /* Compatible target outline for table cells */
@@ -535,17 +538,20 @@ th.legal-droptarget {
 	background-color: rgba(76, 175, 80, 0.2) !important;
 	cursor: pointer !important;
 }
-.land-table .drag-over, .land-table.drag-over {
+.land-table .drag-over,
+.land-table.drag-over {
 	border: 2px solid #2196f3 !important;
-	background-color: rgba(33, 150, 243, 0.20) !important;
+	background-color: rgba(33, 150, 243, 0.2) !important;
 }
-.crop-table .drag-over, .crop-table.drag-over {
+.crop-table .drag-over,
+.crop-table.drag-over {
 	border: 2px solid #4caf50 !important;
-	background-color: rgba(76, 175, 80, 0.20) !important;
+	background-color: rgba(76, 175, 80, 0.2) !important;
 }
-.planting-table .drag-over, .planting-table.drag-over {
+.planting-table .drag-over,
+.planting-table.drag-over {
 	border: 2px solid #f38e1b !important;
-	background-color: rgba(243, 142, 27, 0.20) !important;
+	background-color: rgba(243, 142, 27, 0.2) !important;
 }
 
 /* =====================
@@ -615,24 +621,6 @@ th.required-field span:not([class^='format-']):after {
 	border: 2px dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer;
-}
-
-
-
-/* ============================================================================
-   BREAKPOINTS 
-   ============================================================================ */
-   @media (max-width: 768px) {
-	th,
-	td {
-		width: 9rem;
-		max-width: 9rem;
-	}
-
-	.table-container {
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-	}
 }
 
 td {
@@ -789,4 +777,20 @@ button {
 /* Make all cells in the source table appear draggable */
 .table-container table tbody td {
 	cursor: grab;
+}
+
+/* ============================================================================
+   BREAKPOINTS 
+   ============================================================================ */
+@media (max-width: 768px) {
+	th,
+	td {
+		width: 9rem;
+		max-width: 9rem;
+	}
+
+	.table-container {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
 }

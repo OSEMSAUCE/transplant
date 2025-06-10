@@ -192,10 +192,9 @@
 					!column.headerName.toLowerCase().includes('ownership') &&
 					isColumnNormalizedByLand(cropCol.values, column.values)
 				: false;
-			
-			return {isLandCompatible, isCropCompatible}
-	}
 
+		return { isLandCompatible, isCropCompatible };
+	}
 </script>
 
 <table class="data-table" style="table-layout: fixed;">
@@ -210,17 +209,16 @@
 			</th>
 			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-				{@const {isLandCompatible, isCropCompatible} = isCompatible(column)}
-				
+				{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
+
 				<th
+					class:isCropCompatible
+					class:isLandCompatible
 					data-header-name={column.headerName}
 					data-column-index={index}
 					draggable={!column.isMapped}
 					ondragstart={dragstartHandler}
 					ondragend={dragEndHandler}
-					style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} 
-						${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} 
-						${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -264,19 +262,20 @@
 
 				<!-- BODY isCompatible function between CSVTable and dbTable -->
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
-					{@const {isLandCompatible, isCropCompatible} = isCompatible(column)}
+					{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
 					<td
+						class:isCropCompatible
+						class:isLandCompatible
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
-						class:gps-match-orange={column.currentFormat === 'string' &&
+						class:isGpsMatch={column.currentFormat === 'string' &&
 							gpsMatchColumns()?.[column.headerName]}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
 						ondragstart={dragstartHandler}
 						ondragend={dragEndHandler}
-						style={`position: relative; ${isLandCompatible ? 'border: 1px solid #2196f3;' : ''} ${isCropCompatible ? 'border: 1px solid #4caf50;' : ''} ${isLandCompatible && isCropCompatible ? 'border-left: 1px solid #2196f3; border-top: 1px solid #2196f3; border-right: 1px solid #4caf50; border-bottom: 1px solid #4caf50;' : ''}`}
 					>
 						{#if isTransplant && (column.isGreyed[rowIndex] || !column.isToggled)}
 							<!-- Empty cell when greyed in transplant mode -->
@@ -293,8 +292,39 @@
 </table>
 
 <style>
-	.gps-match-orange {
-		border: 2px solid #f38e1b !important;
-		background-color: rgba(243, 142, 27, 0.2) !important;
+	.isLandCompatible {
+		border-top: 1px solid #2196f3;
+		border-bottom: 1px solid #2196f3;
+	}
+	.isCropCompatible {
+		border-top: 1px solid #4caf50;
+		border-bottom: 1px solid #4caf50;
+	}
+
+	.isCropCompatible.isLandCompatible {
+		border-left: 1px solid #2196f3;
+		border-top: 1px solid #2196f3;
+		border-bottom: 1px solid #4caf50;
+		border-right: 1px solid #4caf50;
+	}
+
+	.isLandCompatible.isCropCompatible.isGpsCompatible {
+		border-left: 1px solid #2196f3;
+		border-right: 1px solid #4caf50;
+		border-top: 1px solid #f38e1b;
+		border-bottom: 1px solid #f38e1b;
+	}
+
+	.isLandCompatible.isGpsCompatible {
+		border-top: 1px solid #f38e1b;
+		border-bottom: 1px solid #f38e1b;
+		border-left: 1px solid #2196f3;
+		border-right: 1px solid #2196f3;
+	}
+	.isCropCompatible.isGpsCompatible {
+		border-top: 1px solid #f38e1b;
+		border-bottom: 1px solid #f38e1b;
+		border-left: 1px solid #4caf50;
+		border-right: 1px solid #4caf50;
 	}
 </style>
