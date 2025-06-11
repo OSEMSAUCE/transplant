@@ -546,11 +546,11 @@ model stakeholderTable {
   stakeholderTableId    String                @id(map: "stakeholdertable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organizationId        String                @db.Uuid
   stakeholderTypeId     String                @db.Uuid
-  tableId               String                @db.Uuid
   stakeholderChildId    String                @db.Uuid
+  targetTable           String?
+  targetId              String?               @db.Uuid
   organizationsTable    organizationsTable    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
   stakeholderTypesTable stakeholderTypesTable @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_stakeholdertype")
-  tableTable            tableTable            @relation(fields: [tableId], references: [tableId], onDelete: Cascade, onUpdate: NoAction, map: "fk_table")
 
   @@schema("public")
 }
@@ -570,9 +570,8 @@ model stakeholderTypesTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model tableTable {
-  tableId          String             @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tableName        String             @unique
-  stakeholderTable stakeholderTable[]
+  tableId   String @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tableName String @unique
 
   @@schema("public")
 }
