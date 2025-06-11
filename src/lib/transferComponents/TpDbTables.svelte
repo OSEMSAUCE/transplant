@@ -164,6 +164,7 @@
 
 		// Cleared column and related columns
 	}
+	
 
 	interface TableColumn {
 		name: string;
