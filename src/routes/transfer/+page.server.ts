@@ -43,24 +43,15 @@ const fakeFormats = {
 //   })
 
 export async function load() {
-	// A more direct approach to handle Prisma objects
 	function serializeForSvelteKit<T>(data: T): T {
-		// Use JSON.stringify/parse to convert all objects to plain JavaScript objects
-		// This will handle Decimal objects by calling their toString() method
 		return JSON.parse(JSON.stringify(data, (key, value) => {
-			// Special handling for Decimal objects
-			if (value !== null && 
-				typeof value === 'object' && 
-				typeof value.toNumber === 'function' && 
-				typeof value.toString === 'function') {
-				// This is likely a Decimal object
+			if (value !== null && typeof value === 'object' && typeof value.toNumber === 'function' && typeof value.toString === 'function') {
 				return Number(value.toString());
 			}
 			return value;
 		}));
 	}
 
-	// Define database table formats
 	const landDbFormat = {
 		landId: "string",
 		landName: "string",
@@ -84,7 +75,6 @@ export async function load() {
 		preparationType: "string",
 		plantings: "string",
 	};
-			
 	const cropDbFormat = {
 		cropId: "string",
 		cropName: "string",
@@ -105,11 +95,9 @@ export async function load() {
 		csvobj: "string",
 		plantings: "string",
 	};
-
 	const plantingDbFormat = {
 		landName: "string",
 		cropName: "string",
-		// cropId: "string",
 		planted: "number",
 		plantingDate: "date",
 		createdAt: "date",
@@ -118,26 +106,37 @@ export async function load() {
 		planting_notes: "string",
 	};
 
-	// Fetch data from Prisma
-	const rawLandsDbTable = await prisma.landTable.findMany({ take: 3 });
-	const rawPlantingDbTable = await prisma.plantingTable.findMany({ take: 3 });
-	const rawCropDbTable = await prisma.cropTable.findMany({ take: 3 });
-	
-	// Serialize and filter the data to only include selected attributes
-	const landsDbTable = serializeForSvelteKit(rawLandsDbTable)
-	const plantingDbTable = serializeForSvelteKit(rawPlantingDbTable); 
-	const cropDbTable = serializeForSvelteKit(rawCropDbTable); 
-	
-	console.log('dbFormat', landDbFormat);
+	try {
+		const rawLandsDbTable = await prisma.landTable.findMany({ take: 3 });
+		const rawPlantingDbTable = await prisma.plantingTable.findMany({ take: 3 });
+		const rawCropDbTable = await prisma.cropTable.findMany({ take: 3 });
 
-	return {
-		landsDbTable,
-		plantingDbTable,
-		cropDbTable,
-		landDbFormat,
-		plantingDbFormat,
-		cropDbFormat
-	};
+		const landsDbTable = serializeForSvelteKit(rawLandsDbTable);
+		const plantingDbTable = serializeForSvelteKit(rawPlantingDbTable);
+		const cropDbTable = serializeForSvelteKit(rawCropDbTable);
+
+		console.log('dbFormat', landDbFormat);
+
+		return {
+			landsDbTable,
+			plantingDbTable,
+			cropDbTable,
+			landDbFormat,
+			plantingDbFormat,
+			cropDbFormat
+		};
+	} catch (error) {
+		console.error('Error in /transfer load():', error);
+		return {
+			landsDbTable: [],
+			plantingDbTable: [],
+			cropDbTable: [],
+			landDbFormat,
+			plantingDbFormat,
+			cropDbFormat,
+			error: 'Failed to load data from server. Check server logs for details.'
+		};
+	}
 }
 
 // Example: src/lib/db/columnFormats.ts
