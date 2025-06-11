@@ -1,8 +1,8 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
-  moduleFormat    = "esm"
   binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+  moduleFormat    = "esm"
 }
 
 datasource db {
@@ -454,19 +454,19 @@ model organizationsTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model plantingTable {
-  plantingId    String        @id(map: "Planting_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  landId        String?       @db.Uuid
+  plantingId    String         @id(map: "Planting_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landId        String?        @db.Uuid
   planted       Int?
-  plantingDate  DateTime?     @db.Date
-  createdAt     DateTime?     @default(now()) @db.Timestamptz(6)
-  lastEditedAt  DateTime?     @default(now()) @db.Timestamptz(6)
-  deleted       Boolean?      @default(false)
-  cropId        String?       @db.Uuid
+  plantingDate  DateTime?      @db.Date
+  createdAt     DateTime?      @default(now()) @db.Timestamptz(6)
+  lastEditedAt  DateTime?      @default(now()) @db.Timestamptz(6)
+  deleted       Boolean?       @default(false)
+  cropId        String?        @db.Uuid
   plantingNotes String?
-  projectId     String        @db.Uuid
-  cropTable     cropTable?    @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_cropId_fkey")
-  landTable     landTable?    @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_landId_fkey")
-  projectsTable projectsTable @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
+  projectId     String?        @db.Uuid
+  cropTable     cropTable?     @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_cropId_fkey")
+  landTable     landTable?     @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_landId_fkey")
+  projectsTable projectsTable? @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
 
   @@unique([landId, cropId], map: "unique_land_crop")
   @@index([cropId], map: "idx_planting_crop_id")

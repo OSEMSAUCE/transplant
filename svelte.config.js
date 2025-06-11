@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-vercel';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 const dev = process.env.NODE_ENV === 'development';
@@ -10,16 +10,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// Use static adapter for GitHub Pages
-		adapter: adapter({
-			// default options are fine
-			fallback: 'index.html' // SPA fallback
-		}),
-
-		// Base path for custom domain
-		paths: {
-			base: ''
-		}
+		adapter: adapter(),
 	},
 
 	// Suppress specific warnings while keeping important ones
