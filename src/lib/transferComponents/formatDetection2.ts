@@ -223,8 +223,7 @@ export function detectFormat(
 	// 1. Check for polygon data patterns - arrays of coordinate pairs or GeoJSON-like structures
 	// 2. Header detection - Check if header contains 'polygon' keyword
 	// 3. Requires at least 4 coordinate pairs to be considered a polygon
-	if (lowerHeader.includes('polygon') || 
-		isColumnOfType(columnData, (val) => isPolygon(val))) {
+	if (lowerHeader.includes('polygon') || isColumnOfType(columnData, (val) => isPolygon(val))) {
 		return 'polygon';
 	}
 
@@ -373,43 +372,45 @@ function numbersInStringFinder(str: string): string[] {
 export function isPolygon(val: string | number | null): boolean {
 	if (typeof val !== 'string') return false;
 
-	if ((val.match(/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,}))/g) || []).length >= 4) {
+	if (
+		(val.match(/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,}))/g) || [])
+			.length >= 4
+	) {
 		return true;
 	}
 
 	// if  (/180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,})/g.test(val))
 	// 	return true;
 
-
 	// // Check for GeoJSON-style nested coordinate arrays
 	// // Matches: "coordinates": [ [ [number, number], ... ] ]
 	// if (/"coordinates"\s*:\s*\[\s*(\[\s*){2,}\[[-+]?\d+(\.\d+)?,\s*[-+]?\d+(\.\d+)?\]/.test(val)) {
 	// 	return true;
 	// }
-	
+
 	// // Check for WKT (Well-Known Text) polygon format
 	// // Matches: POLYGON((x1 y1, x2 y2, ...)) or MULTIPOLYGON(((x1 y1, x2 y2, ...)))
 	// if (/^\s*(MULTI)?POLYGON\s*\(\(+[\d\s\.\-\,]+\)+\)\s*$/.test(val)) {
 	// 	return true;
 	// }
-	
+
 	// // Check for SVG/XML polygon tags
 	// // Matches: <Polygon...>...</Polygon>
 	// if (/<Polygon[^>]*>[\s\S]*?<\/Polygon>/.test(val)) {
 	// 	return true;
 	// }
-	
+
 	// // Check for KMZ files
 	// if (val.endsWith('.kmz') || /application\/vnd\.google-earth\.kmz/.test(val)) {
 	// 	return true;
 	// }
-	
+
 	// Original check for coordinate pairs [number, number]
 	const regex = /\[\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\]/g;
-	
+
 	// Find all matches
 	const matches = val.match(regex);
-	
+
 	// Return true if we have at least 4 coordinate pairs (minimum for a polygon)
 	return Boolean(matches && matches.length >= 4);
 }
@@ -932,58 +933,68 @@ export function formatValue(
 			return formatAllGpsTypes(value, format);
 		}
 		//  POLYGON FORMATTING =========
-		// Reuse the lat and lon formatting
-		// add begining and end to polygon Type, coordinates - make proper geojson
-		// use formatAllGpsTypes from case gps lat lon etc.
-		// SO - after return
 
-		//  AI version of plant for POLYGON FORMATTING =========
-		// To support polygon data (e.g., GeoJSON polygons or WKT), implement the following:
-		// 1. Accept a string or array representing polygon coordinates. The input should be a string of comma-separated lat/lon pairs (e.g., "lat1,lon1;lat2,lon2;...") or a GeoJSON-style array.
-		// 2. Parse and validate each coordinate pair, ensuring valid lat/lon values (with at least 5 decimal places for precision).
-		// 3. Optionally, auto-close the polygon by repeating the first point at the end if not already closed.
-		// 4. Output should be a valid GeoJSON Polygon string or a standardized string format suitable for your backend.
-		// 5. Use the formatAllGpsTypes utility to format each lat/lon pair to the required precision.
-		// 6. Add type guards and error handling for malformed input (e.g., missing pairs, invalid numbers).
-		// 7. Integrate this logic into the FormatSelectorComponent by adding 'polygon' to the formats array and updating the rendering logic to allow polygon-specific UI (e.g., textarea for multi-line input, preview of parsed polygon).
-		// 8. Ensure the matchesFormat function properly validates polygon strings (e.g., checks for at least 4 coordinate pairs, correct delimiters, valid numbers).
-		// 9. Document the expected input format for users in the UI (tooltip or help text).
 		case 'polygon': {
-			if (typeof value !== 'string') return null;
-			
-			// Regex to match coordinate pairs [number, number]
-			const regex = /\[\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*\]/g;
+			console.log('POLYGON FORMATTING - Input value:', value);
+			if (typeof value !== 'string') {
+				console.log('POLYGON FORMATTING - Not a string, returning null');
+				return null;
+			}
 
-			const matches = [];
-			let match;
-			
-			// Extract all coordinate pairs
-			while ((match = regex.exec(value)) !== null) {
-				if (match[1] && match[3]) {
-					const lat = Number(match[1]);
-					const lon = Number(match[3]);
-					
-					// Validate lat/lon ranges
-					if (!isNaN(lat) && !isNaN(lon) && 
-						lat >= -90 && lat <= 90 && 
-						lon >= -180 && lon <= 180) {
-						matches.push([lat, lon]);
-					}
+			// First try to parse as GeoJSON
+			try {
+				const parsed = JSON.parse(value);
+				if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
+					console.log('POLYGON FORMATTING - Successfully parsed as GeoJSON');
+					return value; // Return the original GeoJSON string
+				}
+			} catch (e) {
+				console.log('POLYGON FORMATTING - Not valid GeoJSON, trying coordinate parsing');
+			}
+
+			// Check if it's WKT format
+			const isWKT = value.toUpperCase().startsWith('POLYGON');
+			console.log('POLYGON FORMATTING - Is WKT format:', isWKT);
+
+			const geoNumberRegex =
+				/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]?\d|[1-9]?\d)(?:\.\d{2,}))/g;
+
+			// Find all valid geo numbers
+			const numbers = [...value.matchAll(geoNumberRegex)].map((m) => parseFloat(m[0]));
+			console.log('POLYGON FORMATTING - Found numbers:', numbers);
+
+			// Must be even number of values to form pairs, and at least 4 coordinates (8 numbers)
+			if (numbers.length < 8 || numbers.length % 2 !== 0) {
+				console.log('POLYGON FORMATTING - Invalid number of coordinates:', numbers.length);
+				return null;
+			}
+
+			// Build lon/lat pairs (GeoJSON format)
+			const coords = [];
+			for (let i = 0; i < numbers.length; i += 2) {
+				const lon = numbers[i];
+				const lat = numbers[i + 1];
+				if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
+					coords.push([lon, lat]);
 				}
 			}
-			console.log(matches)
-			// If we have at least 4 valid coordinates, format as GeoJSON
-			if (matches.length >= 4) {
-				// Format each coordinate pair with 7 decimal places
-				const formattedCoords = matches.map(([lat, lon]) => 
-					`[${Number(lat.toFixed(7))}, ${Number(lon.toFixed(7))}]`
-				).join(', ');
-				
-				// Return as a simple polygon array
-				return `[${formattedCoords}]`;
+			console.log('POLYGON FORMATTING - Built coordinates:', coords);
+
+			// Require at least 4 coordinate pairs
+			if (coords.length < 4) {
+				console.log('POLYGON FORMATTING - Not enough valid coordinate pairs:', coords.length);
+				return null;
 			}
-			
-			return null;
+
+			// Create GeoJSON structure
+			const geoJson = {
+				type: 'Polygon',
+				coordinates: [coords]
+			};
+
+			const result = JSON.stringify(geoJson);
+			console.log('POLYGON FORMATTING - Final formatted result:', result);
+			return result;
 		}
 
 		case 'string':
@@ -993,48 +1004,54 @@ export function formatValue(
 }
 
 export function formatAllGpsTypes(
-  value: string | number | null,
-  format: ColumnFormat
+	value: string | number | null,
+	format: ColumnFormat
 ): string | number | null {
-  const originalValue = value;
-  
-  // Handle null values
-  if (value === null) {
-    console.log('formatAllGpsTypes input:', originalValue, 'output: null');
-    return null;
-  }
-  
-  // Only process GPS formatting if the format is GPS
-  if (format === 'gps') {
-    // For string values that might contain GPS coordinates
-    if (typeof value === 'string') {
-      // Extract all numbers from the string (including negative numbers and decimals)
-      const numberMatches = value.match(/-?\d+\.?\d*/g);
-      
-      if (numberMatches && numberMatches.length >= 2) {
-        // Get the first two numbers as lat and lon
-        const lat = parseFloat(numberMatches[0]);
-        const lon = parseFloat(numberMatches[1]);
-        
-        if (!isNaN(lat) && !isNaN(lon)) {
-          // Always print as "<lat>, <lon>" with exactly one comma and one space
-          const result = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
-          console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
-          return result;
-        }
-      }
-    }
-    // For numeric values (unlikely for GPS but handle anyway)
-    else if (typeof value === 'number') {
-      const result = value.toFixed(7);
-      console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
-      return result;
-    }
-  }
-  
-  // If we couldn't format it as GPS or it's not a GPS format, return the original value
-  console.log('formatAllGpsTypes input:', originalValue, 'output:', value, '(no formatting applied)');
-  return value;
+	const originalValue = value;
+
+	// Handle null values
+	if (value === null) {
+		console.log('formatAllGpsTypes input:', originalValue, 'output: null');
+		return null;
+	}
+
+	// Only process GPS formatting if the format is GPS
+	if (format === 'gps') {
+		// For string values that might contain GPS coordinates
+		if (typeof value === 'string') {
+			// Extract all numbers from the string (including negative numbers and decimals)
+			const numberMatches = value.match(/-?\d+\.?\d*/g);
+
+			if (numberMatches && numberMatches.length >= 2) {
+				// Get the first two numbers as lat and lon
+				const lat = parseFloat(numberMatches[0]);
+				const lon = parseFloat(numberMatches[1]);
+
+				if (!isNaN(lat) && !isNaN(lon)) {
+					// Always print as "<lat>, <lon>" with exactly one comma and one space
+					const result = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
+					console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
+					return result;
+				}
+			}
+		}
+		// For numeric values (unlikely for GPS but handle anyway)
+		else if (typeof value === 'number') {
+			const result = value.toFixed(7);
+			console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
+			return result;
+		}
+	}
+
+	// If we couldn't format it as GPS or it's not a GPS format, return the original value
+	console.log(
+		'formatAllGpsTypes input:',
+		originalValue,
+		'output:',
+		value,
+		'(no formatting applied)'
+	);
+	return value;
 }
 
 export function matchesFormat(value: string | number | null, format: ColumnFormat): boolean {
