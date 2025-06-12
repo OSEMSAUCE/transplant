@@ -29,7 +29,15 @@ export interface ColumnDef {
 	};
 }
 
-export type ColumnFormat = 'string' | 'number' | 'date' | 'gps' | 'latitude' | 'longitude' | 'polygon';
+export type ColumnFormat =
+	| 'string'
+	| 'number'
+	| 'date'
+	| 'gps'
+	| 'latitude'
+	| 'longitude'
+	| 'polygon'
+	| 'kml';
 export interface ColumnRep extends ColumnDef {
 	/** The column name/header from the imported data */
 	headerName: string;

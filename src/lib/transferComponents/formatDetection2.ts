@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import type { ColumnFormat } from '../types/columnModel';
+import type { ColumnFormat } from '$lib/types/columnModel';
 // ============================================
 // COLUMN TYPE DETECTION RULES
 // ============================================
@@ -17,9 +17,6 @@ import type { ColumnFormat } from '../types/columnModel';
 //    - If not, move to next type in priority order
 //    - If no types match → Default to String
 // ============================================
-
-// Type definitions
-// export type ColumnFormat = 'gps' | 'latitude' | 'longitude' | 'date' | 'number' | 'string' | 'polygon';
 
 // ============================================
 // DETECTION CONFIGURATION
@@ -86,154 +83,42 @@ export function detectFormat(
 	columnData: Array<string | number | null>,
 	currentColumnHeader: string
 ): ColumnFormat {
-	// Run through each silo in order of specificity
-	// Each silo is a self-contained detection unit
-
-	// =============================================
-	// SILO 1: GPS COORDINATES (MOST SPECIFIC)
-	// =============================================
-	// RULES:
-	// 1. STRICT PATTERN MATCHING ONLY - Use exact regex patterns for validation
-	// 2. NO HEADER DETECTION - GPS detection is based ONLY on value patterns
-	// 3. HIGH PRECISION REQUIRED - Latitude/longitude must have min 3+ decimal places
-	// 4. FORMAT: "Lat, Long" - Must be comma-separated coordinate pair
-	if (
-		isColumnOfType(columnData, (val) => {
-			if (val === null || val === '') return false;
-			if (typeof val === 'string' && val.includes(',')) {
-				const [lat, lon] = val.split(',').map((coord) => coord.trim());
-				return isLatitude(lat) && isLongitude(lon);
-			}
-			return false;
-		})
-	) {
-		return 'gps';
+	// Check for KML format first
+	if (isKml(columnData[0])) {
+		return 'kml';
 	}
 
-	// =============================================
-	// SILO 2: LATITUDE
-	// =============================================
-	// RULES:
-	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lat'
-	// 2. STRICT VALIDATION - Values must be in range -90 to 90
-	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
-	const lowerHeader = currentColumnHeader.toLowerCase().trim(); // Define here for header checks
-	// Check header for latitude patterns
-	if (lowerHeader.includes('lat')) {
-		// For columns with 'lat' in header, prioritize latitude detection
-		// Check actual values directly but with more relaxed validation
-		let validCount = 0;
-		let totalCount = 0;
-
-		for (const val of columnData) {
-			if (val === null || val === '') continue;
-			totalCount++;
-
-			// Simple validation for latitude: number in range -90 to 90
-			if (typeof val === 'number') {
-				if (val >= -90 && val <= 90) validCount++;
-			} else if (typeof val === 'string') {
-				const num = Number(val);
-				if (!isNaN(num) && num >= -90 && num <= 90) validCount++;
-			}
-
-			// Only check a few samples for performance
-			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
-		}
-
-		// If enough valid latitude values, return lat format
-		if (totalCount > 0 && validCount / totalCount >= 0.6) {
-			return 'latitude';
-		}
-	}
-
-	// =============================================
-	// SILO 3: LONGITUDE
-	// =============================================
-	// RULES:
-	// 1. HEADER TEXT DETECTION IS USED - Only check patterns if header includes 'lon' or 'lon'
-	// 2. STRICT VALIDATION - Values must be in range -180 to 180
-	// 3. HIGH PRECISION REQUIRED - Must have min 3+ decimal places for numeric values
-	if (lowerHeader.includes('lon')) {
-		// For columns with 'lon' in header, prioritize longitude detection
-		// Check actual values directly but with more relaxed validation
-		let validCount = 0;
-		let totalCount = 0;
-
-		for (const val of columnData) {
-			if (val === null || val === '') continue;
-			totalCount++;
-
-			// Simple validation for longitude: number in range -180 to 180
-			if (typeof val === 'number') {
-				if (val >= -180 && val <= 180) validCount++;
-			} else if (typeof val === 'string') {
-				const num = Number(val);
-				if (!isNaN(num) && num >= -180 && num <= 180) validCount++;
-			}
-
-			// Only check a few samples for performance
-			if (totalCount >= VALIDATION_CONFIG.SAMPLE_SIZE) break;
-		}
-
-		// If enough valid longitude values, return lon format
-		if (totalCount > 0 && validCount / totalCount >= 0.6) {
-			return 'longitude';
-		}
-	}
-
-	// =============================================
-	// SILO 4: DATE
-	// =============================================
-	// RULES:
-	// 1. NO HEADER DETECTION - Date detection is based ONLY on value patterns
-	// 2. STRICT VALIDATION - Only accept standard date formats like YYYY-MM-DD etc etc
-	// 3. CHECK COMMON FORMATS - see this list in isDate function
-	if (isColumnOfType(columnData, (val) => isDate(val))) {
-		return 'date';
-	}
-
-	// =============================================
-	// SILO 5: NUMBER
-	// =============================================
-	// RULES:
-	// 1. NO HEADER DETECTION - Number detection is based ONLY on value patterns
-	// 2. ALLOWS NUMERIC FORMATS - Integers, decimals, scientific notation
-	// 3. HANDLES THOUSANDS SEPARATORS - Commas in numbers are properly handled
-	if (
-		isColumnOfType(columnData, (val) => {
-			if (typeof val === 'number') return true;
-			if (typeof val === 'string') {
-				// Handle numbers with commas as thousand separators
-				const cleanVal = val.replace(/,/g, '').trim();
-				if (cleanVal === '') return false;
-				const num = Number(cleanVal);
-				return !isNaN(num);
-			}
-			return false;
-		})
-	) {
-		return 'number';
-	}
-
-	// =============================================
-	// SILO 6: POLYGON
-	// =============================================
-	// RULES:
-	// 1. Check for polygon data patterns - arrays of coordinate pairs or GeoJSON-like structures
-	// 2. Header detection - Check if header contains 'polygon' keyword
-	// 3. Requires at least 4 coordinate pairs to be considered a polygon
-	if (lowerHeader.includes('polygon') || isColumnOfType(columnData, (val) => isPolygon(val))) {
+	// Check for polygon format
+	if (isPolygon(columnData[0])) {
 		return 'polygon';
 	}
 
-	// =============================================
-	// SILO 7: STRING (DEFAULT FALLBACK)
-	// =============================================
-	// RULES:
-	// 1. DEFAULT FALLBACK - Any values that don't match other patterns default to string
-	// 2. NO HEADER DETECTION - We do not use headers to identify strings (except where noted at top)
-	// 3. ALL VALUES ACCEPTED - Strings can be any non-null value (most permissive type)
+	// Check for GPS format
+	if (isGps(columnData[0])) {
+		return 'gps';
+	}
+
+	// Check for latitude format
+	if (isLatitude(columnData[0])) {
+		return 'latitude';
+	}
+
+	// Check for longitude format
+	if (isLongitude(columnData[0])) {
+		return 'longitude';
+	}
+
+	// Check for date format
+	if (isDate(columnData[0])) {
+		return 'date';
+	}
+
+	// Check for number format
+	if (isNumber(columnData[0])) {
+		return 'number';
+	}
+
+	// Default to string format
 	return 'string';
 }
 
@@ -371,39 +256,47 @@ function numbersInStringFinder(str: string): string[] {
 
 export function isPolygon(val: string | number | null): boolean {
 	if (typeof val !== 'string') return false;
+	if (val.trim() === '') return false;
 
+	// First try to parse as GeoJSON
+	try {
+		const parsed = JSON.parse(val);
+		if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
+			return true; // Return the original GeoJSON string
+		}
+	} catch (e) {
+		// Not GeoJSON, continue to other formats
+	}
+
+	// Check if it's WKT format
+	if (val.toUpperCase().startsWith('POLYGON')) {
+		// Remove any trailing quotes or other characters
+		const cleanValue = val.replace(/['"]+$/, '');
+		const geoNumberRegex = /-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]?\d|[1-9]?\d)(?:\.\d{2,}))/g;
+		const numbers = [...cleanValue.matchAll(geoNumberRegex)].map((m) => parseFloat(m[0]));
+		if (numbers.length >= 8 && numbers.length % 2 === 0) {
+			const coords = [];
+			for (let i = 0; i < numbers.length; i += 2) {
+				const lon = numbers[i];
+				const lat = numbers[i + 1];
+				if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
+					coords.push([lon, lat]);
+				}
+			}
+			if (coords.length >= 4) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Original polygon detection logic
 	if (
 		(val.match(/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,}))/g) || [])
 			.length >= 4
 	) {
 		return true;
 	}
-
-	// if  (/180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,})/g.test(val))
-	// 	return true;
-
-	// // Check for GeoJSON-style nested coordinate arrays
-	// // Matches: "coordinates": [ [ [number, number], ... ] ]
-	// if (/"coordinates"\s*:\s*\[\s*(\[\s*){2,}\[[-+]?\d+(\.\d+)?,\s*[-+]?\d+(\.\d+)?\]/.test(val)) {
-	// 	return true;
-	// }
-
-	// // Check for WKT (Well-Known Text) polygon format
-	// // Matches: POLYGON((x1 y1, x2 y2, ...)) or MULTIPOLYGON(((x1 y1, x2 y2, ...)))
-	// if (/^\s*(MULTI)?POLYGON\s*\(\(+[\d\s\.\-\,]+\)+\)\s*$/.test(val)) {
-	// 	return true;
-	// }
-
-	// // Check for SVG/XML polygon tags
-	// // Matches: <Polygon...>...</Polygon>
-	// if (/<Polygon[^>]*>[\s\S]*?<\/Polygon>/.test(val)) {
-	// 	return true;
-	// }
-
-	// // Check for KMZ files
-	// if (val.endsWith('.kmz') || /application\/vnd\.google-earth\.kmz/.test(val)) {
-	// 	return true;
-	// }
 
 	// Original check for coordinate pairs [number, number]
 	const regex = /\[\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\]/g;
@@ -935,9 +828,12 @@ export function formatValue(
 		//  POLYGON FORMATTING =========
 
 		case 'polygon': {
-			console.log('POLYGON FORMATTING - Input value:', value);
 			if (typeof value !== 'string') {
-				console.log('POLYGON FORMATTING - Not a string, returning null');
+				console.log('WKT: Not a string value:', value);
+				return null;
+			}
+			if (value.trim() === '') {
+				console.log('WKT: Empty string value');
 				return null;
 			}
 
@@ -945,56 +841,132 @@ export function formatValue(
 			try {
 				const parsed = JSON.parse(value);
 				if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
-					console.log('POLYGON FORMATTING - Successfully parsed as GeoJSON');
+					console.log('WKT: Valid GeoJSON found');
 					return value; // Return the original GeoJSON string
 				}
 			} catch (e) {
-				console.log('POLYGON FORMATTING - Not valid GeoJSON, trying coordinate parsing');
+				console.log('WKT: Not GeoJSON, trying WKT format');
 			}
 
-			// Check if it's WKT format
-			const isWKT = value.toUpperCase().startsWith('POLYGON');
-			console.log('POLYGON FORMATTING - Is WKT format:', isWKT);
+			// Clean the value - remove any trailing quotes and trim
+			const cleanValue = value.replace(/['"]+$/, '').trim();
+			console.log('WKT: Cleaned value:', cleanValue);
 
-			const geoNumberRegex =
-				/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]?\d|[1-9]?\d)(?:\.\d{2,}))/g;
+			// Check if it's WKT format (with or without POLYGON prefix)
+			const isWktFormat =
+				cleanValue.toUpperCase().startsWith('POLYGON') ||
+				(cleanValue.startsWith('((') && cleanValue.endsWith('))'));
 
-			// Find all valid geo numbers
-			const numbers = [...value.matchAll(geoNumberRegex)].map((m) => parseFloat(m[0]));
-			console.log('POLYGON FORMATTING - Found numbers:', numbers);
+			if (isWktFormat) {
+				console.log('WKT: Found WKT format');
+				// Extract the coordinates part
+				const coordMatch = cleanValue.match(/\(\((.*)\)\)/);
+				if (coordMatch) {
+					const coordString = coordMatch[1];
+					console.log('WKT: Extracted coordinates:', coordString.substring(0, 100) + '...');
 
-			// Must be even number of values to form pairs, and at least 4 coordinates (8 numbers)
-			if (numbers.length < 8 || numbers.length % 2 !== 0) {
-				console.log('POLYGON FORMATTING - Invalid number of coordinates:', numbers.length);
-				return null;
-			}
+					// Split by commas and spaces
+					const coordPairs = coordString.split(/[,\s]+/).filter((pair) => pair.trim());
+					console.log('WKT: Number of coordinate pairs:', coordPairs.length);
 
-			// Build lon/lat pairs (GeoJSON format)
-			const coords = [];
-			for (let i = 0; i < numbers.length; i += 2) {
-				const lon = numbers[i];
-				const lat = numbers[i + 1];
-				if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
-					coords.push([lon, lat]);
+					const coords = [];
+					for (let i = 0; i < coordPairs.length; i += 2) {
+						if (i + 1 < coordPairs.length) {
+							const lon = parseFloat(coordPairs[i]);
+							const lat = parseFloat(coordPairs[i + 1]);
+							if (
+								!isNaN(lon) &&
+								!isNaN(lat) &&
+								lon >= -180 &&
+								lon <= 180 &&
+								lat >= -90 &&
+								lat <= 90
+							) {
+								coords.push([lon, lat]);
+							}
+						}
+					}
+
+					console.log('WKT: Valid coordinate pairs:', coords.length);
+					if (coords.length >= 4) {
+						const result = JSON.stringify({
+							type: 'Polygon',
+							coordinates: [coords]
+						});
+						console.log('WKT: Generated GeoJSON:', result.substring(0, 100) + '...');
+						return result;
+					} else {
+						console.log('WKT: Not enough valid coordinates (need at least 4)');
+					}
+				} else {
+					console.log('WKT: Could not extract coordinates from WKT format');
 				}
+			} else {
+				console.log('WKT: Not a WKT format');
 			}
-			console.log('POLYGON FORMATTING - Built coordinates:', coords);
+			return null;
+		}
 
-			// Require at least 4 coordinate pairs
-			if (coords.length < 4) {
-				console.log('POLYGON FORMATTING - Not enough valid coordinate pairs:', coords.length);
+		case 'kml': {
+			if (typeof value !== 'string') {
+				console.log('KML: Not a string value:', value);
+				return null;
+			}
+			if (value.trim() === '') {
+				console.log('KML: Empty string value');
 				return null;
 			}
 
-			// Create GeoJSON structure
-			const geoJson = {
-				type: 'Polygon',
-				coordinates: [coords]
-			};
+			// Check for KML format with coordinates tag
+			if (value.includes('<coordinates>')) {
+				console.log('KML: Found coordinates tag');
+				const coordMatch = value.match(/<coordinates>([\s\S]*?)<\/coordinates>/);
+				if (coordMatch) {
+					const coordContent = coordMatch[1];
+					console.log(
+						'KML: Extracted coordinates content:',
+						coordContent.substring(0, 100) + '...'
+					);
+					const lines = coordContent.trim().split('\n');
+					console.log('KML: Number of coordinate lines:', lines.length);
 
-			const result = JSON.stringify(geoJson);
-			console.log('POLYGON FORMATTING - Final formatted result:', result);
-			return result;
+					const coords = [];
+					for (const line of lines) {
+						const parts = line.trim().split(',');
+						if (parts.length >= 2) {
+							const lon = parseFloat(parts[0]);
+							const lat = parseFloat(parts[1]);
+							if (
+								!isNaN(lon) &&
+								!isNaN(lat) &&
+								lon >= -180 &&
+								lon <= 180 &&
+								lat >= -90 &&
+								lat <= 90
+							) {
+								coords.push([lon, lat]);
+							}
+						}
+					}
+
+					console.log('KML: Number of valid coordinates:', coords.length);
+					if (coords.length >= 4) {
+						const result = JSON.stringify({
+							type: 'Polygon',
+							coordinates: [coords]
+						});
+						console.log('KML: Generated GeoJSON:', result.substring(0, 100) + '...');
+						return result;
+					} else {
+						console.log('KML: Not enough valid coordinates (need at least 4)');
+					}
+				} else {
+					console.log('KML: No coordinates content found');
+				}
+			} else {
+				console.log('KML: No coordinates tag found');
+			}
+			return null;
 		}
 
 		case 'string':
@@ -1072,7 +1044,34 @@ export function matchesFormat(value: string | number | null, format: ColumnForma
 			return isLongitude(value);
 		case 'polygon':
 			return isPolygon(value);
+		case 'kml':
+			return isKml(value);
 		default:
 			return false;
 	}
+}
+
+export function isKml(value: any): boolean {
+	if (typeof value !== 'string') return false;
+	if (value.trim() === '') return false; // Don't consider empty strings as KML
+
+	// Check for KML format with coordinates tag
+	if (value.includes('<coordinates>')) {
+		const coordMatch = value.match(/<coordinates>([\s\S]*?)<\/coordinates>/);
+		if (coordMatch) {
+			const coordContent = coordMatch[1];
+			const lines = coordContent.trim().split('\n');
+			const validCoords = lines.filter((line) => {
+				const parts = line.trim().split(',');
+				if (parts.length >= 2) {
+					const lon = parseFloat(parts[0]);
+					const lat = parseFloat(parts[1]);
+					return !isNaN(lon) && !isNaN(lat) && lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90;
+				}
+				return false;
+			});
+			return validCoords.length >= 4;
+		}
+	}
+	return false;
 }
