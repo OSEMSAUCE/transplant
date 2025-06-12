@@ -707,10 +707,6 @@ export function formatValue(
 						value.match(/^\s*([A-Za-z]{3,})\s*[,\.]?\s*(\d{4})\s*$/i) ||
 						value.match(/^\s*(\d{4})\s*[,\.]?\s*([A-Za-z]{3,})\s*$/i);
 
-					console.log(
-						`DEBUG DATE PARSING [FLEX_MATCH] for '${value}': ${flex ? 'matched' : 'no match'}`
-					);
-
 					if (flex) {
 						let monthStr, year;
 						if (isNaN(Number(flex[1]))) {
@@ -720,10 +716,6 @@ export function formatValue(
 							year = parseInt(flex[1]);
 							monthStr = flex[2].toLowerCase();
 						}
-
-						console.log(
-							`DEBUG DATE PARSING [EXTRACTED] for '${value}': month='${monthStr}', year=${year}`
-						);
 
 						// More robust month matching
 						let monthNum = -1;
@@ -749,13 +741,8 @@ export function formatValue(
 							}
 						}
 
-						console.log(`DEBUG DATE PARSING [MONTH_NUM] for '${value}': ${monthNum}`);
-
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
-							console.log(
-								`DEBUG DATE PARSING [CREATED_DATE] for '${value}': ${dateObj.toISOString()}`
-							);
 						}
 					}
 				}
@@ -763,10 +750,6 @@ export function formatValue(
 				// Standalone month ("August", "Aug")
 				if (!dateObj) {
 					const m = value.match(/^\s*([A-Za-z]{3,})\s*$/i);
-
-					console.log(
-						`DEBUG DATE PARSING [STANDALONE_MATCH] for '${value}': ${m ? 'matched' : 'no match'}`
-					);
 
 					if (m) {
 						const monthStr = m[1].toLowerCase();
@@ -797,13 +780,8 @@ export function formatValue(
 							}
 						}
 
-						console.log(`DEBUG DATE PARSING [STANDALONE_MONTH_NUM] for '${value}': ${monthNum}`);
-
 						if (monthNum !== -1) {
 							dateObj = new Date(year, monthNum, 1, 0, 0, 0);
-							console.log(
-								`DEBUG DATE PARSING [STANDALONE_DATE] for '${value}': ${dateObj.toISOString()}`
-							);
 						}
 					}
 				}
@@ -815,7 +793,6 @@ export function formatValue(
 				}
 
 				// If we couldn't parse it into a standardized format, return as-is
-				console.log(`Date format not standardized: ${value}`);
 				return value;
 			}
 			return value;
@@ -828,29 +805,21 @@ export function formatValue(
 		//  POLYGON FORMATTING =========
 
 		case 'polygon': {
-			if (typeof value !== 'string') {
-				console.log('WKT: Not a string value:', value);
-				return null;
-			}
-			if (value.trim() === '') {
-				console.log('WKT: Empty string value');
-				return null;
-			}
+			if (typeof value !== 'string') return null;
+			if (value.trim() === '') return null;
 
 			// First try to parse as GeoJSON
 			try {
 				const parsed = JSON.parse(value);
 				if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
-					console.log('WKT: Valid GeoJSON found');
 					return value; // Return the original GeoJSON string
 				}
 			} catch (e) {
-				console.log('WKT: Not GeoJSON, trying WKT format');
+				// Not GeoJSON, continue to other formats
 			}
 
 			// Clean the value - remove any trailing quotes and trim
 			const cleanValue = value.replace(/['"]+$/, '').trim();
-			console.log('WKT: Cleaned value:', cleanValue);
 
 			// Check if it's WKT format (with or without POLYGON prefix)
 			const isWktFormat =
@@ -858,16 +827,13 @@ export function formatValue(
 				(cleanValue.startsWith('((') && cleanValue.endsWith('))'));
 
 			if (isWktFormat) {
-				console.log('WKT: Found WKT format');
 				// Extract the coordinates part
 				const coordMatch = cleanValue.match(/\(\((.*)\)\)/);
 				if (coordMatch) {
 					const coordString = coordMatch[1];
-					console.log('WKT: Extracted coordinates:', coordString.substring(0, 100) + '...');
 
 					// Split by commas and spaces
 					const coordPairs = coordString.split(/[,\s]+/).filter((pair) => pair.trim());
-					console.log('WKT: Number of coordinate pairs:', coordPairs.length);
 
 					const coords = [];
 					for (let i = 0; i < coordPairs.length; i += 2) {
@@ -887,48 +853,27 @@ export function formatValue(
 						}
 					}
 
-					console.log('WKT: Valid coordinate pairs:', coords.length);
 					if (coords.length >= 4) {
-						const result = JSON.stringify({
+						return JSON.stringify({
 							type: 'Polygon',
 							coordinates: [coords]
 						});
-						console.log('WKT: Generated GeoJSON:', result.substring(0, 100) + '...');
-						return result;
-					} else {
-						console.log('WKT: Not enough valid coordinates (need at least 4)');
 					}
-				} else {
-					console.log('WKT: Could not extract coordinates from WKT format');
 				}
-			} else {
-				console.log('WKT: Not a WKT format');
 			}
 			return null;
 		}
 
 		case 'kml': {
-			if (typeof value !== 'string') {
-				console.log('KML: Not a string value:', value);
-				return null;
-			}
-			if (value.trim() === '') {
-				console.log('KML: Empty string value');
-				return null;
-			}
+			if (typeof value !== 'string') return null;
+			if (value.trim() === '') return null;
 
 			// Check for KML format with coordinates tag
 			if (value.includes('<coordinates>')) {
-				console.log('KML: Found coordinates tag');
 				const coordMatch = value.match(/<coordinates>([\s\S]*?)<\/coordinates>/);
 				if (coordMatch) {
 					const coordContent = coordMatch[1];
-					console.log(
-						'KML: Extracted coordinates content:',
-						coordContent.substring(0, 100) + '...'
-					);
 					const lines = coordContent.trim().split('\n');
-					console.log('KML: Number of coordinate lines:', lines.length);
 
 					const coords = [];
 					for (const line of lines) {
@@ -949,22 +894,13 @@ export function formatValue(
 						}
 					}
 
-					console.log('KML: Number of valid coordinates:', coords.length);
 					if (coords.length >= 4) {
-						const result = JSON.stringify({
+						return JSON.stringify({
 							type: 'Polygon',
 							coordinates: [coords]
 						});
-						console.log('KML: Generated GeoJSON:', result.substring(0, 100) + '...');
-						return result;
-					} else {
-						console.log('KML: Not enough valid coordinates (need at least 4)');
 					}
-				} else {
-					console.log('KML: No coordinates content found');
 				}
-			} else {
-				console.log('KML: No coordinates tag found');
 			}
 			return null;
 		}
@@ -983,7 +919,6 @@ export function formatAllGpsTypes(
 
 	// Handle null values
 	if (value === null) {
-		console.log('formatAllGpsTypes input:', originalValue, 'output: null');
 		return null;
 	}
 
@@ -1001,28 +936,18 @@ export function formatAllGpsTypes(
 
 				if (!isNaN(lat) && !isNaN(lon)) {
 					// Always print as "<lat>, <lon>" with exactly one comma and one space
-					const result = `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
-					console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
-					return result;
+					return `${lat.toFixed(7)}, ${lon.toFixed(7)}`;
 				}
 			}
 		}
 		// For numeric values (unlikely for GPS but handle anyway)
 		else if (typeof value === 'number') {
 			const result = value.toFixed(7);
-			console.log('formatAllGpsTypes input:', originalValue, 'output:', result);
 			return result;
 		}
 	}
 
 	// If we couldn't format it as GPS or it's not a GPS format, return the original value
-	console.log(
-		'formatAllGpsTypes input:',
-		originalValue,
-		'output:',
-		value,
-		'(no formatting applied)'
-	);
 	return value;
 }
 

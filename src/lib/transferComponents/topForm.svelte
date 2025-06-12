@@ -40,31 +40,7 @@
 	let localProjectNotes = $state(projectNotes || '');
 	let localSource = $state(source || '');
 
-	// Effect to propagate changes back to parent
-	$effect(() => {
-		console.log('Effect running in topForm with values:', {
-			localProjectName,
-			localOrgName,
-			localProjectNotes,
-			localSource
-		});
-		// Use the updateProjectData callback to update the parent component
-		if (updateProjectData) {
-			updateProjectData({
-				projectName: localProjectName,
-				organizationName: localOrgName,
-				projectNotes: localProjectNotes,
-				source: localSource
-			});
-			console.log('Called updateProjectData with:', {
-				localProjectName,
-				localOrgName,
-				localProjectNotes,
-				localSource
-			});
-		}
-	});
-
+	
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
 	let highlightedIndex = $state<number | null>(null);
