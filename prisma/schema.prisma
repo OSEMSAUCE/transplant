@@ -569,14 +569,6 @@ model stakeholderTypesTable {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model tableTable {
-  tableId   String @id(map: "tabletable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tableName String @unique
-
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model polygonTable {
   polygonId    BigInt                 @id @default(autoincrement())
   polygon      Unsupported("polygon")
