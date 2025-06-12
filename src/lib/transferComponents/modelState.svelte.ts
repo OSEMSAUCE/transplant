@@ -37,7 +37,21 @@ export function formatGreyedStatus(
 
 	for (let k = 0; k < columnData[index].values.length; ++k) {
 		columnData[index].formattedValues[k] = formatValue(detectedFormat, columnData[index].values[k]);
-		columnData[index].isGreyed[k] = columnData[index].formattedValues[k] === null;
+		
+		// Special handling for polygons - don't grey them out if they're detected as polygons
+		// even if the formatting failed
+		if (detectedFormat === 'polygon') {
+			// For polygons, we'll use the original value if formatting returned null
+			if (columnData[index].formattedValues[k] === null) {
+				columnData[index].formattedValues[k] = columnData[index].values[k];
+				columnData[index].isGreyed[k] = false; // Never grey out polygons
+			} else {
+				columnData[index].isGreyed[k] = false;
+			}
+		} else {
+			// For non-polygon formats, use the original logic
+			columnData[index].isGreyed[k] = columnData[index].formattedValues[k] === null;
+		}
 	}
 
 	// Log formatting information for debugging
