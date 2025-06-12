@@ -373,7 +373,30 @@ function numbersInStringFinder(str: string): string[] {
 export function isPolygon(val: string | number | null): boolean {
 	if (typeof val !== 'string') return false;
 	
-	// Regex to match coordinate pairs [number, number]
+	// Check for GeoJSON-style nested coordinate arrays
+	// Matches: "coordinates": [ [ [number, number], ... ] ]
+	if (/"coordinates"\s*:\s*\[\s*(\[\s*){2,}\[[-+]?\d+(\.\d+)?,\s*[-+]?\d+(\.\d+)?\]/.test(val)) {
+		return true;
+	}
+	
+	// Check for WKT (Well-Known Text) polygon format
+	// Matches: POLYGON((x1 y1, x2 y2, ...)) or MULTIPOLYGON(((x1 y1, x2 y2, ...)))
+	if (/^\s*(MULTI)?POLYGON\s*\(\(+[\d\s\.\-\,]+\)+\)\s*$/.test(val)) {
+		return true;
+	}
+	
+	// Check for SVG/XML polygon tags
+	// Matches: <Polygon...>...</Polygon>
+	if (/<Polygon[^>]*>[\s\S]*?<\/Polygon>/.test(val)) {
+		return true;
+	}
+	
+	// Check for KMZ files
+	if (val.endsWith('.kmz') || /application\/vnd\.google-earth\.kmz/.test(val)) {
+		return true;
+	}
+	
+	// Original check for coordinate pairs [number, number]
 	const regex = /\[\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\]/g;
 	
 	// Find all matches
@@ -922,6 +945,7 @@ export function formatValue(
 			
 			// Regex to match coordinate pairs [number, number]
 			const regex = /\[\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*\]/g;
+			
 			const matches = [];
 			let match;
 			
@@ -939,7 +963,7 @@ export function formatValue(
 					}
 				}
 			}
-			
+			console.log(matches)
 			// If we have at least 4 valid coordinates, format as GeoJSON
 			if (matches.length >= 4) {
 				// Format each coordinate pair with 7 decimal places
