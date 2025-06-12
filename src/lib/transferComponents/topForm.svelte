@@ -40,7 +40,6 @@
 	let localProjectNotes = $state(projectNotes || '');
 	let localSource = $state(source || '');
 
-	
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
 	let highlightedIndex = $state<number | null>(null);
@@ -92,19 +91,15 @@
 	}
 
 	function selectProjectSuggestion(name: string) {
-		console.log('selectProjectSuggestion called with:', name);
 		localProjectName = name;
 		filteredProjects = [];
 		inputFocused = false;
-		console.log('localProjectName set to:', localProjectName);
 	}
 
 	function selectOrganizationSuggestion(name: string) {
-		console.log('selectOrganizationSuggestion called with:', name);
 		localOrgName = name;
 		filteredOrganizations = [];
 		inputFocused = false;
-		console.log('localOrgName set to:', localOrgName);
 	}
 
 	function handleProjectFocus() {
@@ -275,8 +270,8 @@
 		<div class="input-block">
 			<input type="url" bind:value={localSource} placeholder="Source (URL)" autocomplete="off" />
 			{#if sourceError}
-			<div class="error">{sourceError}</div>
-		{/if}
+				<div class="error">{sourceError}</div>
+			{/if}
 		</div>
 	</div>
 </form>
