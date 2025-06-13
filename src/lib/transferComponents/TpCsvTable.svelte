@@ -196,53 +196,53 @@
 		return { isLandCompatible, isCropCompatible };
 	}
 
-// Helper: check if a value is unique and non-null in a column
-function isUniqueNonNull(values: any[], value: any): boolean {
-	if (value === null || value === '') return false;
-	return values.filter(v => v !== null && v !== '' && v === value).length === 1;
-}
+	// Helper: check if a value is unique and non-null in a column
+	function isUniqueNonNull(values: any[], value: any): boolean {
+		if (value === null || value === '') return false;
+		return values.filter((v) => v !== null && v !== '' && v === value).length === 1;
+	}
 
-// Helper: get the GPS column
-function getGpsColumn() {
-	return importedData.columns.find(col => col.currentFormat === 'gps');
-}
+	// Helper: get the GPS column
+	function getGpsColumn() {
+		return importedData.columns.find((col) => col.currentFormat === 'gps');
+	}
 
-// Cell-level GPS match for string columns
-function isCellGpsMatch(rowIndex: number, column: any): boolean {
-	const cellValue = column.values[rowIndex];
-	if (cellValue === null || cellValue === '') return false;
-	const gpsCol = getGpsColumn();
-	if (!gpsCol) return false;
-	const gpsValue = gpsCol.values[rowIndex];
-	if (gpsValue === null || gpsValue === '') return false;
-	return (
-		isUniqueNonNull(column.values, cellValue) &&
-		isUniqueNonNull(gpsCol.values, gpsValue) &&
-		cellValue === gpsValue
-	);
-}
-
-// Cell-level GPS match for the GPS column itself
-function isGpsCellMatch(rowIndex: number): boolean {
-	const gpsCol = getGpsColumn();
-	if (!gpsCol) return false;
-	const gpsValue = gpsCol.values[rowIndex];
-	if (gpsValue === null || gpsValue === '') return false;
-	// Now check if any string column in this row matches this value uniquely
-	for (const column of importedData.columns) {
-		if (column.currentFormat !== 'string') continue;
+	// Cell-level GPS match for string columns
+	function isCellGpsMatch(rowIndex: number, column: any): boolean {
 		const cellValue = column.values[rowIndex];
-		if (cellValue === null || cellValue === '') continue;
-		if (
+		if (cellValue === null || cellValue === '') return false;
+		const gpsCol = getGpsColumn();
+		if (!gpsCol) return false;
+		const gpsValue = gpsCol.values[rowIndex];
+		if (gpsValue === null || gpsValue === '') return false;
+		return (
 			isUniqueNonNull(column.values, cellValue) &&
 			isUniqueNonNull(gpsCol.values, gpsValue) &&
 			cellValue === gpsValue
-		) {
-			return true;
-		}
+		);
 	}
-	return false;
-}
+
+	// Cell-level GPS match for the GPS column itself
+	function isGpsCellMatch(rowIndex: number): boolean {
+		const gpsCol = getGpsColumn();
+		if (!gpsCol) return false;
+		const gpsValue = gpsCol.values[rowIndex];
+		if (gpsValue === null || gpsValue === '') return false;
+		// Now check if any string column in this row matches this value uniquely
+		for (const column of importedData.columns) {
+			if (column.currentFormat !== 'string') continue;
+			const cellValue = column.values[rowIndex];
+			if (cellValue === null || cellValue === '') continue;
+			if (
+				isUniqueNonNull(column.values, cellValue) &&
+				isUniqueNonNull(gpsCol.values, gpsValue) &&
+				cellValue === gpsValue
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
 </script>
 
 <table class="data-table" style="table-layout: fixed;">
