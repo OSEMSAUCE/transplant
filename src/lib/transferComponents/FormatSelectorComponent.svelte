@@ -22,7 +22,7 @@
 
 	const formats = ['string', 'number', 'date', 'gps', 'latitude', 'longitude', 'polygon'];
 
-	let selectedFormat = $state(currentFormat);
+	let selectedFormat = $state(currentFormat === 'kml' ? 'polygon' : currentFormat);
 	let hasUserSelectedFormat = $state(false);
 
 	//  TODO: later once I solve select detect thing, change this function to
@@ -39,8 +39,10 @@
 			(col) => col.headerName === currentColumnHeader
 		);
 		if (columnIndex !== -1) {
-			importedData.columns[columnIndex].type = newFormat as ColumnFormat;
-			formatGreyedStatus(importedData.columns, columnIndex, newFormat as ColumnFormat);
+			// If the format is polygon and the original was kml, keep it as kml
+			const formatToUse = newFormat === 'polygon' && currentFormat === 'kml' ? 'kml' : newFormat;
+			importedData.columns[columnIndex].type = formatToUse as ColumnFormat;
+			formatGreyedStatus(importedData.columns, columnIndex, formatToUse as ColumnFormat);
 		}
 
 		const customEvent = new CustomEvent('formatchange', {
@@ -64,18 +66,18 @@
 			onchange={handleChange}
 			disabled={isTransplant}
 			style="background-color: {selectedFormat === 'string'
-			? 'rgba(156, 39, 176, 0.4)' // purple for string
-			: selectedFormat === 'number'
-				? 'rgba(33, 150, 243, 0.4)' // blue for number
-				: selectedFormat === 'date'
-					? 'rgba(255, 152, 0, 0.4)' // orange for date
-					: selectedFormat === 'gps'
-						? 'rgba(76, 175, 80, 0.4)' // green for gps
-						: selectedFormat === 'polygon'
-							? 'rgba(219,43,155,0.4)' // brown for polygon
-							: selectedFormat === 'latitude' || selectedFormat === 'longitude'
-								? 'rgba(35,160,42, 0.4)' // teal for lat/lon
-								: 'rgba(158, 158, 158, 0.4)'}"
+				? 'rgba(156, 39, 176, 0.4)' // purple for string
+				: selectedFormat === 'number'
+					? 'rgba(33, 150, 243, 0.4)' // blue for number
+					: selectedFormat === 'date'
+						? 'rgba(255, 152, 0, 0.4)' // orange for date
+						: selectedFormat === 'gps'
+							? 'rgba(76, 175, 80, 0.4)' // green for gps
+							: selectedFormat === 'polygon'
+								? 'rgba(219,43,155,0.4)' // brown for polygon
+								: selectedFormat === 'latitude' || selectedFormat === 'longitude'
+									? 'rgba(35,160,42, 0.4)' // teal for lat/lon
+									: 'rgba(158, 158, 158, 0.4)'}"
 		>
 			{#each formats as format}
 				<option value={format}>{format}</option>
