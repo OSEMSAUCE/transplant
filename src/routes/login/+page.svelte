@@ -1,24 +1,38 @@
-<script>
+<script lang="ts">
+  import { supabase } from '$lib/supabaseClient';
   let email = '';
   let password = '';
   let error = '';
+  let loading = false;
 
-  function handleSignIn(event) {
+  async function handleSignIn(event: Event) {
     event.preventDefault();
-    // Placeholder: Add authentication logic here
     if (!email || !password) {
       error = 'Please enter both email and password.';
       return;
     }
     error = '';
-    // Simulate sign-in (replace with real logic)
-    alert(`Signed in as ${email}`);
+    loading = true;
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    loading = false;
+    if (signInError) {
+      error = signInError.message;
+      return;
+    }
+    // Redirect or show success
+    alert('Signed in!');
+    email = '';
+    password = '';
   }
 </script>
 
 <div class="login-container">
   <h2>Sign In</h2>
   <form onsubmit={handleSignIn}>
+    
     <label for="email">Email</label>
     <input id="email" type="email" bind:value={email} required />
 
@@ -29,6 +43,6 @@
       <div class="error">{error}</div>
     {/if}
 
-    <button type="submit">Sign In</button>
+    <button type="submit" disabled={loading}>{loading ? 'Signing In...' : 'Sign In'}</button>
   </form>
 </div>
