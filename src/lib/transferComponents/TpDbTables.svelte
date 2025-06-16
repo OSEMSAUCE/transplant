@@ -630,25 +630,25 @@
 						{/key}
 					</td>
 					<!-- Polygon column cell is second -->
-					<td class="polygon-cell">
-						{#key uniqueRowIndex}
-							{@const landId = getLandIdForRow(uniqueRowIndex)}
-							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
-							{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
-							{#if landId && landId.polygonId}
-								<span class="polygon-indicator">
-									<span>Polygon ID: {landId.polygonId}</span>
-								</span>
-							{:else if polygonData}
-								<span class="polygon-coordinates">
-									{polygonData.value}
-								</span>
-							{:else if gpsResult}
-								<span class="polygon-placeholder">
-									<span class="material-symbols-outlined">crop_square</span>
-								</span>
-							{/if}
-						{/key}
+					<td style="position: relative;">
+						<div class="polygon-cell" style="text-align: center;">
+							{#key uniqueRowIndex}
+								{@const landId = getLandIdForRow(uniqueRowIndex)}
+								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+								{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
+								{#if landId && landId.polygonId}
+									<span class="polygon-coordinates">Polygon ID: {landId.polygonId}</span>
+								{:else if polygonData}
+									<span class="polygon-coordinates">
+										{polygonData.value}
+									</span>
+								{:else if gpsResult}
+									<span class="polygon-placeholder">
+										<span class="material-symbols-outlined">crop_square</span>
+									</span>
+								{/if}
+							{/key}
+						</div>
 					</td>
 					{#each landTable as column, index}
 						<td

@@ -336,7 +336,7 @@
 				</td>
 				<!-- Polygon column cell -->
 				<td style="position: relative;">
-					<div class="polygon-cell">
+					<div class="polygon-cell" style="text-align: center;">
 						{#key rowIndex}
 							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
 							{#if polygonData}
