@@ -55,6 +55,8 @@
 	"dependencies": {
 		"@picocss/pico": "^2.0.6",
 		"@prisma/client": "^6.9.0",
+		"@supabase/auth-helpers-sveltekit": "^0.13.0",
+		"@supabase/ssr": "^0.6.1",
 		"@supabase/supabase-js": "^2.50.0",
 		"@sveltejs/adapter-vercel": "^5.7.2",
 		"papaparse": "^5.5.2"
