@@ -129,10 +129,16 @@
 	{source}
 	updateProjectData={(data) => {
 		console.log('updateProjectData called with:', data);
+		// Explicitly set each value and log it
 		projectName = data.projectName;
 		organizationName = data.organizationName;
 		projectNotes = data.projectNotes;
-		source = data.source ?? ''; // Add this line!
+		source = data.source ?? '';
+		
+		// Debug: Log the actual state after update
+		console.log('AFTER UPDATE - projectName:', projectName, 'length:', projectName?.length);
+		console.log('AFTER UPDATE - organizationName:', organizationName);
+		
 		console.log('Project metadata changed in +page.svelte:', data);
 	}}
 />
@@ -148,8 +154,10 @@
 		{#if pageIs === 'transplant'}
 			<button
 				onclick={async () => {
-					console.log('submitting to DB');
-					console.log(projectName, organizationName, projectNotes);
+					console.log('submitting to DB with values:');
+					console.log('projectName:', projectName, 'length:', projectName?.length);
+					console.log('organizationName:', organizationName);
+					console.log('projectNotes:', projectNotes);
 					isSubmitting = true;
 					submitResponse = null;
 					submitResponse = await submitToDB(projectName, organizationName, projectNotes);

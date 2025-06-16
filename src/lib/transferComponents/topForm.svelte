@@ -165,7 +165,9 @@
 				placeholder="Organization name *"
 				oninput={(e) => {
 					const val = e.target.value;
+					localOrgName = val;
 					filterOrganizations(val);
+					console.log('Updating organization name to:', val);
 					updateProjectData?.({
 						projectName: localProjectName,
 						organizationName: val,
