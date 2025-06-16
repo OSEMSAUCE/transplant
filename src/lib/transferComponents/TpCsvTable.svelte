@@ -255,6 +255,13 @@
 				</div>
 				<div class="header-name"></div>
 			</th>
+			<!-- The Polygon column is second and separate from the iteration -->
+			<th class="polygon-column">
+				<div class="column-header">
+					<span class="format-label">Polygon</span>
+				</div>
+				<div class="header-name"></div>
+			</th>
 			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 				{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
@@ -305,6 +312,16 @@
 							</span>
 						</div>
 					{/if}
+				</td>
+				<!-- Polygon column cell -->
+				<td style="position: relative;">
+					<div class="polygon-cell">
+						<span class="polygon-indicator">
+							{#if gpsData}
+								<span class="material-symbols-outlined">crop_square</span>
+							{/if}
+						</span>
+					</div>
 				</td>
 
 				<!-- BODY isCompatible function between CSVTable and dbTable -->

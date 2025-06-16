@@ -1,6 +1,7 @@
 import prisma from '$lib/server/prisma';
 import fs from 'fs';
 import path from 'path';
+import { Prisma } from '@prisma/client';
 
 /**
  * Processes GeoJSON data from the common format and submits it to the database
@@ -48,32 +49,39 @@ export async function submitGeoJsonToDb(filePath?: string) {
                 
                 // Process each land in the project
                 for (const landItem of proj.lands) {
-                    // Create a polygon entry for the GeoJSON data
-                    const polygon = await prisma.polygonTable.create({
-                        data: {
-                            geojson: landItem.geojson,
-                            polyNotes: landItem.land_notes
-                        }
-                    });
-                    
-                    // Create the land entry
+                    // First create the land entry without the polygon reference
                     const land = await prisma.landTable.create({
                         data: {
                             landName: landItem.land_name,
-                            hectares: landItem.hectares ? parseFloat(String(landItem.hectares)) : null,
-                            polygonId: polygon.polygonId,
+                            hectares: landItem.hectares ? new Prisma.Decimal(String(landItem.hectares)) : null,
                             projectId: project.projectId,
-                            gpsLat: landItem.gpsLat ? parseFloat(String(landItem.gpsLat)) : null,
-                            gpsLon: landItem.gpsLon ? parseFloat(String(landItem.gpsLon)) : null,
+                            gpsLat: landItem.gpsLat ? new Prisma.Decimal(String(landItem.gpsLat)) : null,
+                            gpsLon: landItem.gpsLon ? new Prisma.Decimal(String(landItem.gpsLon)) : null,
                             landNotes: landItem.land_notes
                         }
                     });
                     
-                    // Update the polygon with the land reference
-                    await prisma.polygonsTable.update({
-                        where: { polygonId: polygon.polygonId },
-                        data: { land_id: land.landId }
-                    });
+                    // Create a polygon entry for the GeoJSON data with the land reference
+                    // Using raw SQL since Prisma doesn't directly support PostGIS polygon type
+                    const polygonResult = await prisma.$queryRaw<{polygonId: bigint}[]>`
+                        INSERT INTO "public"."polygonTable" ("polygon", "polygonNotes", "landId")
+                        VALUES (
+                            ST_GeomFromGeoJSON(${JSON.stringify(landItem.geojson)}),
+                            ${landItem.land_notes || null},
+                            ${land.landId}
+                        )
+                        RETURNING "polygonId"
+                    `;
+                    
+                    const polygonId = polygonResult[0]?.polygonId;
+                    
+                    // Update the land entry with the polygon reference
+                    if (polygonId) {
+                        await prisma.landTable.update({
+                            where: { landId: land.landId },
+                            data: { polygonId }
+                        });
+                    }
                 }
                 
                 results.push({

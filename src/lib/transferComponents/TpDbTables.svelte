@@ -397,6 +397,29 @@
 		dropHandler(ev, landTable, landDbFormat);
 	}
 
+	// Function to get land ID and polygon ID for a specific row
+	function getLandIdForRow(rowIndex: number) {
+		// Find the landName column
+		const landNameCol = landTable.find((col) => col.name === 'landName');
+		if (!landNameCol || landNameCol.modelRepColumnIndex === -1) return null;
+		
+		// Get the imported data column that maps to landName
+		const importedCol = importedData.columns[landNameCol.modelRepColumnIndex];
+		if (!importedCol) return null;
+		
+		// Get the land name for this row
+		const landName = importedCol.values[rowIndex];
+		if (!landName) return null;
+		
+		// In a real implementation, you would query the database or check the local state
+		// to find the land record with this name and return its ID and polygonId
+		// For now, we'll return a placeholder
+		return {
+			landId: `land-${rowIndex}`, // Placeholder
+			polygonId: null // No polygon by default
+		};
+	}
+
 	function cropDropHandler(ev: DragEvent) {
 		dropHandler(ev, cropTable, cropDbFormat);
 	}
@@ -477,6 +500,13 @@
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
+				</div>
+				<div class="header-name"></div>
+			</th>
+			<!-- The Polygon column is second and separate from the iteration -->
+			<th class="polygon-column">
+				<div class="column-header">
+					<span class="format-label">Polygon</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
@@ -575,6 +605,22 @@
 								{:else if gpsResult.type === 'pair'}
 									CHANGE {gpsResult.lat}, {gpsResult.lon}
 								{/if}
+								</span>
+							{/if}
+						{/key}
+					</td>
+					<!-- Polygon column cell is second -->
+					<td class="polygon-cell">
+						{#key uniqueRowIndex}
+							{@const landId = getLandIdForRow(uniqueRowIndex)}
+							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+							{#if landId && landId.polygonId}
+								<span class="polygon-indicator">
+									<span class="material-symbols-outlined">crop_square</span>
+								</span>
+							{:else if gpsResult}
+								<span class="polygon-placeholder">
+									<span class="material-symbols-outlined">crop_square</span>
 								</span>
 							{/if}
 						{/key}
