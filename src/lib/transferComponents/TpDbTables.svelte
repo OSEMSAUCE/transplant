@@ -631,7 +631,7 @@
 					</td>
 					<!-- Polygon column cell is second -->
 					<td style="position: relative;">
-						<div class="polygon-cell" style="text-align: center;">
+						<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%;">
 							{#key uniqueRowIndex}
 								{@const landId = getLandIdForRow(uniqueRowIndex)}
 								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}

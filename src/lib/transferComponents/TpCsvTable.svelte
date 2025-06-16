@@ -142,9 +142,9 @@
 				const rawPolygonValue = column.values[rowIndex];
 				// Format the polygon value using the formatValue function
 				const formattedValue = formatValue(column.currentFormat, rawPolygonValue);
-				return { 
-					value: formattedValue || 'Polygon', 
-					format: column.currentFormat 
+				return {
+					value: formattedValue || 'Polygon',
+					format: column.currentFormat
 				};
 			}
 		}
@@ -336,13 +336,13 @@
 				</td>
 				<!-- Polygon column cell -->
 				<td style="position: relative;">
-					<div class="polygon-cell" style="text-align: center;">
+					<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%;">
 						{#key rowIndex}
 							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
 							{#if polygonData}
-							<span class="polygon-coordinates">
-								{polygonData.value}
-							</span>
+								<span class="polygon-coordinates">
+									{polygonData.value}
+								</span>
 							{:else if gpsData}
 								<span class="polygon-placeholder">
 									<span class="material-symbols-outlined">crop_square</span>
