@@ -420,6 +420,21 @@
 		};
 	}
 
+	function pullFirstPolygonSelected(rowIndex: number) {
+		// Try to find a polygon column
+		for (const column of importedData.columns) {
+			if (
+				(column.currentFormat === 'polygon' || column.currentFormat === 'kml') &&
+				column.values[rowIndex] !== null &&
+				column.values[rowIndex] !== ''
+			) {
+				const polygonValue = column.values[rowIndex];
+				return { value: polygonValue };
+			}
+		}
+		return null;
+	}
+
 	function cropDropHandler(ev: DragEvent) {
 		dropHandler(ev, cropTable, cropDbFormat);
 	}
@@ -614,9 +629,14 @@
 						{#key uniqueRowIndex}
 							{@const landId = getLandIdForRow(uniqueRowIndex)}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+							{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
 							{#if landId && landId.polygonId}
 								<span class="polygon-indicator">
-									<span class="material-symbols-outlined">crop_square</span>
+									<span>Polygon ID: {landId.polygonId}</span>
+								</span>
+							{:else if polygonData}
+								<span class="polygon-coordinates">
+									{polygonData.value}
 								</span>
 							{:else if gpsResult}
 								<span class="polygon-placeholder">

@@ -130,6 +130,22 @@
 		// If we couldn't find a complete pair of valid coordinates, return null
 		return null;
 	}
+
+	function pullFirstPolygonSelected(rowIndex: number) {
+		// Try to find a polygon column
+		for (const column of importedData.columns) {
+			if (
+				(column.currentFormat === 'polygon' || column.currentFormat === 'kml') &&
+				column.values[rowIndex] !== null &&
+				column.values[rowIndex] !== ''
+			) {
+				const polygonValue = column.values[rowIndex];
+				return { value: polygonValue };
+			}
+		}
+		return null;
+	}
+
 	// Utility: Check if mapping between stringCol and gpsCol is consistent (1:1 or repeated-but-consistent)
 	function isStringGpsMappingConsistent(stringCol: any, gpsCol: any) {
 		const mapping = new Map();
@@ -316,11 +332,18 @@
 				<!-- Polygon column cell -->
 				<td style="position: relative;">
 					<div class="polygon-cell">
-						<span class="polygon-indicator">
-							{#if gpsData}
-								<span class="material-symbols-outlined">crop_square</span>
+						{#key rowIndex}
+							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
+							{#if polygonData}
+							<span class="polygon-coordinates">
+								{polygonData.value}
+							</span>
+							{:else if gpsData}
+								<span class="polygon-placeholder">
+									<span class="material-symbols-outlined">crop_square</span>
+								</span>
 							{/if}
-						</span>
+						{/key}
 					</div>
 				</td>
 
