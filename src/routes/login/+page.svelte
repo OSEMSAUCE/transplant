@@ -1,5 +1,6 @@
 <script lang="ts">
   import { supabase } from '$lib/supabaseClient';
+  import { goto } from '$app/navigation';
   let email = '';
   let password = '';
   let error = '';
@@ -22,10 +23,8 @@
       error = signInError.message;
       return;
     }
-    // Redirect or show success
-    alert('Signed in!');
-    email = '';
-    password = '';
+    // Redirect to signed-in homepage
+    goto('/');
   }
 </script>
 
