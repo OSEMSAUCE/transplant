@@ -614,24 +614,25 @@
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
 					<!-- GPS column cell is always first -->
-					<td class="gps-cell">
+					<td style="position: relative; padding: 8px;">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 							{#if gpsResult}
 								<span class="gps-coordinates">
 									{#if gpsResult.type === 'full'}
 									{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-									CHANGE {formattedGps}
+									{formattedGps}
 								{:else if gpsResult.type === 'pair'}
-									CHANGE {gpsResult.lat}, {gpsResult.lon}
+									{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
+									{formattedGps}
 								{/if}
 								</span>
 							{/if}
 						{/key}
 					</td>
 					<!-- Polygon column cell is second -->
-					<td style="position: relative;">
-						<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%;">
+					<td style="position: relative; padding: 4px;">
+						<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%; margin: 0;">
 							{#key uniqueRowIndex}
 								{@const landId = getLandIdForRow(uniqueRowIndex)}
 								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -639,9 +640,9 @@
 								{#if landId && landId.polygonId}
 									<span class="polygon-coordinates">Polygon ID: {landId.polygonId}</span>
 								{:else if polygonData}
-									<span class="polygon-coordinates">
-										{polygonData.value}
-									</span>
+									<span class="polygon-coordinates" style="font-size: 8px; white-space: pre-wrap; word-break: break-all; max-height: 18px; overflow: hidden; display: block; text-overflow: ellipsis;">
+												{polygonData.value}
+											</span>
 								{:else if gpsResult}
 									<span class="polygon-placeholder">
 										<span class="material-symbols-outlined">crop_square</span>

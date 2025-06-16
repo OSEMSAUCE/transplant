@@ -321,7 +321,7 @@
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			{@const gpsData = pullFirstGpsSelected(rowIndex)}
 			<tr>
-				<td style="position: relative;">
+				<td style="position: relative; padding: 8px;">
 					{#if gpsData}
 						<div class="gps-cell">
 							<span class="gps-coordinates">
@@ -335,12 +335,12 @@
 					{/if}
 				</td>
 				<!-- Polygon column cell -->
-				<td style="position: relative;">
-					<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%;">
+				<td style="position: relative; padding: 4px;">
+					<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%; margin: 0;">
 						{#key rowIndex}
 							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
 							{#if polygonData}
-								<span class="polygon-coordinates">
+								<span class="polygon-coordinates" style="font-size: 8px; white-space: pre-wrap; word-break: break-all; max-height:18px; overflow: hidden; display: block; text-overflow: ellipsis;">
 									{polygonData.value}
 								</span>
 							{:else if gpsData}
@@ -383,7 +383,7 @@
 	</tbody>
 </table>
 
-<style>
+<!-- <style>
 	.isLandCompatible {
 		border-top: 1px solid #2196f3;
 		border-bottom: 1px solid #2196f3;
@@ -419,4 +419,4 @@
 		border-left: 1px solid #4caf50;
 		border-right: 1px solid #4caf50;
 	}
-</style>
+</style> -->
