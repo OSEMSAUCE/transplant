@@ -206,7 +206,16 @@
 				type="text"
 				bind:value={localProjectName}
 				placeholder="Project name *"
-				oninput={filterProjects}
+				oninput={() => {
+					filterProjects();
+					updateProjectData &&
+						updateProjectData({
+							projectName: localProjectName,
+							organizationName: localOrgName,
+							projectNotes: localProjectNotes,
+							source: localSource
+						});
+				}}
 				onfocus={handleProjectFocus}
 				onblur={handleProjectBlur}
 				onkeydown={handleProjectKeydown}
@@ -235,7 +244,16 @@
 				type="text"
 				bind:value={localOrgName}
 				placeholder="Organization name *"
-				oninput={filterOrganizations}
+				oninput={() => {
+					filterOrganizations();
+					updateProjectData &&
+						updateProjectData({
+							projectName: localProjectName,
+							organizationName: localOrgName,
+							projectNotes: localProjectNotes,
+							source: localSource
+						});
+				}}
 				onfocus={handleOrganizationFocus}
 				onblur={handleOrganizationBlur}
 				onkeydown={handleOrganizationKeydown}
