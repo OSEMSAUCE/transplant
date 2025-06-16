@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isGps, isLatitude, isLongitude, formatAllGpsTypes } from './formatDetection2';
+	import { isGps, isLatitude, isLongitude, formatAllGpsTypes, formatValue } from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
@@ -428,8 +428,13 @@
 				column.values[rowIndex] !== null &&
 				column.values[rowIndex] !== ''
 			) {
-				const polygonValue = column.values[rowIndex];
-				return { value: polygonValue };
+				const rawPolygonValue = column.values[rowIndex];
+				// Format the polygon value using the formatValue function
+				const formattedValue = formatValue(column.currentFormat, rawPolygonValue);
+				return { 
+					value: formattedValue || 'Polygon', 
+					format: column.currentFormat 
+				};
 			}
 		}
 		return null;

@@ -7,7 +7,7 @@
 	} from './columnNormalizationUtils';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
-	import { detectFormat, isGps, isLatitude, isLongitude } from './formatDetection2';
+	import { detectFormat, isGps, isLatitude, isLongitude, formatValue } from './formatDetection2';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
 	// Add this constant
@@ -139,8 +139,13 @@
 				column.values[rowIndex] !== null &&
 				column.values[rowIndex] !== ''
 			) {
-				const polygonValue = column.values[rowIndex];
-				return { value: polygonValue };
+				const rawPolygonValue = column.values[rowIndex];
+				// Format the polygon value using the formatValue function
+				const formattedValue = formatValue(column.currentFormat, rawPolygonValue);
+				return { 
+					value: formattedValue || 'Polygon', 
+					format: column.currentFormat 
+				};
 			}
 		}
 		return null;
