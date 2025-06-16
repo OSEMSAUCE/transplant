@@ -1,9 +1,11 @@
 <script lang="ts">
 	import '../lib/styles/custom-pico.scss';
+	import { Toaster } from 'svelte-french-toast';
 
 	let { children } = $props();
 </script>
 
+<Toaster />
 <br />
 <nav>
 	<div class="container-fluid p-1">
