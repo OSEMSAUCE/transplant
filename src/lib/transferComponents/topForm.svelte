@@ -1,25 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	// Debounce helper (inside main script)
-	function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-		let timeout: ReturnType<typeof setTimeout>;
-		return (...args: Parameters<T>) => {
-			clearTimeout(timeout);
-			timeout = setTimeout(() => fn(...args), delay);
-		};
-	}
-
-	// Existing project name logic
-	type ApiResponse = { projects: Project[]; organizations: Organization[] };
 	type Project = { projectName: string; projectId: string };
 	type Organization = { organizationName: string; organizationId: string };
-	let inputFocusedProject = $state(false);
-
-	// Generic autocomplete state
-	let inputFocused = $state(false);
-
-	// Project autocomplete state
+	type ApiResponse = { projects: Project[]; organizations: Organization[] };
 
 	let { projectName, organizationName, projectNotes, source, updateProjectData } = $props<{
 		projectName: string;
@@ -34,7 +18,6 @@
 		}) => void;
 	}>();
 
-	// Create local bindings that will update the parent values
 	let localProjectName = $state(projectName || '');
 	let localOrgName = $state(organizationName || '');
 	let localProjectNotes = $state(projectNotes || '');
@@ -43,151 +26,59 @@
 	let allProjects = $state<Project[]>([]);
 	let filteredProjects = $state<Project[]>([]);
 	let highlightedIndex = $state<number | null>(null);
+	let inputFocusedProject = $state(false);
 
-	// Organization autocomplete state
 	let allOrganizations = $state<Organization[]>([]);
 	let filteredOrganizations = $state<Organization[]>([]);
 	let organizationHighlighted = $state<number | null>(null);
 	let inputFocusedOrganization = $state(false);
 
-	// FIX THIS 30 May 2025
-	// NOT generic OrgnaisationName , allOrganizations, filteredOrganizations,
-	// GENERIC organizationHighlighted, inputFocusedOrganization
-	//
+	let sourceError = $state('');
 
-	// Fetch all projects on mount
 	onMount(async () => {
 		const res = await fetch('/api/topFormApi');
 		const data = (await res.json()) as ApiResponse;
 		allProjects = data.projects || [];
-		filteredProjects = [];
 		allOrganizations = data.organizations || [];
-		filteredOrganizations = [];
 	});
 
-	// Filter projects as you type
-	function filterProjects() {
-		if (!localProjectName) {
-			filteredProjects = [];
-			highlightedIndex = null;
-			return;
-		}
-		filteredProjects = allProjects.filter((p) =>
-			p.projectName.toLowerCase().includes(localProjectName.toLowerCase())
-		);
-		highlightedIndex = filteredProjects.length > 0 ? 0 : null;
+	function filterProjects(val = localProjectName) {
+		filteredProjects = val
+			? allProjects.filter((p) => p.projectName.toLowerCase().includes(val.toLowerCase()))
+			: [];
+		highlightedIndex = filteredProjects.length ? 0 : null;
 	}
 
-	function filterOrganizations() {
-		if (!localOrgName) {
-			filteredOrganizations = [];
-			organizationHighlighted = null;
-			return;
-		}
-		filteredOrganizations = allOrganizations.filter((o) =>
-			o.organizationName.toLowerCase().includes(localOrgName.toLowerCase())
-		);
-		organizationHighlighted = filteredOrganizations.length > 0 ? 0 : null;
+	function filterOrganizations(val = localOrgName) {
+		filteredOrganizations = val
+			? allOrganizations.filter((o) => o.organizationName.toLowerCase().includes(val.toLowerCase()))
+			: [];
+		organizationHighlighted = filteredOrganizations.length ? 0 : null;
 	}
 
 	function selectProjectSuggestion(name: string) {
 		localProjectName = name;
 		filteredProjects = [];
-		inputFocused = false;
+		inputFocusedProject = false;
+		updateProjectData?.({
+			projectName: name,
+			organizationName: localOrgName,
+			projectNotes: localProjectNotes,
+			source: localSource
+		});
 	}
 
 	function selectOrganizationSuggestion(name: string) {
 		localOrgName = name;
 		filteredOrganizations = [];
-		inputFocused = false;
+		inputFocusedOrganization = false;
+		updateProjectData?.({
+			projectName: localProjectName,
+			organizationName: name,
+			projectNotes: localProjectNotes,
+			source: localSource
+		});
 	}
-
-	function handleProjectFocus() {
-		inputFocusedProject = true;
-		filterProjects();
-	}
-
-	function handleOrganizationFocus() {
-		inputFocusedOrganization = true;
-		filterOrganizations();
-	}
-
-	function handleProjectBlur() {
-		// Delay to allow click event on suggestion
-		setTimeout(() => {
-			inputFocusedProject = false;
-			highlightedIndex = null;
-		}, 100);
-	}
-
-	function handleOrganizationBlur() {
-		// Delay to allow click event on suggestion
-		setTimeout(() => {
-			inputFocusedOrganization = false;
-			organizationHighlighted = null;
-		}, 100);
-	}
-
-	function handleProjectKeydown(e: KeyboardEvent) {
-		if (!filteredProjects.length) return;
-		if (e.key === 'ArrowDown') {
-			e.preventDefault();
-			if (highlightedIndex === null || highlightedIndex === filteredProjects.length - 1) {
-				highlightedIndex = 0;
-			} else {
-				highlightedIndex!++;
-			}
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault();
-			if (highlightedIndex === null || highlightedIndex === 0) {
-				highlightedIndex = filteredProjects.length - 1;
-			} else {
-				highlightedIndex!--;
-			}
-		} else if (e.key === 'Enter' || e.key === 'Tab') {
-			if (highlightedIndex !== null && filteredProjects[highlightedIndex]) {
-				selectProjectSuggestion(filteredProjects[highlightedIndex].projectName);
-				e.preventDefault();
-			}
-		} else if (e.key === 'Escape') {
-			filteredProjects = [];
-			highlightedIndex = null;
-		}
-	}
-
-	function handleOrganizationKeydown(e: KeyboardEvent) {
-		if (!filteredOrganizations.length) return;
-		if (e.key === 'ArrowDown') {
-			e.preventDefault();
-			if (
-				organizationHighlighted === null ||
-				organizationHighlighted === filteredOrganizations.length - 1
-			) {
-				organizationHighlighted = 0;
-			} else {
-				organizationHighlighted!++;
-			}
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault();
-			if (organizationHighlighted === null || organizationHighlighted === 0) {
-				organizationHighlighted = filteredOrganizations.length - 1;
-			} else {
-				organizationHighlighted!--;
-			}
-		} else if (e.key === 'Enter' || e.key === 'Tab') {
-			if (organizationHighlighted !== null && filteredOrganizations[organizationHighlighted]) {
-				selectOrganizationSuggestion(
-					filteredOrganizations[organizationHighlighted].organizationName
-				);
-				e.preventDefault();
-			}
-		} else if (e.key === 'Escape') {
-			filteredOrganizations = [];
-			organizationHighlighted = null;
-		}
-	}
-
-	let sourceError = $state('');
 
 	$effect(() => {
 		if (localSource && !/^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(localSource)) {
@@ -198,31 +89,59 @@
 	});
 </script>
 
-<form action="" autocomplete="off">
+<form autocomplete="off">
 	<div class="topform-row">
-		<!-- Project Name Input with dropdown -->
+		<!-- Project Name Input -->
 		<div class="input-block">
 			<input
 				type="text"
 				bind:value={localProjectName}
 				placeholder="Project name *"
-				oninput={() => {
-					filterProjects();
-					updateProjectData &&
-						updateProjectData({
-							projectName: localProjectName,
-							organizationName: localOrgName,
-							projectNotes: localProjectNotes,
-							source: localSource
-						});
+				oninput={(e) => {
+					const val = e.target.value;
+					filterProjects(val);
+					updateProjectData?.({
+						projectName: val,
+						organizationName: localOrgName,
+						projectNotes: localProjectNotes,
+						source: localSource
+					});
 				}}
-				onfocus={handleProjectFocus}
-				onblur={handleProjectBlur}
-				onkeydown={handleProjectKeydown}
+				onfocus={() => {
+					inputFocusedProject = true;
+					filterProjects();
+				}}
+				onblur={() =>
+					setTimeout(() => {
+						inputFocusedProject = false;
+						highlightedIndex = null;
+					}, 100)}
+				onkeydown={(e) => {
+					if (!filteredProjects.length) return;
+					if (e.key === 'ArrowDown')
+						highlightedIndex =
+							highlightedIndex === null || highlightedIndex === filteredProjects.length - 1
+								? 0
+								: highlightedIndex + 1;
+					else if (e.key === 'ArrowUp')
+						highlightedIndex =
+							highlightedIndex === null || highlightedIndex === 0
+								? filteredProjects.length - 1
+								: highlightedIndex - 1;
+					else if (e.key === 'Enter' || e.key === 'Tab') {
+						if (highlightedIndex !== null && filteredProjects[highlightedIndex]) {
+							selectProjectSuggestion(filteredProjects[highlightedIndex].projectName);
+							e.preventDefault();
+						}
+					} else if (e.key === 'Escape') {
+						filteredProjects = [];
+						highlightedIndex = null;
+					}
+				}}
 				autocomplete="off"
 				class="required-field"
 			/>
-			{#if inputFocusedProject && filteredProjects.length > 0}
+			{#if inputFocusedProject && filteredProjects.length}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredProjects as project, i}
 						<li
@@ -238,34 +157,68 @@
 			{/if}
 		</div>
 
-		<!-- Organization Input with dropdown -->
+		<!-- Organization Name Input -->
 		<div class="input-block">
 			<input
 				type="text"
 				bind:value={localOrgName}
 				placeholder="Organization name *"
-				oninput={() => {
-					filterOrganizations();
-					updateProjectData &&
-						updateProjectData({
-							projectName: localProjectName,
-							organizationName: localOrgName,
-							projectNotes: localProjectNotes,
-							source: localSource
-						});
+				oninput={(e) => {
+					const val = e.target.value;
+					filterOrganizations(val);
+					updateProjectData?.({
+						projectName: localProjectName,
+						organizationName: val,
+						projectNotes: localProjectNotes,
+						source: localSource
+					});
 				}}
-				onfocus={handleOrganizationFocus}
-				onblur={handleOrganizationBlur}
-				onkeydown={handleOrganizationKeydown}
+				onfocus={() => {
+					inputFocusedOrganization = true;
+					filterOrganizations();
+				}}
+				onblur={() =>
+					setTimeout(() => {
+						inputFocusedOrganization = false;
+						organizationHighlighted = null;
+					}, 100)}
+				onkeydown={(e) => {
+					if (!filteredOrganizations.length) return;
+					if (e.key === 'ArrowDown')
+						organizationHighlighted =
+							organizationHighlighted === null ||
+							organizationHighlighted === filteredOrganizations.length - 1
+								? 0
+								: organizationHighlighted + 1;
+					else if (e.key === 'ArrowUp')
+						organizationHighlighted =
+							organizationHighlighted === null || organizationHighlighted === 0
+								? filteredOrganizations.length - 1
+								: organizationHighlighted - 1;
+					else if (e.key === 'Enter' || e.key === 'Tab') {
+						if (
+							organizationHighlighted !== null &&
+							filteredOrganizations[organizationHighlighted]
+						) {
+							selectOrganizationSuggestion(
+								filteredOrganizations[organizationHighlighted].organizationName
+							);
+							e.preventDefault();
+						}
+					} else if (e.key === 'Escape') {
+						filteredOrganizations = [];
+						organizationHighlighted = null;
+					}
+				}}
 				autocomplete="off"
 				class="required-field"
 			/>
-			{#if inputFocusedOrganization && filteredOrganizations.length > 0}
+			{#if inputFocusedOrganization && filteredOrganizations.length}
 				<ul id="autocomplete-items-list" role="listbox">
 					{#each filteredOrganizations as organization, i}
 						<li
 							role="option"
-							placeholder="Organization name *"
+							onmousedown={() => selectOrganizationSuggestion(organization.organizationName)}
 							class:selected={i === organizationHighlighted}
 							style="cursor:pointer"
 						>
@@ -275,45 +228,42 @@
 				</ul>
 			{/if}
 		</div>
+
 		<!-- Project Notes Input -->
 		<div class="input-block">
 			<input
 				type="text"
 				bind:value={localProjectNotes}
 				placeholder="Project Notes"
+				oninput={(e) =>
+					updateProjectData?.({
+						projectName: localProjectName,
+						organizationName: localOrgName,
+						projectNotes: e.target.value,
+						source: localSource
+					})}
 				autocomplete="off"
 			/>
 		</div>
+
 		<!-- Source Input -->
 		<div class="input-block">
-			<input type="url" bind:value={localSource} placeholder="Source (URL)" autocomplete="off" />
+			<input
+				type="url"
+				bind:value={localSource}
+				placeholder="Source (URL)"
+				oninput={(e) =>
+					updateProjectData?.({
+						projectName: localProjectName,
+						organizationName: localOrgName,
+						projectNotes: localProjectNotes,
+						source: e.target.value
+					})}
+				autocomplete="off"
+			/>
 			{#if sourceError}
 				<div class="error">{sourceError}</div>
 			{/if}
 		</div>
 	</div>
 </form>
-<!-- 
-<style>
-	/* Add this to custom-pico.scss if you want it to apply globally */
-	.required-field::placeholder {
-		color: inherit;
-	}
-
-	/* Use a pseudo-element to create the red asterisk effect */
-	.required-field {
-		position: relative;
-	}
-
-	.required-field::after {
-		content: '*';
-		position: absolute;
-		right: 10px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: #e53935;
-		font-weight: bold;
-	}
-
-	/* Other styles moved to src/lib/styles/custom-pico.scss */
-</style> -->
