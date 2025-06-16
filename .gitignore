@@ -16,6 +16,8 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+sqlTemplateDrop.sql
+sqlTemplate.sql
 
 # Env
 .env
@@ -26,6 +28,7 @@ Thumbs.db
 .env.test
 .env.development
 .env.dev
+
 
 # Vite
 vite.config.js.timestamp-*
