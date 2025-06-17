@@ -64,7 +64,7 @@
   }
   
   .account-button {
-    padding: 0.5rem 1rem;
+    /* padding: 0.5rem 1rem; */
     border-radius: 4px;
     cursor: pointer;
     background-color: #4a5568;
@@ -96,7 +96,7 @@
   .dropdown-menu button {
     width: 100%;
     text-align: left;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     background: none;
     border: none;
     cursor: pointer;
