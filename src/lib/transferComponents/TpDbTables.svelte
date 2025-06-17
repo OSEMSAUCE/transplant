@@ -513,7 +513,7 @@
 		{/each}
 	</tbody>
 </table>
-// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️
+
 <DbTableInstance
 	tableColumns={landTable}
 	title="Land Table"
