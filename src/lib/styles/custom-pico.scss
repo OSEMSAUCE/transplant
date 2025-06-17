@@ -16,7 +16,7 @@
 	--button-max-width: 28rem;
 	--button-background: transparent;
 	--button-color: var(--color-grey);
-	--button-border: solid 0.04rem #343434 --button-padding: 0.75rem 2rem;
+	--button-border: solid 0.5rem #343434 --button-padding: 2rem 2rem;
 	--button-margin: 0.75rem 2rem;
 	// --button-margin-bottom: 1rem;
 	--button-radius: 0.25rem;
@@ -41,25 +41,30 @@ td,
 select {
 	background-color: var(--color-black);
 }
-// nav .container-fluid {
-//   padding: 0.15rem 0; // slightly less vertical padding
-//   margin: 0;
-// }
+
 
 nav {
-	padding: -0.15rem 0;
-	margin: -1rem 0 0 0;
+  display: flex;
+  justify-content: flex-start !important;
+  padding: -0.15rem 0;
+  margin: -1rem 0 0 0;
 }
-
 nav a {
-	padding: 0.15rem 0.2rem; // slightly less vertical padding
+	padding: 0.15rem 0.2rem;
 	margin: 0 0.2rem 0 0;
+	color: var(--color-purple) !important;
+	background: none;
+	border: none;
+	font-size: inherit;
+	line-height: inherit;
+	text-decoration: underline;
 	text-decoration-color: var(--color-purple);
-	&:hover {
-		color: var(--color-purple);
-		text-decoration-color: var(--color-white);
-	}
-}
+	transition: color 0.2s, text-decoration-color 0.2s;
+  }
+  nav a:hover {
+	color: #b663df !important;
+	text-decoration-color: var(--color-purple);
+  }
 
 h1 {
 	color: var(--color-white);
