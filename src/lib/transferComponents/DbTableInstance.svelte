@@ -13,10 +13,13 @@ import {
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
     import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
-    
-
-
-    
+  
+	
+	const landColumns = [
+	{ name: 'landName', label: 'Land Name', modelRepColumnIndex: 0, viewOnly: false },
+	{ name: 'hectares', label: 'Hectares', modelRepColumnIndex: 1, viewOnly: false },
+	{ name: 'landNotes', label: 'Notes', modelRepColumnIndex: 2, viewOnly: false }
+];
 
 	let { tableColumns, title, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
     

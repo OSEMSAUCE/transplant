@@ -515,7 +515,7 @@
 </table>
 
 <DbTableInstance
-	tableColumns={landTable}
+	tableColumns={landColumns}
 	title="Land Table"
 	dragoverHandler={dragoverHandler}
 	dropHandler={landDropHandler}
