@@ -31,6 +31,9 @@ html {
 	// font-size: 12px;
 }
 
+p {
+	font-size: 0.5rem;
+}
 .container,
 table,
 th,
@@ -358,7 +361,6 @@ td {
 	max-width: 45rem;
 	// font-size: 0.5rem;
 }
-
 .topform-row,
 .topform-row input,
 .topform-row label {
@@ -392,9 +394,30 @@ tbody td.drag-over {
 	cursor: pointer !important;
 }
 
+.polygon-coordinates {
+	font-size: 8px;
+	white-space: pre-wrap;
+	word-break: break-all;
+	max-height: 18px;
+	overflow: hidden;
+	display: block;
+	text-overflow: ellipsis;
+}
+.db-table-container {
+	display: flex;
+	flex-direction: row;
+	margin-top: 1.5rem;
+}
+.db-table-dashboard {
+ 	border: 1px solid var(--color-light-grey);
+	border-radius: 0.25rem;
+	padding: 0.25rem;
+	margin-right: 0.2rem;
+	}
+
 /* ============================================================================
-   AUTOCOMPLETE LISTS
-   ============================================================================ */
+AUTOCOMPLETE LISTS
+============================================================================ */
 #autocomplete-items-list {
 	/* Override Pico's variable and fallback background */
 	--pico-background-color: #a7c0cc44 !important;

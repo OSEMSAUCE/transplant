@@ -1,8 +1,16 @@
 <script lang="ts">
-	import { isGps, isLatitude, isLongitude, formatAllGpsTypes, formatValue } from './formatDetection2';
+	import {
+		isGps,
+		isLatitude,
+		isLongitude,
+		formatAllGpsTypes,
+		formatValue
+	} from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/transferComponents/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+
+	import DbTableInstance from './DbTableInstance.svelte';
 
 	// Define the GPS data type
 	type GpsData =
@@ -164,7 +172,6 @@
 
 		// Cleared column and related columns
 	}
-	
 
 	interface TableColumn {
 		name: string;
@@ -402,15 +409,15 @@
 		// Find the landName column
 		const landNameCol = landTable.find((col) => col.name === 'landName');
 		if (!landNameCol || landNameCol.modelRepColumnIndex === -1) return null;
-		
+
 		// Get the imported data column that maps to landName
 		const importedCol = importedData.columns[landNameCol.modelRepColumnIndex];
 		if (!importedCol) return null;
-		
+
 		// Get the land name for this row
 		const landName = importedCol.values[rowIndex];
 		if (!landName) return null;
-		
+
 		// In a real implementation, you would query the database or check the local state
 		// to find the land record with this name and return its ID and polygonId
 		// For now, we'll return a placeholder
@@ -431,9 +438,9 @@
 				const rawPolygonValue = column.values[rowIndex];
 				// Format the polygon value using the formatValue function
 				const formattedValue = formatValue(column.currentFormat, rawPolygonValue);
-				return { 
-					value: formattedValue || 'Polygon', 
-					format: column.currentFormat 
+				return {
+					value: formattedValue || 'Polygon',
+					format: column.currentFormat
 				};
 			}
 		}
@@ -506,8 +513,26 @@
 		{/each}
 	</tbody>
 </table>
+// 👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️👍️🌲️
+<DbTableInstance
+	tableColumns={landTable}
+	title="Land Table"
+	dragoverHandler={dragoverHandler}
+	dropHandler={landDropHandler}
+	dbFormat={landDbFormat}
+	clearDbColumn={clearDbColumn}
+	getUniqueValues={getUniqueValues}
+	pullFirstGpsSelected={pullFirstGpsSelected}
+	pullFirstPolygonSelected={pullFirstPolygonSelected}
+	getLandIdForRow={getLandIdForRow}
+/>
 
-<h3 class="table-title">Land Table</h3>
+<div class="db-table-container">
+	<div class="db-table-dashboard">
+		<h3 class="table-title">Land Table</h3>
+		<p>stuff</p>
+		<p>more stuff</p>
+	</div>
 <table
 	class="no-table-bottom-margin land-table"
 	class:greyed-out={!landTable.some(
@@ -620,29 +645,35 @@
 							{#if gpsResult}
 								<span class="gps-coordinates">
 									{#if gpsResult.type === 'full'}
-									{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-									{formattedGps}
-								{:else if gpsResult.type === 'pair'}
-									{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-									{formattedGps}
-								{/if}
+										{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
+										{formattedGps}
+									{:else if gpsResult.type === 'pair'}
+										{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
+										{formattedGps}
+									{/if}
 								</span>
 							{/if}
 						{/key}
 					</td>
 					<!-- Polygon column cell is second -->
 					<td style="position: relative; padding: 4px;">
-						<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%; margin: 0;">
+						<div
+							class="polygon-cell"
+							style="display: flex; justify-content: center; width: 100%; margin: 0;"
+						>
 							{#key uniqueRowIndex}
 								{@const landId = getLandIdForRow(uniqueRowIndex)}
 								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 								{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
 								{#if landId && landId.polygonId}
-									<span class="polygon-coordinates">Polygon ID: {landId.polygonId}</span>
+									<span>Polygon ID: {landId.polygonId}</span>
 								{:else if polygonData}
-									<span class="polygon-coordinates" style="font-size: 8px; white-space: pre-wrap; word-break: break-all; max-height: 18px; overflow: hidden; display: block; text-overflow: ellipsis;">
-												{polygonData.value}
-											</span>
+									<span
+										class="polygon-coordinates"
+									
+									>
+										{polygonData.value}
+									</span>
 								{:else if gpsResult}
 									<span class="polygon-placeholder">
 										<span class="material-symbols-outlined">crop_square</span>
@@ -737,6 +768,7 @@
 		{/if}
 	</tbody>
 </table>
+</div>
 
 <h3 class="table-title">Crop Table</h3>
 <table
