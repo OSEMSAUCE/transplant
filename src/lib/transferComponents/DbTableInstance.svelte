@@ -85,8 +85,8 @@ import {
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={(e) => dragoverHandler(e)}
-					ondrop={(e) => {
+					ondragover={dragoverHandler}
+					ondrop={(() => {
 						console.log('Drop attempt on column:', column.name);
 						console.log('naturaKey value:', naturaKey);
 						console.log('Is viewOnly:', column.viewOnly);
@@ -95,7 +95,7 @@ import {
 						// Don't allow drop for view-only columns
 						if (column.viewOnly) {
 							console.log('Blocking drop: column is viewOnly');
-							return;
+							return null;
 						}
 
 						// Table requires naturaKey to be mapped first (except for naturaKey itself)
@@ -104,13 +104,13 @@ import {
 							!table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
 						) {
 							console.log('Blocking drop: naturaKey not mapped yet and this is not naturaKey column');
-							return;
+							return null;
 						}
 
 						// Use the standard drop handler - normalization is checked inside dropHandler
 						console.log('Allowing drop, using standard dropHandler');
-						dropHandler(e);
-					}}
+						return dropHandler;
+					})()}
 					class:legal-droptarget={column.name === naturaKey
 						? // For naturaKey column, just check basic conditions
 							!column.viewOnly &&
@@ -221,18 +221,8 @@ import {
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={(e) => {
-							if (column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)) {
-								return;
-							}
-							dragoverHandler(e);
-						}}
-							ondrop={(e) => {
-							if (column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)) {
-								return;
-							}
-							dropHandler(e);
-						}}
+							ondragover={column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
+							ondrop={column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) ? null : dropHandler}
 							class:legal-droptarget={column.name === naturaKey
 								? // For naturaKey column, just check basic conditions
 									!column.viewOnly &&
@@ -288,18 +278,8 @@ import {
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={(e) => {
-							if (column.viewOnly || column.name !== naturaKey) {
-								return;
-							}
-							dragoverHandler(e);
-						}}
-							ondrop={(e) => {
-							if (column.viewOnly || column.name !== naturaKey) {
-								return;
-							}
-							dropHandler(e);
-						}}
+							ondragover={column.viewOnly || column.name !== naturaKey ? null : dragoverHandler}
+							ondrop={column.viewOnly || column.name !== naturaKey ? null : dropHandler}
 							class:legal-droptarget={!column.viewOnly &&
 								column.name === naturaKey &&
 								dragColumnState.currentFormat === dbFormat[column.name] &&

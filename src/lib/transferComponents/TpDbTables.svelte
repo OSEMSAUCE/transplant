@@ -180,17 +180,21 @@
 		viewOnly: boolean;
 	}
 
+	console.log('Creating plantingTable with columns:', plantingColumns);
 	let plantingTable = $state<TableColumn[]>(createColumnState(plantingColumns));
+	console.log('Initial plantingTable state:', plantingTable);
 	let landTable = $state<TableColumn[]>(createColumnState(landColumns, ['landName']));
 	let cropTable = $state<TableColumn[]>(createColumnState(cropColumns, ['cropName']));
 
-	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
-		return columns.map((col) => ({
+	function createColumnState(columns: string[], viewOnlyFields: string[] = []) {
+		const result = columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
 			modelRepColumnIndex: -1,
 			viewOnly: viewOnlyFields.includes(col)
 		}));
+		console.log(`createColumnState for [${columns.join(', ')}] created:`, result);
+		return result;
 	}
 
 	// $inspect(plantingTable);
@@ -201,6 +205,14 @@
 		// Set dropEffect to 'copy' to show a copy cursor
 		if (ev.dataTransfer) {
 			ev.dataTransfer.dropEffect = 'copy';
+		}
+		
+		// Get the element that triggered the event
+		const element = ev.currentTarget as HTMLElement;
+		if (element) {
+			const columnName = element.dataset.headerName;
+			const columnIndex = element.dataset.columnIndex;
+			console.log('Dragover on column:', columnName, 'index:', columnIndex);
 		}
 	}
 
@@ -238,7 +250,11 @@
 
 		// Get the dragged column index from dataTransfer
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text') || '-1');
-		if (draggedColumnIndex < 0) return; // Invalid dragged column
+		console.log('Drop event - draggedColumnIndex:', draggedColumnIndex);
+		if (draggedColumnIndex < 0) {
+			console.log('Invalid dragged column index, aborting drop');
+			return; // Invalid dragged column
+		}
 
 		// Find the drop target element (th or td) with column index
 		// Use currentTarget (the element with the event listener) instead of target (which could be a child element)
@@ -254,9 +270,18 @@
 
 		// Get the target column name
 		const targetColumnName = dbDropTable[targetColumnIndex].name;
+		
+		// Identify which table we're dropping on
+		let tableName = 'unknown';
+		if (dbDropTable === plantingTable) tableName = 'plantingTable';
+		if (dbDropTable === landTable) tableName = 'landTable';
+		if (dbDropTable === cropTable) tableName = 'cropTable';
+		
+		console.log(`Drop target: ${tableName}, column: ${targetColumnName}, index: ${targetColumnIndex}`);
 
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
+			console.log('Target is view-only, aborting drop');
 			// Cannot map to view-only field
 			return;
 		}
@@ -355,8 +380,10 @@
 			importedData.columns[dbDropTable[targetColumnIndex].modelRepColumnIndex].isMapped = false;
 			importedData.columns[dbDropTable[targetColumnIndex].modelRepColumnIndex].mappedTo = undefined;
 		}
+		console.log(`Setting ${tableName}[${targetColumnIndex}].modelRepColumnIndex from ${dbDropTable[targetColumnIndex].modelRepColumnIndex} to ${draggedColumnIndex}`);
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
+		console.log(`Column mapping updated: ${targetColumnName} in ${tableName} now maps to importedData.columns[${draggedColumnIndex}]`);
 
 		// Add the appropriate table prefix to mappedTo
 		let tablePrefix = '';
@@ -368,10 +395,14 @@
 
 		// Propagate landName and cropName between tables
 		if (targetColumnName === 'landName' && dbDropTable === plantingTable) {
+			console.log('Mapping landName in plantingTable, draggedColumnIndex:', draggedColumnIndex);
 			// Find landName in landTable and update it
 			const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
+			console.log('landNameIndex in landTable:', landNameIndex);
 			if (landNameIndex !== -1) {
+				console.log('Setting landTable[landNameIndex].modelRepColumnIndex to', draggedColumnIndex);
 				landTable[landNameIndex].modelRepColumnIndex = draggedColumnIndex;
+				console.log('landTable after update:', landTable.map(col => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex })));
 			}
 		} else if (targetColumnName === 'cropName' && dbDropTable === plantingTable) {
 			// Find cropName in cropTable and update it
@@ -397,7 +428,10 @@
 	}
 
 	function plantingDropHandler(ev: DragEvent) {
+		console.log('plantingDropHandler called');
+		console.log('plantingTable before:', plantingTable.map(col => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex })));
 		dropHandler(ev, plantingTable, plantingDbFormat);
+		console.log('plantingTable after:', plantingTable.map(col => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex })));
 	}
 
 	function landDropHandler(ev: DragEvent) {
@@ -460,11 +494,33 @@
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={column.viewOnly ? null : dragoverHandler}
-					ondrop={column.viewOnly ? null : plantingDropHandler}
-					class:legal-droptarget={!column.viewOnly &&
-						dragColumnState.currentFormat === plantingDbFormat[column.name] &&
-						column.modelRepColumnIndex === -1}
+					ondragover={dragoverHandler}
+					ondrop={(() => {
+						// Don't allow drop for view-only columns
+						if (column.viewOnly) return null;
+
+						// Planting table requires landName and cropName to be mapped first (except for those columns themselves)
+						if (
+							column.name !== 'landName' && 
+							column.name !== 'cropName' &&
+							!plantingTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+						) {
+							return null;
+						}
+
+						// Use the standard drop handler - normalization is checked inside dropHandler
+						return plantingDropHandler;
+					})()}
+					class:legal-droptarget={column.name === 'landName' || column.name === 'cropName'
+						? // For key columns, just check basic conditions
+							!column.viewOnly &&
+							column.modelRepColumnIndex === -1 &&
+							dragColumnState.currentFormat === plantingDbFormat[column.name]
+						: // For other columns, check that landName is mapped
+							!column.viewOnly &&
+							plantingTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+							dragColumnState.currentFormat === plantingDbFormat[column.name] &&
+							column.modelRepColumnIndex === -1}
 				>
 					<div class="column-header">
 						<FormatSelectorComponent
@@ -496,11 +552,26 @@
 					<td
 						data-header-name={column.name}
 						data-column-index={index}
-						ondragover={column.viewOnly ? null : dragoverHandler}
-						ondrop={column.viewOnly ? null : plantingDropHandler}
-						class:legal-droptarget={!column.viewOnly &&
-							dragColumnState.currentFormat === plantingDbFormat[column.name] &&
-							column.modelRepColumnIndex === -1}
+						ondragover={column.viewOnly ||
+						!((column.name === 'landName' || column.name === 'cropName') || 
+						  plantingTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1))
+							? null
+							: dragoverHandler}
+						ondrop={column.viewOnly ||
+						!((column.name === 'landName' || column.name === 'cropName') || 
+						  plantingTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1))
+							? null
+							: plantingDropHandler}
+						class:legal-droptarget={column.name === 'landName' || column.name === 'cropName'
+							? // For key columns, just check basic conditions
+								!column.viewOnly &&
+								column.modelRepColumnIndex === -1 &&
+								dragColumnState.currentFormat === plantingDbFormat[column.name]
+							: // For other columns, check that landName is mapped
+								!column.viewOnly &&
+								plantingTable.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+								dragColumnState.currentFormat === plantingDbFormat[column.name] &&
+								column.modelRepColumnIndex === -1}
 					>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
@@ -513,6 +584,20 @@
 		{/each}
 	</tbody>
 </table>
+
+<DbTableInstance
+	tableColumns={plantingColumns}
+	title="Planting Table"
+	naturaKey="landName"
+	dragoverHandler={dragoverHandler}
+	dropHandler={plantingDropHandler}
+	dbFormat={plantingDbFormat}
+	clearDbColumn={clearDbColumn}
+	getUniqueValues={getUniqueValues}
+	pullFirstGpsSelected={pullFirstGpsSelected}
+	pullFirstPolygonSelected={pullFirstPolygonSelected}
+	getLandIdForRow={getLandIdForRow}
+/>
 
 <DbTableInstance
 	tableColumns={landColumns}
