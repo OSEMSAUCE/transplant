@@ -61,6 +61,7 @@
 <style>
   .account-menu {
     position: relative;
+    display: flex;
   }
   
   .account-button {
@@ -70,6 +71,7 @@
     background-color: #4a5568;
     color: white;
     border: none;
+    transform: translateY(0.1rem) !important; /* Adjust signed-in account button position */
   }
   
   .dropdown-menu {
@@ -109,6 +111,8 @@
   
   .auth-links {
     display: flex;
+    align-items: center;
+    height: 100%;
     gap: 1rem;
   }
   
@@ -116,6 +120,10 @@
     padding: 0.2rem 0.7rem;
     border-radius: 4px;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    height: 28px;
+    transform: translateY(-0.2rem); /* Adjust login/signup links position */
   }
   
   .login-link {

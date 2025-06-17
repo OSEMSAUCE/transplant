@@ -66,6 +66,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
+  height: 40px; /* Fixed height container */
 }
 .nav-links a {
   padding: 0.15rem 0.2rem;
@@ -86,14 +87,16 @@
 .github-logo {
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0;
   color: #fff;
   transition: color 0.15s;
+  height: 100%;
 }
 .github-logo svg {
   display: block;
   height: 32px;
   width: 32px;
+  transform: translateY(-3px); /* Fine-tune vertical position */
 }
 .github-logo:hover {
   color: #8b949e;
