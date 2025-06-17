@@ -79,14 +79,14 @@
     background-color: white;
     border: 1px solid #e2e8f0;
     border-radius: 4px;
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     width: 200px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
   }
   
   .user-email {
-    padding: 0.5rem;
+    /* padding: 0.5rem; */
     border-bottom: 1px solid #e2e8f0;
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
@@ -113,7 +113,7 @@
   }
   
   .login-link, .signup-link {
-    padding: 0.5rem 1rem;
+    padding: 0.2rem 0.7rem;
     border-radius: 4px;
     text-decoration: none;
   }
