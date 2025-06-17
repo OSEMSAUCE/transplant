@@ -12,7 +12,7 @@
 
 	import DbTableInstance from './DbTableInstance.svelte';
 
-	// Define the GPS data type
+	
 	type GpsData =
 		| { type: 'full'; value: string }
 		| { type: 'pair'; lat: string; lon: string }

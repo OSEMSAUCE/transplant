@@ -22,6 +22,9 @@ import {
 ];
 
 	let { tableColumns, title, naturaKey, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
+
+// Debug the naturaKey prop
+console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey);
     
     interface TableColumn {
 		name: string;
@@ -40,12 +43,14 @@ import {
 		console.log('viewOnlyFields:', viewOnlyFields);
 		console.log('naturaKey:', naturaKey);
 		
-		return columns.map((col) => ({
+		const result = columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
 			modelRepColumnIndex: -1,
 			viewOnly: viewOnlyFields.includes(col)
 		}));
+		console.log(`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}:`, result);
+		return result;
 	}
 
 
@@ -85,7 +90,10 @@ import {
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={dragoverHandler}
+					ondragover={(e) => {
+						console.log(`Header dragover for ${title}, column ${column.name}, naturaKey=${naturaKey}`);
+						return dragoverHandler(e);
+					}}
 					ondrop={(() => {
 						console.log('Drop attempt on column:', column.name);
 						console.log('naturaKey value:', naturaKey);
@@ -221,8 +229,26 @@ import {
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) ? null : dragoverHandler}
-							ondrop={column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) ? null : dropHandler}
+							ondragover={(e) => {
+							const hasNaturaKeyMapped = table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1);
+							console.log(`Dragover check for ${title}, column ${column.name}, naturaKey=${naturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
+							if (column.viewOnly || (!hasNaturaKeyMapped && column.name !== naturaKey)) {
+								return null;
+							} else {
+								return dragoverHandler(e);
+							}
+						}}
+							ondrop={(e) => {
+							const hasNaturaKeyMapped = table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1);
+							console.log(`Drop check for ${title}, column ${column.name}, naturaKey=${naturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
+							if (column.viewOnly || (!hasNaturaKeyMapped && column.name !== naturaKey)) {
+								console.log(`Drop blocked for ${column.name} - viewOnly=${column.viewOnly}, naturaKey=${naturaKey}`);
+								return null;
+							} else {
+								console.log(`Drop allowed for ${column.name}, calling dropHandler`);
+								return dropHandler(e);
+							}
+						}}
 							class:legal-droptarget={column.name === naturaKey
 								? // For naturaKey column, just check basic conditions
 									!column.viewOnly &&
