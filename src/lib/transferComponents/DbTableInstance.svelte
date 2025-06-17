@@ -21,7 +21,7 @@ import {
 	{ name: 'landNotes', label: 'Notes', modelRepColumnIndex: 2, viewOnly: false }
 ];
 
-	let { tableColumns, title, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
+	let { tableColumns, title, naturaKey, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
     
     interface TableColumn {
 		name: string;
@@ -32,10 +32,14 @@ import {
 
 
 	
-	let table = $state<TableColumn[]>(createColumnState(tableColumns, ['landName']));
+	let table = $state<TableColumn[]>(createColumnState(tableColumns, [naturaKey]));
 	
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
+		console.log('Creating column state with columns:', columns);
+		console.log('viewOnlyFields:', viewOnlyFields);
+		console.log('naturaKey:', naturaKey);
+		
 		return columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
@@ -57,7 +61,7 @@ import {
 <table
 	class="no-table-bottom-margin land-table"
 	class:greyed-out={!table.some(
-		(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+		(col) => col.name === naturaKey && col.modelRepColumnIndex !== -1
 	)}
 >
 	<thead>
@@ -76,35 +80,45 @@ import {
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- Iterate over land table columns -->
+			<!-- Iterate over table columns -->
 			{#each table as column, index}
 				<th
 					data-header-name={column.name}
 					data-column-index={index}
-					ondragover={dragoverHandler}
-					ondrop={(() => {
-						// Don't allow drop for view-only columns
-						if (column.viewOnly) return null;
+					ondragover={(e) => dragoverHandler(e)}
+					ondrop={(e) => {
+						console.log('Drop attempt on column:', column.name);
+						console.log('naturaKey value:', naturaKey);
+						console.log('Is viewOnly:', column.viewOnly);
+						console.log('Has naturaKey mapped:', table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1));
 
-						// Land table requires landName to be mapped first (except for landName itself)
+						// Don't allow drop for view-only columns
+						if (column.viewOnly) {
+							console.log('Blocking drop: column is viewOnly');
+							return;
+						}
+
+						// Table requires naturaKey to be mapped first (except for naturaKey itself)
 						if (
-							column.name !== 'landName' &&
-							!table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
+							column.name !== naturaKey &&
+							!table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
 						) {
-							return null;
+							console.log('Blocking drop: naturaKey not mapped yet and this is not naturaKey column');
+							return;
 						}
 
 						// Use the standard drop handler - normalization is checked inside dropHandler
-						return dropHandler;
-					})()}
-					class:legal-droptarget={column.name === 'landName'
-						? // For landName column, just check basic conditions
+						console.log('Allowing drop, using standard dropHandler');
+						dropHandler(e);
+					}}
+					class:legal-droptarget={column.name === naturaKey
+						? // For naturaKey column, just check basic conditions
 							!column.viewOnly &&
 							column.modelRepColumnIndex === -1 &&
 							dragColumnState.currentFormat === dbFormat[column.name]
 						: // For other columns, check normalization too
 							!column.viewOnly &&
-							table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) &&
+							table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) &&
 							dragColumnState.currentFormat === dbFormat[column.name] &&
 							column.modelRepColumnIndex === -1 &&
 							(() => {
@@ -116,7 +130,7 @@ import {
 
 								// For other columns, check normalization
 								const landColIndex =
-									table.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+									table.find((col) => col.name === naturaKey)?.modelRepColumnIndex ?? -1;
 								if (landColIndex === -1) return false;
 
 								const landCol = importedData.columns[landColIndex];
@@ -140,7 +154,7 @@ import {
 							isToggled={true}
 						/>
 						{column.name}
-						{#if !column.viewOnly && (table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1) || column.name === 'landName')}
+						{#if !column.viewOnly && (table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1) || column.name === naturaKey)}
 							<button
 								type="button"
 								onclick={() => clearDbColumn(table, index)}
@@ -154,8 +168,8 @@ import {
 		</tr>
 	</thead>
 	<tbody>
-		{#if table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)}
-			{@const landNameColumn = table.find((col) => col.name === 'landName')}
+		{#if table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)}
+			{@const landNameColumn = table.find((col) => col.name === naturaKey)}
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
@@ -207,23 +221,27 @@ import {
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={column.viewOnly ||
-							!table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
-								? null
-								: dragoverHandler}
-							ondrop={column.viewOnly ||
-							!table.some((col) => col.name === 'landName' && col.modelRepColumnIndex !== -1)
-								? null
-								: dropHandler}
-							class:legal-droptarget={column.name === 'landName'
-								? // For landName column, just check basic conditions
+							ondragover={(e) => {
+							if (column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)) {
+								return;
+							}
+							dragoverHandler(e);
+						}}
+							ondrop={(e) => {
+							if (column.viewOnly || !table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)) {
+								return;
+							}
+							dropHandler(e);
+						}}
+							class:legal-droptarget={column.name === naturaKey
+								? // For naturaKey column, just check basic conditions
 									!column.viewOnly &&
 									column.modelRepColumnIndex === -1 &&
 									dragColumnState.currentFormat === dbFormat[column.name]
 								: // For other columns, check normalization too
 									!column.viewOnly &&
 									table.some(
-										(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
+										(col) => col.name === naturaKey && col.modelRepColumnIndex !== -1
 									) &&
 									dragColumnState.currentFormat === dbFormat[column.name] &&
 									column.modelRepColumnIndex === -1 &&
@@ -236,7 +254,7 @@ import {
 
 										// For other columns, check normalization
 										const landColIndex =
-											table.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
+											table.find((col) => col.name === naturaKey)?.modelRepColumnIndex ?? -1;
 										if (landColIndex === -1) return false;
 
 										const landCol = importedData.columns[landColIndex];
@@ -270,10 +288,20 @@ import {
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
-							ondragover={column.viewOnly || column.name !== 'landName' ? null : dragoverHandler}
-							ondrop={column.viewOnly || column.name !== 'landName' ? null : dropHandler}
+							ondragover={(e) => {
+							if (column.viewOnly || column.name !== naturaKey) {
+								return;
+							}
+							dragoverHandler(e);
+						}}
+							ondrop={(e) => {
+							if (column.viewOnly || column.name !== naturaKey) {
+								return;
+							}
+							dropHandler(e);
+						}}
 							class:legal-droptarget={!column.viewOnly &&
-								column.name === 'landName' &&
+								column.name === naturaKey &&
 								dragColumnState.currentFormat === dbFormat[column.name] &&
 								column.modelRepColumnIndex === -1}
 						>

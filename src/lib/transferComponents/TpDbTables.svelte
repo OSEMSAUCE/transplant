@@ -517,6 +517,7 @@
 <DbTableInstance
 	tableColumns={landColumns}
 	title="Land Table"
+	naturaKey="landName"
 	dragoverHandler={dragoverHandler}
 	dropHandler={landDropHandler}
 	dbFormat={landDbFormat}
