@@ -95,7 +95,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 	)}
 >
 	<thead>
-	
+		<!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
 		<tr>
 			{#if showGpsAndPolygonCols}
 			<!-- The GPS column is always first and separate from the iteration -->
@@ -211,7 +211,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 			<tr>
-				{#if showGpsAndPolygonCols}
+<!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
+ 				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell is always first -->
 					<td style="position: relative; padding: 8px;">
 						{#key uniqueRowIndex}
@@ -305,12 +306,12 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 			<tr>
 				{#if showGpsAndPolygonCols}
-				<td style="position: relative;"></td>
-				<td style="position: relative;"></td>
+				<!-- <td style="position: relative;"></td>
+				<td style="position: relative;"></td> -->
 				{/if}
 				
-				<td style="position: relative;"></td>
-				<td style="position: relative;"></td>
+				<!-- <td style="position: relative;"></td>
+				<td style="position: relative;"></td> -->
 				{#each table as column, index}
 					<td
 						data-header-name={column.name}
