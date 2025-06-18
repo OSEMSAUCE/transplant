@@ -605,6 +605,7 @@
 	pullFirstGpsSelected={pullFirstGpsSelected}
 	pullFirstPolygonSelected={pullFirstPolygonSelected}
 	getLandIdForRow={getLandIdForRow}
+	showGpsAndPolygonCols={false}
 />
 
 <DbTableInstance
@@ -620,8 +621,8 @@
     pullFirstGpsSelected={pullFirstGpsSelected}
     pullFirstPolygonSelected={pullFirstPolygonSelected}
     getLandIdForRow={getLandIdForRow}
-    
-/>
+	showGpsAndPolygonCols={true}
+	/>
 
 <DbTableInstance
 	tableColumns={cropColumns}
@@ -636,7 +637,7 @@
 	pullFirstGpsSelected={pullFirstGpsSelected}
 	pullFirstPolygonSelected={pullFirstPolygonSelected}
 	getLandIdForRow={getLandIdForRow}
-/>
+	showGpsAndPolygonCols={false}/>
 
 <div class="db-table-container">
 	<div class="db-table-dashboard">

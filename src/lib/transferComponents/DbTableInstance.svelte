@@ -14,14 +14,35 @@ import {
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
     import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
   
-	
+	// export let showGpsAndPolygonCols = false;
+
+	// 
+	// function showGpsAndPolygonCols() {
+	// 	// go get the gps and polygon cols and render them at the beginning of the instance with prop showGpsAndPolygonCols=true 
+	// 	return true;
+	// }
+
 	const landColumns = [
 	{ name: 'landName', label: 'Land Name', modelRepColumnIndex: 0, viewOnly: false },
 	{ name: 'hectares', label: 'Hectares', modelRepColumnIndex: 1, viewOnly: false },
 	{ name: 'landNotes', label: 'Notes', modelRepColumnIndex: 2, viewOnly: false }
 ];
 
-	let { tableColumns, title, naturaKey, viewOnlyNaturaKey = false, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow, showGpsAndPolygonCols = false } = $props();
+	let {
+		tableColumns,
+		title,
+		naturaKey,
+		viewOnlyNaturaKey = false,
+		dragoverHandler,
+		dropHandler,
+		dbFormat,
+		clearDbColumn,
+		getUniqueValues,
+		pullFirstGpsSelected,
+		pullFirstPolygonSelected,
+		getLandIdForRow,
+		showGpsAndPolygonCols,
+	} = $props();
 
 	// Debug the props
 console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
@@ -75,8 +96,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 >
 	<thead>
 	
-		<!-- {#if showGpsAndPolygonCols} -->
 		<tr>
+			{#if showGpsAndPolygonCols}
 			<!-- The GPS column is always first and separate from the iteration -->
 			<th class="gps-column">
 				<div class="column-header">
@@ -91,8 +112,9 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- {/if} -->
-					<!-- Iterate over table columns -->
+			{/if}
+				
+			<!-- Iterate over table columns -->
 			{#each table as column, index}
 				<th
 					data-header-name={column.name}
@@ -207,11 +229,12 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 							{/if}
 						{/key}
 					</td>
-					<!-- Polygon column cell is second -->
-					<td style="position: relative; padding: 4px;">
-						<div
-							class="polygon-cell"
-							style="display: flex; justify-content: center; width: 100%; margin: 0;"
+				{/if}
+				<!-- Polygon column cell is second -->
+				<td style="position: relative; padding: 4px;">
+					<div
+						class="polygon-cell"
+						style="display: flex; justify-content: center; width: 100%; margin: 0;"
 						>
 							{#key uniqueRowIndex}
 								{@const landId = getLandIdForRow(uniqueRowIndex)}
@@ -234,7 +257,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 							{/key}
 						</div>
 					</td>
-				{/if}
+				<!-- {/if} -->
 				{#each table as column, index}
 					<td
 						data-header-name={column.name}
@@ -281,6 +304,11 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 	{:else}
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 			<tr>
+				{#if showGpsAndPolygonCols}
+				<td style="position: relative;"></td>
+				<td style="position: relative;"></td>
+				{/if}
+				
 				<td style="position: relative;"></td>
 				<td style="position: relative;"></td>
 				{#each table as column, index}
