@@ -428,7 +428,7 @@ tbody td.legal-droptarget {
 }
 
 tbody td.drag-over {
-	border: 2px solid #4caf50 !important;
+	border: 0.05rem solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
 	cursor: pointer !important;
 }
@@ -484,7 +484,7 @@ AUTOCOMPLETE LISTS
 #autocomplete-items-list li.selected {
 	background-color: #21f35625 !important;
 	color: #2196f3 !important;
-	border: 2px solid #21f35655;
+	border: 0.05rem solid #21f35655;
 	border-radius: 0.25rem;
 	font-weight: bold;
 }
@@ -518,7 +518,7 @@ AUTOCOMPLETE LISTS
 #stakeholder-autocomplete-list li.selected {
 	background-color: #2196f355 !important;
 	color: #2196f3 !important;
-	border: 2px solid #2196f355;
+	border: 0.05rem solid #2196f355;
 	border-radius: 0.25rem;
 	font-weight: bold;
 }
@@ -554,68 +554,68 @@ Active/Drag-Over: Shows when a target is being hovered (drag-over)
 
 // gps & landName match
 .isGpsMatch {
-	border: 2px solid #2196f3 !important;
+	border: 0.05rem solid #2196f3 !important;
 	background-color: rgba(243, 142, 27, 0.2) !important;
 }
 
 /* Outline/Indication Styles (legal drop targets) */
 th.legal-droptarget {
-	border: 2px solid #4caf50;
+	border: 0.05rem solid #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer !important;
 }
 
 .land-table th.legal-droptarget {
-	border: 2px solid #2196f3 !important;
+	border: 0.05rem solid #2196f3 !important;
 	background-color: rgba(33, 150, 243, 0.1) !important;
 }
 .crop-table th.legal-droptarget {
-	border: 2px solid #4caf50 !important;
+	border: 0.05rem solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.1) !important;
 }
 .planting-table th.legal-droptarget {
-	border: 2px solid #f38e1b !important;
+	border: 0.05rem solid #f38e1b !important;
 	background-color: rgba(243, 142, 27, 0.1) !important;
 }
 
 /* Compatible target outline for table cells */
 .compatible-target {
-	border: 2px dashed #4caf50;
+	border: 0.05rem dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer !important;
 }
 .land-table .compatible-target {
-	border: 2px dashed #2196f3;
+	border: 0.05rem dashed #2196f3;
 	background-color: rgba(33, 150, 243, 0.08);
 }
 .crop-table .compatible-target {
-	border: 2px dashed #4caf50;
+	border: 0.05rem dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.08);
 }
 .planting-table .compatible-target {
-	border: 2px dashed #f38e1b;
+	border: 0.05rem dashed #f38e1b;
 	background-color: rgba(243, 142, 27, 0.08);
 }
 
 /* Active/Drag-Over Styles */
 .drag-over {
-	border: 2px solid #4caf50 !important;
+	border: 0.05rem solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
 	cursor: pointer !important;
 }
 .land-table .drag-over,
 .land-table.drag-over {
-	border: 2px solid #2196f3 !important;
+	border: 0.05rem solid #2196f3 !important;
 	background-color: rgba(33, 150, 243, 0.2) !important;
 }
 .crop-table .drag-over,
 .crop-table.drag-over {
-	border: 2px solid #4caf50 !important;
+	border: 0.05rem solid #4caf50 !important;
 	background-color: rgba(76, 175, 80, 0.2) !important;
 }
 .planting-table .drag-over,
 .planting-table.drag-over {
-	border: 2px solid #f38e1b !important;
+	border: 0.05rem solid #f38e1b !important;
 	background-color: rgba(243, 142, 27, 0.2) !important;
 }
 
@@ -646,13 +646,13 @@ th.legal-droptarget {
 
 /* Table border color rules grouped for clarity */
 .land-table {
-	border: 1px solid #2196f3;
+	border: 0.05rem solid #2196f3;
 }
 .crop-table {
-	border: 1px solid #4caf50;
+	border: 0.05rem solid #4caf50;
 }
 .planting-table {
-	border: 1px solid #f38e1b;
+	border: 0.05rem solid #f38e1b;
 }
 
 .gps-column {
@@ -671,7 +671,7 @@ th.required-field {
 th span.required-mapped {
 	position: relative;
 	display: block;
-	border-left: 3px solid #4caf50;
+	border-left: 0.05rem solid #4caf50;
 	padding-left: 5px;
 	font-weight: bold;
 }
@@ -683,7 +683,7 @@ th.required-field span:not([class^='format-']):after {
 
 /* Existing compatible target styles */
 .compatible-target {
-	border: 2px dashed #4caf50;
+	border: 0.05rem dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer;
 }
@@ -818,7 +818,7 @@ button {
 }
 
 .compatible-target {
-	border: 2px dashed #4caf50;
+	border: 0.05rem dashed #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
 	cursor: pointer;
 }
