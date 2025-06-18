@@ -177,21 +177,40 @@ div.container {
 	padding-bottom: 0rem;
 	position: relative;
 }
+
+/* Generic: remove all borders for a clean slate (optional, but helps) */
 th[class^="col-"], td[class^="col-"] {
-	border: 2px solid transparent !important; // default, gets overridden below
+	border: none !important;
   }
-  
-  // Example for landName and cropName:
-  th.col-landName, td.col-landName {
-	border: 2px solid #2196f3 !important;
-  }
-  th.col-cropName, td.col-cropName {
-	border: 2px solid #4caf50 !important;
-  }
-  th.col-hectares, td.col-hectares {
-	border: 2px solid #2196f3 !important;
-  }
-  // Add more as needed...
+  /* LAND columns: blue borders */
+th.col-landName, td.col-landName,
+th.col-hectares, td.col-hectares,
+th.col-landNotes, td.col-landNotes
+// Add more land columns here if needed
+{
+  border-left: 0.05rem solid #2196f3 !important;
+  border-right: 0.05rem solid #2196f3 !important;
+}
+th.col-landName, th.col-hectares, th.col-landNotes {
+  border-top: 0.05rem solid #2196f3 !important;
+}
+
+/* CROP columns: green borders */
+th.col-cropName, td.col-cropName,
+th.col-speciesId, td.col-speciesId,
+th.col-seed_info, td.col-seed_info,
+th.col-cropStock, td.col-cropStock,
+th.col-cropNotes, td.col-cropNotes
+// Add more crop columns here if needed
+{
+  border-left: 0.05rem solid #4caf50 !important;
+  border-right: 0.05rem solid #4caf50 !important;
+}
+th.col-cropName, th.col-speciesId, th.col-seed_info, th.col-cropStock, th.col-cropNotes {
+  border-top: 0.05rem solid #4caf50 !important;
+}
+
+
 
 .table-header {
 	position: sticky;

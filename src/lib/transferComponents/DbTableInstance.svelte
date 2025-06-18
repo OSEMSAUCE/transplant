@@ -214,7 +214,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 <!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
  				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell is always first -->
-					<td class={"col-" + column.name}
+					<td
 					style="position: relative; padding: 8px;">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -233,7 +233,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 					</td>
 				{/if}
 				<!-- Polygon column cell is second -->
-				<td class={"col-" + column.name}
+				<td
 				style="position: relative; padding: 4px;">
 					<div
 						class="polygon-cell"
@@ -262,7 +262,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 					</td>
 				<!-- {/if} -->
 				{#each table as column, index}
-					<td class={"col-" + column.name}
+					<td 
 						data-header-name={column.name}
 						data-column-index={index}
 						ondragover={(e) => {
@@ -306,17 +306,14 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 		{/each}
 	{:else}
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-			<tr>
+			<tr >
 				{#if showGpsAndPolygonCols}
-				<!-- <td style="position: relative;"></td>
-				<td style="position: relative;"></td> -->
-				{/if}
+			
+				{/if}	
 				
-				<!-- <td style="position: relative;"></td>
-				<td style="position: relative;"></td> -->
+			 
 				{#each table as column, index}
-					<td
-					class={"col-" + column.name}
+					<td class={"col-" + column.name}
 					data-header-name={column.name}
 					data-column-index={index}
 					ondragover={column.viewOnly || column.name !== naturaKey ? null : dragoverHandler}
