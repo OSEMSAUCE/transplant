@@ -116,7 +116,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 				
 			<!-- Iterate over table columns -->
 			{#each table as column, index}
-				<th
+				<th class={"col-" + column.name}
 					data-header-name={column.name}
 					data-column-index={index}
 					ondragover={(e) => {
@@ -214,7 +214,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 <!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
  				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell is always first -->
-					<td style="position: relative; padding: 8px;">
+					<td class={"col-" + column.name}
+					style="position: relative; padding: 8px;">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 							{#if gpsResult}
@@ -232,7 +233,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 					</td>
 				{/if}
 				<!-- Polygon column cell is second -->
-				<td style="position: relative; padding: 4px;">
+				<td class={"col-" + column.name}
+				style="position: relative; padding: 4px;">
 					<div
 						class="polygon-cell"
 						style="display: flex; justify-content: center; width: 100%; margin: 0;"
@@ -260,7 +262,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 					</td>
 				<!-- {/if} -->
 				{#each table as column, index}
-					<td
+					<td class={"col-" + column.name}
 						data-header-name={column.name}
 						data-column-index={index}
 						ondragover={(e) => {
@@ -314,15 +316,16 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 				<td style="position: relative;"></td> -->
 				{#each table as column, index}
 					<td
-						data-header-name={column.name}
-						data-column-index={index}
-						ondragover={column.viewOnly || column.name !== naturaKey ? null : dragoverHandler}
-						ondrop={column.viewOnly || column.name !== naturaKey ? null : dropHandler}
-						class:legal-droptarget={!column.viewOnly &&
-							column.name === naturaKey &&
-							dragColumnState.currentFormat === dbFormat[column.name] &&
-							column.modelRepColumnIndex === -1}
-					>
+					class={"col-" + column.name}
+					data-header-name={column.name}
+					data-column-index={index}
+					ondragover={column.viewOnly || column.name !== naturaKey ? null : dragoverHandler}
+					ondrop={column.viewOnly || column.name !== naturaKey ? null : dropHandler}
+					class:legal-droptarget={!column.viewOnly &&
+						column.name === naturaKey &&
+						dragColumnState.currentFormat === dbFormat[column.name] &&
+						column.modelRepColumnIndex === -1}
+				>
 						{#if column.modelRepColumnIndex !== -1}
 							{importedData.columns[column.modelRepColumnIndex].formattedValues[rowIndex]}
 						{:else}
