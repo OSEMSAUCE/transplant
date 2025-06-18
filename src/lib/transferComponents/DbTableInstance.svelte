@@ -23,7 +23,9 @@ import {
 
 	let { tableColumns, title, naturaKey, viewOnlyNaturaKey = false, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
 
-// Debug the props
+	export let showGpsAndPolygonCols = false;
+
+	// Debug the props
 console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
 
 // Debug the naturaKey prop
@@ -74,6 +76,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 	)}
 >
 	<thead>
+	
+		<!-- {#if showGpsAndPolygonCols} -->
 		<tr>
 			<!-- The GPS column is always first and separate from the iteration -->
 			<th class="gps-column">
@@ -89,7 +93,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- Iterate over table columns -->
+			<!-- {/if} -->
+					<!-- Iterate over table columns -->
 			{#each table as column, index}
 				<th
 					data-header-name={column.name}
@@ -186,6 +191,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
+				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell is always first -->
 					<td style="position: relative; padding: 8px;">
 						{#key uniqueRowIndex}
@@ -230,7 +236,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 							{/key}
 						</div>
 					</td>
-					{#each table as column, index}
+						{#each table as column, index}
 						<td
 							data-header-name={column.name}
 							data-column-index={index}
@@ -319,6 +325,7 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 		{:else}
 			{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 				<tr>
+					<td style="position: relative;"></td>
 					<td style="position: relative;"></td>
 					{#each table as column, index}
 						<td
