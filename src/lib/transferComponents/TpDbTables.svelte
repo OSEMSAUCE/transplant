@@ -589,6 +589,7 @@
 	tableColumns={plantingColumns}
 	title="Planting Table"
 	naturaKey="landName"
+	viewOnlyNaturaKey={false}
 	dragoverHandler={dragoverHandler}
 	dropHandler={plantingDropHandler}
 	dbFormat={plantingDbFormat}
@@ -603,6 +604,7 @@
 	tableColumns={landColumns}
 	title="Land Table"
 	naturaKey="landName"
+	viewOnlyNaturaKey={true}
 	dragoverHandler={dragoverHandler}
 	dropHandler={landDropHandler}
 	dbFormat={landDbFormat}
@@ -627,7 +629,7 @@
 >
 	<thead>
 		<tr>
-			<!-- The GPS column is always first and separate from the iteration -->
+			
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
@@ -1032,6 +1034,7 @@
 		{/if}
 	</tbody>
 </table>
+-->
 
 <style>
 </style>

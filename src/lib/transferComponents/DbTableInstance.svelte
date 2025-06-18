@@ -21,7 +21,10 @@ import {
 	{ name: 'landNotes', label: 'Notes', modelRepColumnIndex: 2, viewOnly: false }
 ];
 
-	let { tableColumns, title, naturaKey, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
+	let { tableColumns, title, naturaKey, viewOnlyNaturaKey = false, dragoverHandler, dropHandler, dbFormat, clearDbColumn, getUniqueValues, pullFirstGpsSelected, pullFirstPolygonSelected, getLandIdForRow } = $props();
+
+// Debug the props
+console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
 
 // Debug the naturaKey prop
 console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey);
@@ -35,21 +38,22 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 
 
 	
-	let table = $state<TableColumn[]>(createColumnState(tableColumns, [naturaKey]));
+	let table = $state<TableColumn[]>(createColumnState(tableColumns, [])); // Don't make naturaKey view-only
 	
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
 		console.log('Creating column state with columns:', columns);
 		console.log('viewOnlyFields:', viewOnlyFields);
-		console.log('naturaKey:', naturaKey);
+		console.log('naturaKey:', naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
 		
 		const result = columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
 			modelRepColumnIndex: -1,
-			viewOnly: viewOnlyFields.includes(col)
+			// Make the natural key column view-only if viewOnlyNaturaKey is true
+			viewOnly: viewOnlyFields.includes(col) || (viewOnlyNaturaKey && col === naturaKey)
 		}));
-		console.log(`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}:`, result);
+		console.log(`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}:`, result);
 		return result;
 	}
 
@@ -95,14 +99,15 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 						return dragoverHandler(e);
 					}}
 					ondrop={(() => {
-						console.log('Drop attempt on column:', column.name);
+						console.log(`Drop attempt on header for ${title}, column ${column.name}`);
 						console.log('naturaKey value:', naturaKey);
 						console.log('Is viewOnly:', column.viewOnly);
+						console.log('viewOnlyNaturaKey setting:', viewOnlyNaturaKey);
 						console.log('Has naturaKey mapped:', table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1));
 
 						// Don't allow drop for view-only columns
 						if (column.viewOnly) {
-							console.log('Blocking drop: column is viewOnly');
+							console.log(`Blocking drop on ${column.name}: column is viewOnly`);
 							return null;
 						}
 
@@ -231,8 +236,16 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 							data-column-index={index}
 							ondragover={(e) => {
 							const hasNaturaKeyMapped = table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1);
-							console.log(`Dragover check for ${title}, column ${column.name}, naturaKey=${naturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
-							if (column.viewOnly || (!hasNaturaKeyMapped && column.name !== naturaKey)) {
+							console.log(`Dragover check for ${title}, column ${column.name}, naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
+							
+							// Block dragover if:
+							// 1. Column is view-only, OR
+							// 2. This is the naturaKey column and viewOnlyNaturaKey is true, OR
+							// 3. This is not the naturaKey column and naturaKey is not mapped yet
+							if (column.viewOnly || 
+							    (column.name === naturaKey && viewOnlyNaturaKey) || 
+							    (!hasNaturaKeyMapped && column.name !== naturaKey)) {
+								console.log(`Blocking dragover on ${column.name}: viewOnly=${column.viewOnly}, isNaturaKey=${column.name === naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}`);
 								return null;
 							} else {
 								return dragoverHandler(e);
@@ -240,9 +253,16 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 						}}
 							ondrop={(e) => {
 							const hasNaturaKeyMapped = table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1);
-							console.log(`Drop check for ${title}, column ${column.name}, naturaKey=${naturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
-							if (column.viewOnly || (!hasNaturaKeyMapped && column.name !== naturaKey)) {
-								console.log(`Drop blocked for ${column.name} - viewOnly=${column.viewOnly}, naturaKey=${naturaKey}`);
+							console.log(`Drop check for ${title}, column ${column.name}, naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}, hasNaturaKeyMapped=${hasNaturaKeyMapped}`);
+							
+							// Block drop if:
+							// 1. Column is view-only, OR
+							// 2. This is the naturaKey column and viewOnlyNaturaKey is true, OR
+							// 3. This is not the naturaKey column and naturaKey is not mapped yet
+							if (column.viewOnly || 
+							    (column.name === naturaKey && viewOnlyNaturaKey) || 
+							    (!hasNaturaKeyMapped && column.name !== naturaKey)) {
+								console.log(`Drop blocked for ${column.name}: viewOnly=${column.viewOnly}, isNaturaKey=${column.name === naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}`);
 								return null;
 							} else {
 								console.log(`Drop allowed for ${column.name}, calling dropHandler`);
