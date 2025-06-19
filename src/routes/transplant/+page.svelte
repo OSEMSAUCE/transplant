@@ -182,7 +182,7 @@
 </div>
 
 {#if pageIs === 'transplant'}
-	<h5 style="text-align: center">~~~~~~~~~~~~~~~~~~~~~ CSV Import ~~~~~~~~~~~~~~~~~~~~~</h5>
+	<h5 style="text-align: center margin-bottom: 0.3rem margin-top: 5rem !important">~~~~~~~~~~~~~~~~~~~~~ CSV Import ~~~~~~~~~~~~~~~~~~~~~</h5>
 {/if}
 
 {#if importedData.columns.length > 0}
