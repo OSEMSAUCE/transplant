@@ -106,14 +106,14 @@
 </script>
 
 {#if isHeader}
-	<!-- Header mode - just show the column headers -->
+	
 	<th>
 		<div>
 			<span>GPS</span>
 		</div>
 		<div></div>
 	</th>
-	<!-- The Polygon column is second and separate from the iteration -->
+	
 	<th>
 		<div>
 			<span>Polygon</span>
@@ -121,7 +121,7 @@
 		<div></div>
 	</th>
 {:else}
-	<!-- Body mode - show the actual GPS and Polygon data -->
+	
 	<td>
 		{#key uniqueRowIndex}
 			{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -138,7 +138,7 @@
 			{/if}
 		{/key}
 	</td>
-	<!-- Polygon column cell -->
+	
 	<td>
 		<div>
 			{#key uniqueRowIndex}
