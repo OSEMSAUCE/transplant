@@ -303,12 +303,14 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 		{/each}
 	{:else}
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-			<tr >
+			<tr>
 				{#if showGpsAndPolygonCols}
-			
+					<!-- GPS column cell -->
+					<td style="position: relative; padding: 8px;"></td>
+					<!-- Polygon column cell -->
+					<td style="position: relative; padding: 4px;"></td>
 				{/if}	
 				
-			 
 				{#each table as column, index}
 					<td class={"col-" + column.name}
 					data-header-name={column.name}
