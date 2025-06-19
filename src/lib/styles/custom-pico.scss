@@ -73,6 +73,12 @@ h1 {
 
 th {
 	font-size: 0.6rem;
+	height: 2.8rem; // or whatever your standard is
+	min-height: 2.2rem;
+	max-height: 2.2rem;
+	padding-top: 0.3rem;
+	padding-bottom: 0.5rem;
+	background: var(--color-light-grey);
 	padding-left: 0.2rem !important; // leave important
 	padding-right: 0.2rem !important;
 	overflow: hidden;

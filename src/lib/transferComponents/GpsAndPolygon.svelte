@@ -107,27 +107,27 @@
 
 {#if isHeader}
 	<!-- Header mode - just show the column headers -->
-	<th class="gps-column">
-		<div class="column-header">
-			<span class="format-label">GPS</span>
+	<th>
+		<div>
+			<span>GPS</span>
 		</div>
-		<div class="header-name"></div>
+		<div></div>
 	</th>
 	<!-- The Polygon column is second and separate from the iteration -->
-	<th class="polygon-column">
-		<div class="column-header">
-			<span class="format-label">Polygon</span>
+	<th>
+		<div>
+			<span>Polygon</span>
 		</div>
-		<div class="header-name"></div>
+		<div></div>
 	</th>
 {:else}
 	<!-- Body mode - show the actual GPS and Polygon data -->
-	<td class="gps-column">
+	<td>
 		{#key uniqueRowIndex}
 			{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 			{#if gpsResult}
-				<div class="gps-cell">
-					<span class="gps-coordinates">
+				<div>
+					<span>
 						{#if gpsResult.type === 'full'}
 							{gpsResult.value}
 						{:else if gpsResult.type === 'pair'}
@@ -139,8 +139,8 @@
 		{/key}
 	</td>
 	<!-- Polygon column cell -->
-	<td class="polygon-column">
-		<div class="polygon-cell center-aligned-cell">
+	<td>
+		<div>
 			{#key uniqueRowIndex}
 				{@const landId = getLandIdForRow(uniqueRowIndex)}
 				{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -152,65 +152,11 @@
 						{polygonData.value}
 					</span>
 				{:else if gpsResult}
-					<span class="polygon-placeholder">
-						<span class="material-symbols-outlined">crop_square</span>
+					<span>
+						
 					</span>
 				{/if}
 			{/key}
 		</div>
 	</td>
 {/if}
-
-<style>
-	/* Ensure proper styling for GPS and Polygon columns */
-	.gps-column, .polygon-column {
-		position: relative;
-		border: 1px solid var(--color-light-grey);
-		background-color: var(--header-background);
-		color: white;
-	}
-	
-	/* Specific styling for polygon column in body */
-	:global(tbody) .polygon-column {
-		background-color: rgba(240, 240, 245, 0.3);
-		color: inherit;
-	}
-	
-	:global(tbody) .gps-column {
-		color: inherit;
-		background-color: transparent;
-	}
-	
-	.center-aligned-cell {
-		text-align: center !important;
-	}
-	
-	.polygon-cell {
-		display: flex;
-		justify-content: center;
-		width: 100%;
-		margin: 0;
-	}
-	
-	.column-header {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		padding: 4px;
-	}
-	
-	.format-label {
-		font-weight: bold;
-		font-size: 0.75rem;
-	}
-	
-	.gps-coordinates {
-		font-size: 0.75rem;
-	}
-	
-	/* Override any other styling */
-	:global(th.gps-column), :global(th.polygon-column) {
-		background-color: var(--header-background) !important;
-		color: white !important;
-	}
-</style>
