@@ -2,6 +2,7 @@
     
 
 
+import GpsAndPolygon from './GpsAndPolygon.svelte';
 import {
 		isGps,
 		isLatitude,
@@ -9,10 +10,10 @@ import {
 		formatAllGpsTypes,
 		formatValue
 	} from './formatDetection2';
-	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
-	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
-    import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
+import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
+import { importedData } from '$lib/transferComponents/modelState.svelte';
+import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
   
 
 	const landColumns = [
@@ -83,6 +84,50 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
+	
+	{#if showGpsAndPolygonCols}
+	<!-- Insert the new GpsAndPolygon component here for testing -->
+	<div class="gps-polygon-section">
+		<h4 class="section-title">Location Data</h4>
+		<table class="gps-polygon-table">
+			<thead>
+				<tr>
+					<GpsAndPolygon isHeader={true} />
+				</tr>
+			</thead>
+			<tbody>
+				{#if table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)}
+					{@const landNameColumn = table.find((col) => col.name === naturaKey)}
+					{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
+					{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
+						<tr>
+							<GpsAndPolygon 
+								isHeader={false} 
+								{uniqueRowIndex} 
+								{pullFirstGpsSelected} 
+								{pullFirstPolygonSelected} 
+								{getLandIdForRow} 
+								isCollapsed={true} 
+							/>
+						</tr>
+					{/each}
+				{:else}
+					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
+						<tr>
+							<GpsAndPolygon 
+								isHeader={false} 
+								uniqueRowIndex={rowIndex} 
+								{pullFirstGpsSelected} 
+								{pullFirstPolygonSelected} 
+								isCollapsed={true} 
+							/>
+						</tr>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
+	</div>
+	{/if}
 <table
 	class="no-table-bottom-margin land-table"
 	class:greyed-out={!table.some(
@@ -336,3 +381,41 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	</tbody>
 </table>
 </div>
+
+<style>
+	/* Styles for the GPS and Polygon section */
+	.gps-polygon-section {
+		margin-bottom: 1rem;
+		border: 1px solid #e0e0e0;
+		border-radius: 4px;
+		background-color: #f9f9fb;
+		padding: 0.5rem;
+	}
+	
+	.section-title {
+		margin: 0 0 0.5rem 0;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid #e0e0e0;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #444;
+	}
+	
+	.gps-polygon-table {
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+		margin: 0;
+	}
+	
+	/* Ensure the GPS and Polygon table has proper spacing */
+	.gps-polygon-table th,
+	.gps-polygon-table td {
+		border: 1px solid #e0e0e0;
+	}
+	
+	/* Match the dashboard styling */
+	.gps-polygon-section {
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+</style>
