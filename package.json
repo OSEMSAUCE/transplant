@@ -26,6 +26,7 @@
 		"db:reset:dev": "dotenv -e .env.dev prisma migrate reset",
 		"deploy": "gh-pages -d build"
 	},
+	
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
