@@ -135,24 +135,24 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	)}
 >
 	<thead>
-		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 		<tr>
-			{#if showGpsAndPolygonCols}
-			<!-- The GPS column is always first and separate from the iteration -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- {#if showGpsAndPolygonCols}
+		
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- The Polygon column is second and separate from the iteration -->
+			
 			<th class="polygon-column">
 				<div class="column-header">
 					<span class="format-label">Polygon</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
-			{/if}
+			{/if} -->
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				
 			<!-- Iterate over table columns -->
@@ -253,8 +253,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 			<tr>
 <!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
- 				{#if showGpsAndPolygonCols}
-					<!-- GPS column cell is always first -->
+ 				<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -273,8 +272,6 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 					</td>
 				{/if}
 				{#if showGpsAndPolygonCols}
-				<!-- Polygon column cell is second -->
-
 				<td class="polygon-column">
 					<div
 						class="polygon-cell"
@@ -301,7 +298,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 							{/key}
 						</div>
 					</td>
-				{/if}
+				{/if} -->
 				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				{#each table as column, index}
 					<td 
