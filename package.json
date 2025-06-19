@@ -9,7 +9,6 @@
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
 		"db:sync:prod": "dotenv -e .env.production -- prisma db pull && prisma generate",
 		"db:generate:dev": "prisma generate",
-		"dev": "dotenv -e .env.dev vite dev",
 		"dev:prod": "dotenv -e .env.production vite dev --watch",
 		"dev:prod_db": "dotenv -e .env.production vite dev",
 		"import:dev": "dotenv -e .env.dev node src/routes/api/submitGeoJson/importGeoJson.cjs",
@@ -26,7 +25,6 @@
 		"db:reset:dev": "dotenv -e .env.dev prisma migrate reset",
 		"deploy": "gh-pages -d build"
 	},
-	
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
