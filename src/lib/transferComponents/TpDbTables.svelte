@@ -666,56 +666,56 @@
 	</table>
 </div>
 <dir style="border: 1px solid red; padding: 1rem;">
-<DbTableInstance
-	tableColumns={plantingColumns}
-	tableState={plantingTable}
-	title="Planting Table Instance"
-	naturaKey="landName"
-	viewOnlyNaturaKey={false}
-	{dragoverHandler}
-	dropHandler={plantingDropHandler}
-	dbFormat={plantingDbFormat}
-	{clearDbColumn}
-	{getUniqueValues}
-	{pullFirstGpsSelected}
-	{pullFirstPolygonSelected}
-	{getLandIdForRow}
-	showGpsAndPolygonCols={false}
-/>
+	<DbTableInstance
+		tableColumns={plantingColumns}
+		tableState={plantingTable}
+		title="Planting Table Instance"
+		naturaKey="landName"
+		viewOnlyNaturaKey={false}
+		{dragoverHandler}
+		dropHandler={plantingDropHandler}
+		dbFormat={plantingDbFormat}
+		{clearDbColumn}
+		{getUniqueValues}
+		{pullFirstGpsSelected}
+		{pullFirstPolygonSelected}
+		{getLandIdForRow}
+		showGpsAndPolygonCols={false}
+	/>
 
-<DbTableInstance
-	tableColumns={landColumns}
-	tableState={landTable}
-	title="Land Table Instance"
-	naturaKey="landName"
-	viewOnlyNaturaKey={true}
-	{dragoverHandler}
-	dropHandler={landDropHandler}
-	dbFormat={landDbFormat}
-	{clearDbColumn}
-	{getUniqueValues}
-	{pullFirstGpsSelected}
-	{pullFirstPolygonSelected}
-	{getLandIdForRow}
-	showGpsAndPolygonCols={true}
-/>
+	<DbTableInstance
+		tableColumns={landColumns}
+		tableState={landTable}
+		title="Land Table Instance"
+		naturaKey="landName"
+		viewOnlyNaturaKey={true}
+		{dragoverHandler}
+		dropHandler={landDropHandler}
+		dbFormat={landDbFormat}
+		{clearDbColumn}
+		{getUniqueValues}
+		{pullFirstGpsSelected}
+		{pullFirstPolygonSelected}
+		{getLandIdForRow}
+		showGpsAndPolygonCols={true}
+	/>
 
-<DbTableInstance
-	tableColumns={cropColumns}
-	tableState={cropTable}
-	title="Crop Table Instance"
-	naturaKey="cropName"
-	viewOnlyNaturaKey={true}
-	{dragoverHandler}
-	dropHandler={cropDropHandler}
-	dbFormat={cropDbFormat}
-	{clearDbColumn}
-	{getUniqueValues}
-	{pullFirstGpsSelected}
-	{pullFirstPolygonSelected}
-	{getLandIdForRow}
-	showGpsAndPolygonCols={false}
-/>
+	<DbTableInstance
+		tableColumns={cropColumns}
+		tableState={cropTable}
+		title="Crop Table Instance"
+		naturaKey="cropName"
+		viewOnlyNaturaKey={true}
+		{dragoverHandler}
+		dropHandler={cropDropHandler}
+		dbFormat={cropDbFormat}
+		{clearDbColumn}
+		{getUniqueValues}
+		{pullFirstGpsSelected}
+		{pullFirstPolygonSelected}
+		{getLandIdForRow}
+		showGpsAndPolygonCols={false}
+	/>
 </dir>
 <div class="db-table-container">
 	<div class="db-table-dashboard">
