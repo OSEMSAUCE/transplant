@@ -90,10 +90,10 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	<!-- Insert the new GpsAndPolygon component here for testing -->
 	<div class="gps-polygon-section">
 		<table>
-			<thead style="background-color: black">
-				
+			<thead>
+				<tr>
 					<GpsAndPolygon isHeader={true} />
-				
+				</tr>
 			</thead>
 			<tbody>
 				{#if table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)}

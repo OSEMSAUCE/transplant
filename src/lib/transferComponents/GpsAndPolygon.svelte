@@ -122,7 +122,7 @@
 	</th>
 {:else}
 	<!-- Body mode - show the actual GPS and Polygon data -->
-	<td class="gps-column" style="padding: 8px;">
+	<td class="gps-column">
 		{#key uniqueRowIndex}
 			{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 			{#if gpsResult}
@@ -139,8 +139,8 @@
 		{/key}
 	</td>
 	<!-- Polygon column cell -->
-	<td class="polygon-column" style="padding: 4px; background-color: rgba(240, 240, 245, 0.3);">
-		<div class="polygon-cell center-aligned-cell" style="display: flex; justify-content: center; width: 100%; padding: 0 8px;">
+	<td class="polygon-column">
+		<div class="polygon-cell center-aligned-cell">
 			{#key uniqueRowIndex}
 				{@const landId = getLandIdForRow(uniqueRowIndex)}
 				{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -148,7 +148,7 @@
 				{#if landId && landId.polygonId}
 					<span>Polygon ID: {landId.polygonId}</span>
 				{:else if polygonData}
-					<span class="polygon-coordinates" style="font-size: 0.85rem; white-space: pre-wrap; word-break: break-all; max-height: 18px; overflow: hidden; display: block; text-overflow: ellipsis;">
+					<span class="polygon-coordinates">
 						{polygonData.value}
 					</span>
 				{:else if gpsResult}
@@ -165,11 +165,20 @@
 	/* Ensure proper styling for GPS and Polygon columns */
 	.gps-column, .polygon-column {
 		position: relative;
-		border: 1px solid #e0e0e0;
+		border: 1px solid var(--color-light-grey);
+		background-color: var(--header-background);
+		color: white;
 	}
 	
-	.polygon-column {
+	/* Specific styling for polygon column in body */
+	:global(tbody) .polygon-column {
 		background-color: rgba(240, 240, 245, 0.3);
+		color: inherit;
+	}
+	
+	:global(tbody) .gps-column {
+		color: inherit;
+		background-color: transparent;
 	}
 	
 	.center-aligned-cell {
@@ -192,5 +201,16 @@
 	
 	.format-label {
 		font-weight: bold;
+		font-size: 0.75rem;
+	}
+	
+	.gps-coordinates {
+		font-size: 0.75rem;
+	}
+	
+	/* Override any other styling */
+	:global(th.gps-column), :global(th.polygon-column) {
+		background-color: var(--header-background) !important;
+		color: white !important;
 	}
 </style>

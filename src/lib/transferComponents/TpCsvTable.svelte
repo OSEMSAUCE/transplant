@@ -270,6 +270,8 @@
 	<thead>
 		<tr>
 			<!-- The GPS column is always first and separate from the iteration -->
+			 		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
@@ -283,6 +285,7 @@
 				</div>
 				<div class="header-name"></div>
 			</th>
+		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 			
 			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
