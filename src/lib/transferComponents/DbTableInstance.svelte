@@ -88,8 +88,8 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 
 	{#if showGpsAndPolygonCols}
 	<!-- Insert the new GpsAndPolygon component here for testing -->
-	<div class="gps-polygon-section">
-		<table>
+	<!-- <div class="gps-polygon-section"> -->
+		<table class="gps-polygon-section">
 			<thead>
 				<tr>
 					<GpsAndPolygon isHeader={true} />
@@ -111,6 +111,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 							/>
 						</tr>
 					{/each}
+								<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				{:else}
 					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 						<tr>
@@ -126,7 +127,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 				{/if}
 			</tbody>
 		</table>
-	</div>
+	<!-- </div> -->
 	{/if}
 <table
 	class="no-table-bottom-margin land-table"
@@ -135,24 +136,22 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	)}
 >
 	<thead>
-		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 		<tr>
-			{#if showGpsAndPolygonCols}
-			<!-- The GPS column is always first and separate from the iteration -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- {#if showGpsAndPolygonCols}
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- The Polygon column is second and separate from the iteration -->
 			<th class="polygon-column">
 				<div class="column-header">
 					<span class="format-label">Polygon</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
-			{/if}
+			{/if} -->
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				
 			<!-- Iterate over table columns -->
@@ -252,9 +251,8 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 			<tr>
-<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
- 				{#if showGpsAndPolygonCols}
-					<!-- GPS column cell is always first -->
+				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
+ 				<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -273,7 +271,6 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 					</td>
 				{/if}
 				{#if showGpsAndPolygonCols}
-				<!-- Polygon column cell is second -->
 
 				<td class="polygon-column">
 					<div
@@ -301,7 +298,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 							{/key}
 						</div>
 					</td>
-				{/if}
+				{/if} -->
 				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				{#each table as column, index}
 					<td 
@@ -350,13 +347,12 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	{:else}
 		{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 			<tr>
-				{#if showGpsAndPolygonCols}
-					<!-- GPS column cell -->
+				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+				<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column"></td>
-					<!-- Polygon column cell -->
 					<td class="polygon-column"></td>
-				{/if}	
-				
+				{/if}	 -->
+				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				{#each table as column, index}
 					<td class={"col-" + column.name}
 					data-header-name={column.name}
@@ -385,16 +381,8 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 <style>
 	.gps-polygon-section {
 		margin-right: 0.2rem;
-		margin-left: -0.2rem;
+		margin-left: 0.0rem;
 		
 	}
-	
-	.section-title {
-		margin: 0 0 0.5rem 0;
-		background-color: #f9f9fb !important;
-		padding-bottom: 0.5rem;
-		border-bottom: 1px solid #e0e0e0;
-		font-size: 1rem;
-		font-weight: 600;
-	}
+
 </style>
