@@ -227,6 +227,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 						{/key}
 					</td>
 				{/if}
+				{#if showGpsAndPolygonCols}
 				<!-- Polygon column cell is second -->
 				<td
 				style="position: relative; padding: 4px;">
@@ -255,9 +256,10 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 							{/key}
 						</div>
 					</td>
-				<!-- {/if} -->
+				{/if}
 				{#each table as column, index}
 					<td 
+						class={"col-" + column.name}
 						data-header-name={column.name}
 						data-column-index={index}
 						ondragover={(e) => {
