@@ -31,6 +31,26 @@ html {
 	// font-size: 12px;
 }
 
+th {
+  height: 2.7rem !important;
+  min-height: 2.7rem !important;
+  max-height: 2.7rem !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+td {
+  height: 1.5rem !important;
+  min-height: 1.6rem !important;
+  max-height: 1.6rem !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 p {
 	font-size: 0.5rem;
 }
@@ -40,6 +60,10 @@ th,
 td,
 select {
 	background-color: var(--color-black);
+}
+.land-table td[class^="col-"],
+.land-table th[class^="col-"] {
+	border: 0.05rem solid var(--color-light-grey) !important;
 }
 
 nav {
@@ -110,7 +134,6 @@ table {
 // thead {
 // 	position: sticky;
 // 	z-index: 1;
-	
 
 // 	tr.header-text {
 // 		position: sticky;
@@ -193,11 +216,11 @@ td[class^='col-'] {
 /* Add cell borders for all cells */
 th,
 td {
-	height: 1.5rem;          /* or whatever you want */
+	height: 1.5rem; /* or whatever you want */
 	max-height: 1.5rem;
-	overflow: hidden;        /* prevents content from overflowing */
-	vertical-align: middle;  /* centers content vertically */
-  }
+	overflow: hidden; /* prevents content from overflowing */
+	vertical-align: middle; /* centers content vertically */
+}
 
 /* LAND columns: blue borders */
 th.col-landName, td.col-landName,
@@ -237,6 +260,11 @@ th.col-cropNotes {
 	position: relative;
 	background-color: var(--color-grey) !important;
 }
+
+.extra-column {
+	border-left: 0.05rem solid #2196f3 !important;
+	border-right: 0.05rem solid #2196f3 !important;
+}
 .gps-column {
 	position: relative;
 	background-color: var(--color-grey) !important;
@@ -260,6 +288,7 @@ th.col-cropNotes {
 .format-selector-row > div {
 	display: flex;
 	justify-content: center;
+	margin-bottom: 0.5rem;
 }
 
 .format-selector-row > div input[type='checkbox'] {
@@ -744,7 +773,6 @@ select {
 	border-width: 0.05rem;
 	border-style: solid;
 	border-color: var(--color-light-grey);
-	border: 0.05rem solid var(--color-light-grey);
 	margin-bottom: -0.1rem;
 	font-size: 0.5rem;
 	/* cSpell:disable-next-line */
