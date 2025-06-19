@@ -14,13 +14,6 @@ import {
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
     import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
   
-	// export let showGpsAndPolygonCols = false;
-
-	// 
-	// function showGpsAndPolygonCols() {
-	// 	// go get the gps and polygon cols and render them at the beginning of the instance with prop showGpsAndPolygonCols=true 
-	// 	return true;
-	// }
 
 	const landColumns = [
 	{ name: 'landName', label: 'Land Name', modelRepColumnIndex: 0, viewOnly: false },
@@ -30,6 +23,7 @@ import {
 
 	let {
 		tableColumns,
+		tableState = null, // New prop to allow parent to pass and bind to table state
 		title,
 		naturaKey,
 		viewOnlyNaturaKey = false,
@@ -59,7 +53,8 @@ console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKe
 
 
 	
-	let table = $state<TableColumn[]>(createColumnState(tableColumns, [])); // Don't make naturaKey view-only
+	// Use the passed tableState if available, otherwise create a new one
+let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, []));
 	
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {

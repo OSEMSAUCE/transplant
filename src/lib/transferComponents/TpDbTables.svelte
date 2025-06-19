@@ -430,7 +430,44 @@
 	function plantingDropHandler(ev: DragEvent) {
 		console.log('plantingDropHandler called');
 		console.log('plantingTable before:', plantingTable.map(col => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex })));
+		
+		// Get the target column name and dragged column index
+		const targetColumnName = (ev.currentTarget as HTMLElement)?.getAttribute('data-header-name');
+		const draggedColumnIndex = dragColumnState.index;
+		
+		console.log(`Drop on plantingColumns - target: ${targetColumnName}, dragged index: ${draggedColumnIndex}`);
+		
+		// Update both the old plantingTable (for compatibility) and the new DbTableInstance data
 		dropHandler(ev, plantingTable, plantingDbFormat);
+		
+		// Find the index of the target column in plantingColumns
+		if (targetColumnName && draggedColumnIndex !== null) {
+			// Find the corresponding column in plantingTable that was just updated
+			const updatedColumn = plantingTable.find(col => col.name === targetColumnName);
+			
+			if (updatedColumn) {
+				console.log(`Column ${targetColumnName} updated in plantingTable with modelRepColumnIndex: ${updatedColumn.modelRepColumnIndex}`);
+				
+				// Also update landTable if this is landName
+				if (targetColumnName === 'landName') {
+					const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
+					if (landNameIndex !== -1) {
+						landTable[landNameIndex].modelRepColumnIndex = draggedColumnIndex;
+						console.log(`Updated landTable[${landNameIndex}].modelRepColumnIndex to ${draggedColumnIndex}`);
+					}
+				}
+				
+				// Also update cropTable if this is cropName
+				if (targetColumnName === 'cropName') {
+					const cropNameIndex = cropTable.findIndex((col) => col.name === 'cropName');
+					if (cropNameIndex !== -1) {
+						cropTable[cropNameIndex].modelRepColumnIndex = draggedColumnIndex;
+						console.log(`Updated cropTable[${cropNameIndex}].modelRepColumnIndex to ${draggedColumnIndex}`);
+					}
+				}
+			}
+		}
+		
 		console.log('plantingTable after:', plantingTable.map(col => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex })));
 	}
 
@@ -486,10 +523,10 @@
 	}
 </script>
 
-<h3 class="table-title">Planting Table</h3>
+
 <div class="db-table-container">
 	<div class="db-table-dashboard">
-		<h3 class="table-title">Land Table</h3>
+		<h3 class="table-title">Planting Table OLD</h3>
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
@@ -594,7 +631,8 @@
 
 <DbTableInstance
 	tableColumns={plantingColumns}
-	title="Planting Table"
+	tableState={plantingTable}
+	title="Planting Table Instance"
 	naturaKey="landName"
 	viewOnlyNaturaKey={false}
 	dragoverHandler={dragoverHandler}
@@ -610,7 +648,8 @@
 
 <DbTableInstance
     tableColumns={landColumns}
-    title="Land Table"
+    tableState={landTable}
+    title="Land Table Instance"
     naturaKey="landName"
     viewOnlyNaturaKey={true}
     dragoverHandler={dragoverHandler}
@@ -626,7 +665,8 @@
 
 <DbTableInstance
 	tableColumns={cropColumns}
-	title="Crop Table"
+	tableState={cropTable}
+	title="Crop Table Instance"
 	naturaKey="cropName"
 	viewOnlyNaturaKey={true}
 	dragoverHandler={dragoverHandler}
@@ -641,7 +681,7 @@
 
 <div class="db-table-container">
 	<div class="db-table-dashboard">
-		<h3 class="table-title">Land Table</h3>
+		<h3 class="table-title">Land Table OLD</h3>
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
@@ -835,10 +875,10 @@
 </table>
 </div>
 
-<h3 class="table-title">Crop Table</h3>
+
 <div class="db-table-container">
 	<div class="db-table-dashboard">
-		<h3 class="table-title">Land Table</h3>
+		<h3 class="table-title">Crop Table OLD</h3>
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
