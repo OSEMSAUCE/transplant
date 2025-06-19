@@ -182,6 +182,11 @@ div.container {
 th[class^="col-"], td[class^="col-"] {
 	border: none !important;
   }
+  
+/* Add cell borders for all cells */
+th, td {
+  border: 0.05rem solid #e0e0e0 !important; /* Light gray border for all cells */
+}
   /* LAND columns: blue borders */
 th.col-landName, td.col-landName,
 th.col-hectares, td.col-hectares,
