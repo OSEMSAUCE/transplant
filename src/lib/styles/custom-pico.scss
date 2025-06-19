@@ -215,6 +215,19 @@ th.col-cropName, th.col-speciesId, th.col-seed_info, th.col-cropStock, th.col-cr
   border-top: 0.05rem solid #4caf50 !important;
 }
 
+/* Special column styles for GPS and Polygon data cells */
+
+td.gps-column {
+  position: relative;
+  padding: 8px !important; /* Consistent padding for GPS cells */
+}
+
+td.polygon-column {
+  position: relative;
+  padding: 4px !important; /* Specific padding for Polygon cells */
+  background-color: rgba(240, 240, 245, 0.3) !important; /* Subtle background for visual separation */
+}
+
 
 
 .table-header {

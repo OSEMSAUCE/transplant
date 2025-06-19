@@ -90,7 +90,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 	)}
 >
 	<thead>
-		<!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
+		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 		<tr>
 			{#if showGpsAndPolygonCols}
 			<!-- The GPS column is always first and separate from the iteration -->
@@ -108,6 +108,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 				<div class="header-name"></div>
 			</th>
 			{/if}
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				
 			<!-- Iterate over table columns -->
 			{#each table as column, index}
@@ -206,11 +207,10 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 			<tr>
-<!-- 🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️🔥️ -->
+<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
  				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell is always first -->
-					<td
-					style="position: relative; padding: 8px;">
+					<td class="gps-column">
 						{#key uniqueRowIndex}
 							{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
 							{#if gpsResult}
@@ -229,8 +229,8 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 				{/if}
 				{#if showGpsAndPolygonCols}
 				<!-- Polygon column cell is second -->
-				<td
-				style="position: relative; padding: 4px;">
+
+				<td class="polygon-column">
 					<div
 						class="polygon-cell"
 						style="display: flex; justify-content: center; width: 100%; margin: 0;"
@@ -257,6 +257,7 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 						</div>
 					</td>
 				{/if}
+				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 				{#each table as column, index}
 					<td 
 						class={"col-" + column.name}
@@ -306,9 +307,9 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 			<tr>
 				{#if showGpsAndPolygonCols}
 					<!-- GPS column cell -->
-					<td style="position: relative; padding: 8px;"></td>
+					<td class="gps-column"></td>
 					<!-- Polygon column cell -->
-					<td style="position: relative; padding: 4px;"></td>
+					<td class="polygon-column"></td>
 				{/if}	
 				
 				{#each table as column, index}
