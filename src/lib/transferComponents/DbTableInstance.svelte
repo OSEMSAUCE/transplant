@@ -139,12 +139,20 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 		<tr>
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 			<!-- {#if showGpsAndPolygonCols}
+<<<<<<< HEAD
+=======
+		
+>>>>>>> 99852923d106ec2c997ad7c117063226642fd0c5
 			<th class="gps-column">
 				<div class="column-header">
 					<span class="format-label">GPS</span>
 				</div>
 				<div class="header-name"></div>
 			</th>
+<<<<<<< HEAD
+=======
+			
+>>>>>>> 99852923d106ec2c997ad7c117063226642fd0c5
 			<th class="polygon-column">
 				<div class="column-header">
 					<span class="format-label">Polygon</span>
@@ -251,7 +259,11 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 			{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 			<tr>
+<<<<<<< HEAD
 				<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
+=======
+<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  --> 
+>>>>>>> 99852923d106ec2c997ad7c117063226642fd0c5
  				<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column">
 						{#key uniqueRowIndex}
@@ -271,7 +283,10 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 					</td>
 				{/if}
 				{#if showGpsAndPolygonCols}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 99852923d106ec2c997ad7c117063226642fd0c5
 				<td class="polygon-column">
 					<div
 						class="polygon-cell"

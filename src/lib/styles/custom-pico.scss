@@ -74,11 +74,11 @@ h1 {
 th {
 	font-size: 0.6rem;
 	height: 2.8rem; // or whatever your standard is
-	min-height: 2.2rem;
-	max-height: 2.2rem;
-	padding-top: 0.3rem;
-	padding-bottom: 0.5rem;
-	background: var(--color-light-grey);
+	min-height: 2.8rem;
+	max-height: 2.8rem;
+	// padding-top: 0.3rem;
+	// padding-bottom: 0.5rem;
+	background: var(--color-light-grey) !important;
 	padding-left: 0.2rem !important; // leave important
 	padding-right: 0.2rem !important;
 	overflow: hidden;
@@ -488,7 +488,7 @@ tbody td.drag-over {
 	border: 1px solid var(--color-light-grey);
 	border-radius: 0.1rem;
 	padding: 0.25rem;
-	margin-right: 0.2rem;
+	margin-right: 0.3rem;
 	min-width: var(--column-width);
 	max-width: var(--column-width);
 	width: var(--column-width);
