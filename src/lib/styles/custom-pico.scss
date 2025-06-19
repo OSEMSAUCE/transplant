@@ -42,12 +42,11 @@ select {
 	background-color: var(--color-black);
 }
 
-
 nav {
-  display: flex;
-  justify-content: flex-start !important;
-  padding: -0.15rem 0;
-  margin: -1rem 0 0 0;
+	display: flex;
+	justify-content: flex-start !important;
+	padding: -0.15rem 0;
+	margin: -1rem 0 0 0;
 }
 nav a {
 	padding: 0.15rem 0.2rem;
@@ -59,12 +58,14 @@ nav a {
 	line-height: inherit;
 	text-decoration: underline;
 	text-decoration-color: var(--color-purple);
-	transition: color 0.2s, text-decoration-color 0.2s;
-  }
-  nav a:hover {
+	transition:
+		color 0.2s,
+		text-decoration-color 0.2s;
+}
+nav a:hover {
 	color: #b663df !important;
 	text-decoration-color: var(--color-purple);
-  }
+}
 
 h1 {
 	color: var(--color-white);
@@ -179,25 +180,29 @@ div.container {
 }
 
 /* Generic: remove all borders for a clean slate (optional, but helps) */
-th[class^="col-"], td[class^="col-"] {
+th[class^='col-'],
+td[class^='col-'] {
 	border: none !important;
-  }
-  
-/* Add cell borders for all cells */
-th, td {
-  border: 0.05rem solid #e0e0e0 !important; /* Light gray border for all cells */
 }
-  /* LAND columns: blue borders */
+
+/* Add cell borders for all cells */
+th,
+td {
+	border: 0.05rem solid var(--color-light-grey) !important; /* Light gray border for all cells */
+}
+/* LAND columns: blue borders */
 th.col-landName, td.col-landName,
 th.col-hectares, td.col-hectares,
 th.col-landNotes, td.col-landNotes
 // Add more land columns here if needed
 {
-  border-left: 0.05rem solid #2196f3 !important;
-  border-right: 0.05rem solid #2196f3 !important;
+	border-left: 0.05rem solid #2196f3 !important;
+	border-right: 0.05rem solid #2196f3 !important;
 }
-th.col-landName, th.col-hectares, th.col-landNotes {
-  border-top: 0.05rem solid #2196f3 !important;
+th.col-landName,
+th.col-hectares,
+th.col-landNotes {
+	border-top: 0.05rem solid #2196f3 !important;
 }
 
 /* CROP columns: green borders */
@@ -208,27 +213,34 @@ th.col-cropStock, td.col-cropStock,
 th.col-cropNotes, td.col-cropNotes
 // Add more crop columns here if needed
 {
-  border-left: 0.05rem solid #4caf50 !important;
-  border-right: 0.05rem solid #4caf50 !important;
+	border-left: 0.05rem solid #4caf50 !important;
+	border-right: 0.05rem solid #4caf50 !important;
 }
-th.col-cropName, th.col-speciesId, th.col-seed_info, th.col-cropStock, th.col-cropNotes {
-  border-top: 0.05rem solid #4caf50 !important;
+th.col-cropName,
+th.col-speciesId,
+th.col-seed_info,
+th.col-cropStock,
+th.col-cropNotes {
+	border-top: 0.05rem solid #4caf50 !important;
 }
 
 /* Special column styles for GPS and Polygon data cells */
 
 td.gps-column {
-  position: relative;
-  padding: 8px !important; /* Consistent padding for GPS cells */
+	position: relative;
+	padding: 8px !important; /* Consistent padding for GPS cells */
 }
 
 td.polygon-column {
-  position: relative;
-  padding: 4px !important; /* Specific padding for Polygon cells */
-  background-color: rgba(240, 240, 245, 0.3) !important; /* Subtle background for visual separation */
+	position: relative;
+	padding: 4px !important; /* Specific padding for Polygon cells */
+	background-color: rgba(
+		240,
+		240,
+		245,
+		0.3
+	) !important; /* Subtle background for visual separation */
 }
-
-
 
 .table-header {
 	position: sticky;
@@ -466,14 +478,14 @@ tbody td.drag-over {
 	margin-top: 1.5rem;
 }
 .db-table-dashboard {
- 	border: 1px solid var(--color-light-grey);
+	border: 1px solid var(--color-light-grey);
 	border-radius: 0.1rem;
 	padding: 0.25rem;
 	margin-right: 0.2rem;
 	min-width: var(--column-width);
-    max-width: var(--column-width);
+	max-width: var(--column-width);
 	width: var(--column-width);
-	}
+}
 
 /* ============================================================================
 AUTOCOMPLETE LISTS
