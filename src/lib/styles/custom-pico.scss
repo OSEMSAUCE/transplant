@@ -193,8 +193,12 @@ td[class^='col-'] {
 /* Add cell borders for all cells */
 th,
 td {
-	border: 0.05rem solid var(--color-light-grey) !important; /* Light gray border for all cells */
-}
+	height: 1.5rem;          /* or whatever you want */
+	max-height: 1.5rem;
+	overflow: hidden;        /* prevents content from overflowing */
+	vertical-align: middle;  /* centers content vertically */
+  }
+
 /* LAND columns: blue borders */
 th.col-landName, td.col-landName,
 th.col-hectares, td.col-hectares,
@@ -473,25 +477,25 @@ tbody td.drag-over {
 }
 .db-table-container {
 	display: flex;
-	width: 100%; // ensures the container itself fills its parent
-
-	// max-height: 7rem;
-	flex-wrap: wrap;
 	flex-direction: row;
+	width: 100%; // ensures the container itself fills its parent
+	height: 100%;
+	flex-wrap: wrap;
 	margin-top: 1.5rem;
 }
 .db-table-container table {
 	height: 100%;
-  }
-
+}
 
 .db-table-dashboard {
+	height: 100%;
 	border: 1px solid var(--color-light-grey);
 	border-radius: 0.1rem;
 	padding: 0.25rem;
 	margin-right: 0.3rem;
 	min-width: var(--column-width);
 	max-width: var(--column-width);
+	max-height: 5.2rem;
 	width: var(--column-width);
 }
 
@@ -805,13 +809,14 @@ button,
 button.material-symbols-outlined {
 	background: none;
 	border: none;
-	padding: 0;
+	padding: 0rem;
 	/* keep your icon style below */
 	//   font-size: var(--button-font-size);
 	vertical-align: -0.2rem;
 	//   align-items: center;
-	margin-bottom: -0.25rem;
-	margin-top: -0.1rem;
+	font-size: 0.9rem;
+	margin-bottom: -0.3rem;
+	margin-top: -0.2rem;
 	// padding-bottom: -0.25rem;
 }
 /* View toggle buttons */

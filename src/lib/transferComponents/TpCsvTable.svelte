@@ -344,7 +344,7 @@
 						{#key rowIndex}
 							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
 							{#if polygonData}
-								<span class="polygon-coordinates" style="font-size: 8px; white-space: pre-wrap; word-break: break-all; max-height:18px; overflow: hidden; display: block; text-overflow: ellipsis;">
+								<span class="polygon-coordinates">
 									{polygonData.value}
 								</span>
 							{:else if gpsData}
