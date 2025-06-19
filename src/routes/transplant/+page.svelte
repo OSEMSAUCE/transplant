@@ -134,11 +134,11 @@
 		organizationName = data.organizationName;
 		projectNotes = data.projectNotes;
 		source = data.source ?? '';
-		
+
 		// Debug: Log the actual state after update
 		console.log('AFTER UPDATE - projectName:', projectName, 'length:', projectName?.length);
 		console.log('AFTER UPDATE - organizationName:', organizationName);
-		
+
 		console.log('Project metadata changed in +page.svelte:', data);
 	}}
 />

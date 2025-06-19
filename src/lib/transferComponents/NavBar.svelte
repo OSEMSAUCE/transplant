@@ -28,7 +28,6 @@
     <h1>OSEM🤘🌲</h1>
     <nav class="nav-links">
       <a href="/">Home</a>
-      <a href="/transform">Transform</a>
       <a href="/transplant">Transplant</a>
     </nav>
   </div>
