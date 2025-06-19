@@ -545,7 +545,8 @@
 	}
 </script>
 
-<dir style="border: 1px solid red; padding: 1rem;">
+<dir style="border: 1px solid #ccc; padding: 0rem">
+	
 	<DbTableInstance
 		tableColumns={plantingColumns}
 		tableState={plantingTable}
