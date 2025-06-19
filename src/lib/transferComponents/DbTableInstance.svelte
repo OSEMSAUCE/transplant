@@ -84,16 +84,16 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
-	
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+
 	{#if showGpsAndPolygonCols}
 	<!-- Insert the new GpsAndPolygon component here for testing -->
 	<div class="gps-polygon-section">
-		<h4 class="section-title">Location Data</h4>
-		<table class="gps-polygon-table">
-			<thead>
-				<tr>
+		<table>
+			<thead style="background-color: black">
+				
 					<GpsAndPolygon isHeader={true} />
-				</tr>
+				
 			</thead>
 			<tbody>
 				{#if table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)}
@@ -383,39 +383,18 @@ let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, 
 </div>
 
 <style>
-	/* Styles for the GPS and Polygon section */
 	.gps-polygon-section {
-		margin-bottom: 1rem;
-		border: 1px solid #e0e0e0;
-		border-radius: 4px;
-		background-color: #f9f9fb;
-		padding: 0.5rem;
+		margin-right: 0.2rem;
+		margin-left: -0.2rem;
+		
 	}
 	
 	.section-title {
 		margin: 0 0 0.5rem 0;
+		background-color: #f9f9fb !important;
 		padding-bottom: 0.5rem;
 		border-bottom: 1px solid #e0e0e0;
 		font-size: 1rem;
 		font-weight: 600;
-		color: #444;
-	}
-	
-	.gps-polygon-table {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-		margin: 0;
-	}
-	
-	/* Ensure the GPS and Polygon table has proper spacing */
-	.gps-polygon-table th,
-	.gps-polygon-table td {
-		border: 1px solid #e0e0e0;
-	}
-	
-	/* Match the dashboard styling */
-	.gps-polygon-section {
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	}
 </style>
