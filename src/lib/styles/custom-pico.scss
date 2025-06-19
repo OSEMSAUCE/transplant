@@ -229,31 +229,14 @@ th.col-cropNotes {
 	border-top: 0.05rem solid #4caf50 !important;
 }
 
-/* Special column styles for GPS and Polygon data cells */
-
-td.gps-column {
-	position: relative;
-	padding: 8px !important; /* Consistent padding for GPS cells */
-}
-
 .polygon-column {
 	position: relative;
-	background-color: grey !important;
+	background-color: var(--color-grey) !important;
 }
-
-td.polygon-column {
+.gps-column {
 	position: relative;
-	padding: 4px !important; /* Specific padding for Polygon cells */
-	margin-left: 0.2rem;
-
-	background-color: rgba(
-		240,
-		240,
-		245,
-		0.3
-	) !important; /* Subtle background for visual separation */
+	background-color: var(--color-grey) !important;
 }
-
 .table-header {
 	position: sticky;
 	top: 0;
@@ -607,13 +590,11 @@ Outline/Indication: Shows when a target is compatible (legal drop target)
 Active/Drag-Over: Shows when a target is being hovered (drag-over)
 */
 
-// gps & landName match
 .isGpsMatch {
 	border: 0.05rem solid #2196f3 !important;
 	background-color: rgba(243, 142, 27, 0.2) !important;
 }
 
-/* Outline/Indication Styles (legal drop targets) */
 th.legal-droptarget {
 	border: 0.05rem solid #4caf50;
 	background-color: rgba(76, 175, 80, 0.1);
