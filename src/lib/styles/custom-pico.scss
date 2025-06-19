@@ -421,7 +421,7 @@ td {
 	display: flex;
 	gap: 1rem;
 	align-items: flex-start;
-	margin-bottom: 0.5rem;
+	// margin-bottom: 0.5rem;
 	max-width: 45rem;
 	// font-size: 0.5rem;
 }
@@ -829,7 +829,8 @@ button {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	// margin-bottom: 1rem;
+	padding-bottom: -0.5rem !important;
+	margin-bottom: -1.2rem !important;
 	width: 100%;
 }
 
