@@ -216,10 +216,11 @@ input:not([type='checkbox'], [type='radio'], [type='range'], [type='file']) {
 	position: relative;
 }
 
-/* Generic: remove all borders for a clean slate (optional, but helps) */
+/* Base styling for columns */
 th[class^='col-'],
 td[class^='col-'] {
-	border: none !important;
+	/* Clear default borders first */
+	border: none;
 }
 
 /* Add cell borders for all cells */
@@ -232,36 +233,36 @@ td {
 }
 
 /* LAND columns: blue borders */
-th.col-landName, td.col-landName,
-th.col-hectares, td.col-hectares,
-th.col-landNotes, td.col-landNotes
+.land-table th.col-landName, .land-table td.col-landName,
+.land-table th.col-hectares, .land-table td.col-hectares,
+.land-table th.col-landNotes, .land-table td.col-landNotes
 // Add more land columns here if needed
 {
 	border-left: 0.05rem solid #2196f3 !important;
 	border-right: 0.05rem solid #2196f3 !important;
 }
-th.col-landName,
-th.col-hectares,
-th.col-landNotes {
+.land-table th.col-landName,
+.land-table th.col-hectares,
+.land-table th.col-landNotes {
 	border-top: 0.05rem solid #2196f3 !important;
 }
 
 /* CROP columns: green borders */
-th.col-cropName, td.col-cropName,
-th.col-speciesId, td.col-speciesId,
-th.col-seed_info, td.col-seed_info,
-th.col-cropStock, td.col-cropStock,
-th.col-cropNotes, td.col-cropNotes
+.land-table th.col-cropName, .land-table td.col-cropName,
+.land-table th.col-speciesId, .land-table td.col-speciesId,
+.land-table th.col-seed_info, .land-table td.col-seed_info,
+.land-table th.col-cropStock, .land-table td.col-cropStock,
+.land-table th.col-cropNotes, .land-table td.col-cropNotes
 // Add more crop columns here if needed
 {
 	border-left: 0.05rem solid #4caf50 !important;
 	border-right: 0.05rem solid #4caf50 !important;
 }
-th.col-cropName,
-th.col-speciesId,
-th.col-seed_info,
-th.col-cropStock,
-th.col-cropNotes {
+.land-table th.col-cropName,
+.land-table th.col-speciesId,
+.land-table th.col-seed_info,
+.land-table th.col-cropStock,
+.land-table th.col-cropNotes {
 	border-top: 0.05rem solid #4caf50 !important;
 }
 
