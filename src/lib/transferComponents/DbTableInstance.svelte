@@ -128,7 +128,7 @@
 		>
 			<thead>
 				<tr>
-					<th class="extra-column">Extra</th>
+					<th class="extra-column">{title}</th>
 					<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 					{#if showGpsAndPolygonCols}
 						<th class="gps-column">
@@ -255,7 +255,7 @@
 					{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 					{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 						<tr>
-							<td class="extra-column">EXTRA</td>
+							<td class="extra-column">{title}</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							{#if showGpsAndPolygonCols}
 								<td class="gps-column">
@@ -374,7 +374,7 @@
 				{:else}
 					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 						<tr>
-							<td class="extra-column">EXTRA</td>
+							<td class="extra-column">{title}</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column"></td>

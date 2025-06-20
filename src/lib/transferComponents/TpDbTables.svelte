@@ -549,7 +549,7 @@
 	<DbTableInstance
 		tableColumns={plantingColumns}
 		tableState={plantingTable}
-		title="Planting Table Instance"
+		title="Planting Table"
 		naturaKey="landName"
 		viewOnlyNaturaKey={false}
 		{dragoverHandler}
@@ -566,7 +566,7 @@
 	<DbTableInstance
 		tableColumns={landColumns}
 		tableState={landTable}
-		title="Land Table Instance"
+		title="Land Table"
 		naturaKey="landName"
 		viewOnlyNaturaKey={true}
 		{dragoverHandler}
@@ -583,7 +583,7 @@
 	<DbTableInstance
 		tableColumns={cropColumns}
 		tableState={cropTable}
-		title="Crop Table Instance"
+		title="Crop Table"
 		naturaKey="cropName"
 		viewOnlyNaturaKey={true}
 		{dragoverHandler}
