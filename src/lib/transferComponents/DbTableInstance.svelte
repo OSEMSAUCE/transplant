@@ -103,15 +103,6 @@
 								return dragoverHandler(e);
 							}}
 							ondrop={(() => {
-								// console.log(`Drop attempt on header for ${title}, column ${column.name}`);
-								// console.log('naturaKey value:', naturaKey);
-								// console.log('Is viewOnly:', column.viewOnly);
-								// console.log('viewOnlyNaturaKey setting:', viewOnlyNaturaKey);
-								// console.log(
-								// 	'Has naturaKey mapped:',
-								// 	table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
-								// );
-
 								// Don't allow drop for view-only columns
 								if (column.viewOnly) {
 									console.log(`Blocking drop on ${column.name}: column is viewOnly`);
@@ -198,6 +189,7 @@
 					{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 					{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 						<tr>
+							<td class="extra-column">more data</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							{#if showGpsAndPolygonCols}
 								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
@@ -301,6 +293,7 @@
 				{:else}
 					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 						<tr>
+							<td class="extra-column">more data</td>
 							{#each table as column, index}
 								<td
 									class={'col-' + column.name}
