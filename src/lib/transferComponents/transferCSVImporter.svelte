@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { detectFormat} from './formatDetection2';
+	import { detectFormat } from './formatDetection2';
 	import Papa from 'papaparse';
 	import type { ColumnRep } from '$lib/types/columnModel';
 	import { BaseColumnModel } from '$lib/types/columnModel';
@@ -109,16 +108,18 @@
 </script>
 
 <div class="file-input-container">
-	<button
-		onclick={() => {
-			const fileInput = document.getElementById('hidden-file-input');
-			if (fileInput) fileInput.click();
-		}}
-		disabled={isLoading}
-	>
-		Load CSV
-	</button>
-	<span style="color: grey; font-size: 0.7rem">{fileName}</span>
+	<div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: -0.8rem;">
+		<button
+			onclick={() => {
+				const fileInput = document.getElementById('hidden-file-input');
+				if (fileInput) fileInput.click();
+			}}
+			disabled={isLoading}
+		>
+			Load CSV
+		</button>
+		<span style="color: grey; font-size: 0.7rem">{fileName}</span>
+	</div>
 	<input
 		id="hidden-file-input"
 		type="file"

@@ -545,8 +545,7 @@
 	}
 </script>
 
-<dir style="border: 1px solid #ccc; padding: 0rem">
-	
+<!-- <dir style="border: 1px solid #ccc; padding: 0rem"> -->
 	<DbTableInstance
 		tableColumns={plantingColumns}
 		tableState={plantingTable}
@@ -597,7 +596,7 @@
 		{getLandIdForRow}
 		showGpsAndPolygonCols={false}
 	/>
-</dir>
+<!-- </dir> -->
 
 <div class="db-table-container">
 	<div class="db-table-dashboard">
