@@ -56,9 +56,9 @@
 	let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, []));
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
-		console.log('Creating column state with columns:', columns);
-		console.log('viewOnlyFields:', viewOnlyFields);
-		console.log('naturaKey:', naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
+		// console.log('Creating column state with columns:', columns);
+		// console.log('viewOnlyFields:', viewOnlyFields);
+		// console.log('naturaKey:', naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
 
 		const result = columns.map((col) => ({
 			name: col,
@@ -67,10 +67,10 @@
 			// Make the natural key column view-only if viewOnlyNaturaKey is true
 			viewOnly: viewOnlyFields.includes(col) || (viewOnlyNaturaKey && col === naturaKey)
 		}));
-		console.log(
-			`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}:`,
-			result
-		);
+		// console.log(
+		// 	`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}:`,
+		// 	result
+		// );
 		return result;
 	}
 </script>

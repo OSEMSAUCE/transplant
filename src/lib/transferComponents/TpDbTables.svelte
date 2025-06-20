@@ -604,7 +604,7 @@
 		<p>stuff</p>
 		<p>more stuff</p>
 	</div>
-	<table class="no-table-bottom-margin planting-table" class:greyed-out={false}>
+	<table class="no-table-bottom-border planting-table" class:greyed-out={false}>
 		<thead>
 			<tr>
 				{#each plantingTable as column, index}
@@ -726,7 +726,7 @@
 		<p>more stuff</p>
 	</div>
 	<table
-		class="no-table-bottom-margin land-table"
+		class="no-table-bottom-border land-table"
 		class:greyed-out={!landTable.some(
 			(col) => col.name === 'landName' && col.modelRepColumnIndex !== -1
 		)}
@@ -926,7 +926,7 @@
 		<p>more stuff</p>
 	</div>
 	<table
-		class="no-table-bottom-margin crop-table"
+		class="no-table-bottom-border crop-table"
 		class:greyed-out={!cropTable.some(
 			(col) => col.name === 'cropName' && col.modelRepColumnIndex !== -1
 		)}
