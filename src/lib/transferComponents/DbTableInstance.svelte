@@ -35,15 +35,15 @@
 	} = $props();
 
 	// Debug the props
-	console.log(
-		`DbTableInstance initialized for ${title} with naturaKey:`,
-		naturaKey,
-		'viewOnlyNaturaKey:',
-		viewOnlyNaturaKey
-	);
+	// console.log(
+	// 	`DbTableInstance initialized for ${title} with naturaKey:`,
+	// 	naturaKey,
+	// 	'viewOnlyNaturaKey:',
+	// 	viewOnlyNaturaKey
+	// );
 
 	// Debug the naturaKey prop
-	console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey);
+	// console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey);
 
 	interface TableColumn {
 		name: string;
@@ -160,14 +160,14 @@
 								return dragoverHandler(e);
 							}}
 							ondrop={(() => {
-								console.log(`Drop attempt on header for ${title}, column ${column.name}`);
-								console.log('naturaKey value:', naturaKey);
-								console.log('Is viewOnly:', column.viewOnly);
-								console.log('viewOnlyNaturaKey setting:', viewOnlyNaturaKey);
-								console.log(
-									'Has naturaKey mapped:',
-									table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
-								);
+								// console.log(`Drop attempt on header for ${title}, column ${column.name}`);
+								// console.log('naturaKey value:', naturaKey);
+								// console.log('Is viewOnly:', column.viewOnly);
+								// console.log('viewOnlyNaturaKey setting:', viewOnlyNaturaKey);
+								// console.log(
+								// 	'Has naturaKey mapped:',
+								// 	table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
+								// );
 
 								// Don't allow drop for view-only columns
 								if (column.viewOnly) {
@@ -255,7 +255,7 @@
 					{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 					{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 						<tr>
-							<td class="extra-column">{title}</td>
+							<td class="extra-column">more data</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							{#if showGpsAndPolygonCols}
 								<td class="gps-column">
@@ -374,7 +374,7 @@
 				{:else}
 					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 						<tr>
-							<td class="extra-column">{title}</td>
+							<td class="extra-column">more data</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							<!-- {#if showGpsAndPolygonCols}
 					<td class="gps-column"></td>
