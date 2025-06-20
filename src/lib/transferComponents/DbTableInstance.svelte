@@ -34,17 +34,6 @@
 		showGpsAndPolygonCols
 	} = $props();
 
-	// Debug the props
-	// console.log(
-	// 	`DbTableInstance initialized for ${title} with naturaKey:`,
-	// 	naturaKey,
-	// 	'viewOnlyNaturaKey:',
-	// 	viewOnlyNaturaKey
-	// );
-
-	// Debug the naturaKey prop
-	// console.log(`DbTableInstance initialized for ${title} with naturaKey:`, naturaKey);
-
 	interface TableColumn {
 		name: string;
 		values: unknown[]; // Changed from never[] to unknown[]
@@ -56,10 +45,6 @@
 	let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, []));
 
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
-		// console.log('Creating column state with columns:', columns);
-		// console.log('viewOnlyFields:', viewOnlyFields);
-		// console.log('naturaKey:', naturaKey, 'viewOnlyNaturaKey:', viewOnlyNaturaKey);
-
 		const result = columns.map((col) => ({
 			name: col,
 			values: ['', '', ''],
@@ -67,59 +52,19 @@
 			// Make the natural key column view-only if viewOnlyNaturaKey is true
 			viewOnly: viewOnlyFields.includes(col) || (viewOnlyNaturaKey && col === naturaKey)
 		}));
-		// console.log(
-		// 	`DbTableInstance (${title}): Created column state with naturaKey=${naturaKey}, viewOnlyNaturaKey=${viewOnlyNaturaKey}:`,
-		// 	result
-		// );
 		return result;
 	}
 </script>
 
+<style>
+	.centered-cell-content {
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		margin: 0;
+	}
+</style>
 
-		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
-		{#if showGpsAndPolygonCols}
-			<!-- Insert the new GpsAndPolygon component here for testing -->
-			<!-- <div class="gps-polygon-section"> -->
-			<table class="gps-polygon-section">
-				<thead>
-					<tr>
-						<!-- <GpsAndPolygon isHeader={true} /> -->
-					</tr>
-				</thead>
-				<tbody>
-					{#if table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)}
-						{@const landNameColumn = table.find((col) => col.name === naturaKey)}
-						{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
-						{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
-							<tr>
-								<!-- <GpsAndPolygon 
-								isHeader={false} 
-								{uniqueRowIndex} 
-								{pullFirstGpsSelected} 
-								{pullFirstPolygonSelected} 
-								{getLandIdForRow} 
-								isCollapsed={true} 
-							/> -->
-							</tr>
-						{/each}
-						<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
-					{:else}
-						{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
-							<tr>
-								<!-- <GpsAndPolygon 
-								isHeader={false} 
-								uniqueRowIndex={rowIndex} 
-								{pullFirstGpsSelected} 
-								{pullFirstPolygonSelected} 
-								isCollapsed={true} 
-							/> -->
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-			<!-- </div> -->
-		{/if}
 		<table
 			class="no-table-bottom-margin land-table"
 			class:greyed-out={!table.some(
@@ -135,14 +80,12 @@
 							<div class="column-header">
 								<span class="format-label">GPS</span>
 							</div>
-							<div class="header-name"></div>
 						</th>
 
 						<th class="polygon-column">
 							<div class="column-header">
 								<span class="format-label">Polygon</span>
 							</div>
-							<div class="header-name"></div>
 						</th>
 					{/if}
 					<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
@@ -255,48 +198,32 @@
 					{@const uniqueIndices = getUniqueValues(landNameColumn?.modelRepColumnIndex ?? -1)}
 					{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 						<tr>
-							<td class="extra-column">more data</td>
 							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							{#if showGpsAndPolygonCols}
+								{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+								{@const landId = getLandIdForRow(uniqueRowIndex)}
+								{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
 								<td class="gps-column">
-									{#key uniqueRowIndex}
-										{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
-										{#if gpsResult}
-											<span class="gps-coordinates">
-												{#if gpsResult.type === 'full'}
-													{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-													{formattedGps}
-												{:else if gpsResult.type === 'pair'}
-													{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-													{formattedGps}
-												{/if}
+									{#if gpsResult && (gpsResult.type === 'full' || gpsResult.type === 'pair')}
+										{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
+										<span class="gps-coordinates">
+											{formattedGps}
+										</span>
+									{/if}
+								</td>
+								<td class="polygon-column">
+									<div class="polygon-cell centered-cell-content">
+										{#if landId && landId.polygonId}
+											<span>Polygon ID: {landId.polygonId}</span>
+										{:else if polygonData}
+											<span class="polygon-coordinates">
+												{polygonData.value}
+											</span>
+										{:else if gpsResult}
+											<span class="polygon-placeholder">
+												<span class="material-symbols-outlined">crop_square</span>
 											</span>
 										{/if}
-									{/key}
-								</td>
-							{/if}
-							{#if showGpsAndPolygonCols}
-								<td class="polygon-column">
-									<div
-										class="polygon-cell"
-										style="display: flex; justify-content: center; width: 100%; margin: 0;"
-									>
-										{#key uniqueRowIndex}
-											{@const landId = getLandIdForRow(uniqueRowIndex)}
-											{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
-											{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
-											{#if landId && landId.polygonId}
-												<span>Polygon ID: {landId.polygonId}</span>
-											{:else if polygonData}
-												<span class="polygon-coordinates">
-													{polygonData.value}
-												</span>
-											{:else if gpsResult}
-												<span class="polygon-placeholder">
-													<span class="material-symbols-outlined">crop_square</span>
-												</span>
-											{/if}
-										{/key}
 									</div>
 								</td>
 							{/if}
@@ -374,13 +301,6 @@
 				{:else}
 					{#each importedData.columns[0].values.slice(0, 3) as _, rowIndex}
 						<tr>
-							<td class="extra-column">more data</td>
-							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
-							<!-- {#if showGpsAndPolygonCols}
-					<td class="gps-column"></td>
-					<td class="polygon-column"></td>
-				{/if}	 -->
-							<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 							{#each table as column, index}
 								<td
 									class={'col-' + column.name}
