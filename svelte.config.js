@@ -10,7 +10,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter(),
+		adapter: adapter()
 	},
 
 	// Suppress specific warnings while keeping important ones

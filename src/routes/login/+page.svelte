@@ -46,12 +46,14 @@
 			<div class="error">{error}</div>
 		{/if}
 
-		<button class="submit-button" type="submit" disabled={loading}>{loading ? 'Signing In...' : 'Sign In'}</button>
+		<button class="submit-button" type="submit" disabled={loading}
+			>{loading ? 'Signing In...' : 'Sign In'}</button
+		>
 	</form>
 </div>
 
 <style>
-  .submit-button {
-    padding: 0.2rem;
+	.submit-button {
+		padding: 0.2rem;
 	}
-	</style>
+</style>

@@ -1,61 +1,61 @@
 {
 	"organizations": [
-	  {
-		"organizationName": "Green Roots Alliance",
-		"contactName": "Alice Brown",
-		"contactEmail": "alice@greenroots.org",
-		"website": "https://greenroots.org",
-		"organizationNotes": "Non-profit focused on biodiversity and climate resilience through reforestation.",
-		"projects": [
-		  {
-			"projectName": "Mekong Delta Restoration",
-			"projectNotes": "Wetland and mangrove restoration in southern Vietnam.",
-			"source": "https://greenroots.org/projects/mekong",
-			"lands": [
-			  {
-				"landName": "Delta Zone A",
-				"hectares": 3.5,
-				"landHolder": "Mr. Tran Van Hai",
-				"gpsLat": 9.803421,
-				"gpsLon": 105.602841,
-				"landNotes": "Mangrove planting area | Subject to seasonal flooding",
-				"polygon": {
-				  "type": "Polygon",
-				  "coordinates": [
-					[
-					  [105.602841, 9.803421],
-					  [105.603111, 9.802891],
-					  [105.603689, 9.803102],
-					  [105.603421, 9.803689],
-					  [105.602991, 9.803551],
-					  [105.602841, 9.803421]
+		{
+			"organizationName": "Green Roots Alliance",
+			"contactName": "Alice Brown",
+			"contactEmail": "alice@greenroots.org",
+			"website": "https://greenroots.org",
+			"organizationNotes": "Non-profit focused on biodiversity and climate resilience through reforestation.",
+			"projects": [
+				{
+					"projectName": "Mekong Delta Restoration",
+					"projectNotes": "Wetland and mangrove restoration in southern Vietnam.",
+					"source": "https://greenroots.org/projects/mekong",
+					"lands": [
+						{
+							"landName": "Delta Zone A",
+							"hectares": 3.5,
+							"landHolder": "Mr. Tran Van Hai",
+							"gpsLat": 9.803421,
+							"gpsLon": 105.602841,
+							"landNotes": "Mangrove planting area | Subject to seasonal flooding",
+							"polygon": {
+								"type": "Polygon",
+								"coordinates": [
+									[
+										[105.602841, 9.803421],
+										[105.603111, 9.802891],
+										[105.603689, 9.803102],
+										[105.603421, 9.803689],
+										[105.602991, 9.803551],
+										[105.602841, 9.803421]
+									]
+								]
+							}
+						},
+						{
+							"landName": "Delta Zone B",
+							"hectares": 2.1,
+							"landHolder": null,
+							"gpsLat": 9.804721,
+							"gpsLon": 105.601231,
+							"landNotes": "Community co-managed zone | Trialing native species",
+							"polygon": {
+								"type": "Polygon",
+								"coordinates": [
+									[
+										[105.601231, 9.804721],
+										[105.601899, 9.804233],
+										[105.602012, 9.804812],
+										[105.601455, 9.805001],
+										[105.601231, 9.804721]
+									]
+								]
+							}
+						}
 					]
-				  ]
 				}
-			  },
-			  {
-				"landName": "Delta Zone B",
-				"hectares": 2.1,
-				"landHolder": null,
-				"gpsLat": 9.804721,
-				"gpsLon": 105.601231,
-				"landNotes": "Community co-managed zone | Trialing native species",
-				"polygon": {
-				  "type": "Polygon",
-				  "coordinates": [
-					[
-					  [105.601231, 9.804721],
-					  [105.601899, 9.804233],
-					  [105.602012, 9.804812],
-					  [105.601455, 9.805001],
-					  [105.601231, 9.804721]
-					]
-				  ]
-				}
-			  }
 			]
-		  }
-		]
-	  }
+		}
 	]
 }

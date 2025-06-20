@@ -1,8 +1,5 @@
-
 ---
-
 # OSEM🤘🌲
-
 ---
 
 - [About](about.md)

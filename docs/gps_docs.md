@@ -95,5 +95,3 @@ The `sourceTracking` property in the GpsColumn tracks which source provided each
 - [ ] Add local caching system
 - [ ] Add coordinate range validation
 - [ ] Support additional GPS formats
-
-

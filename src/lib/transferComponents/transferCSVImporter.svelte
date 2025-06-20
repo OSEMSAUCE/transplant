@@ -108,7 +108,9 @@
 </script>
 
 <div class="file-input-container">
-	<div style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: -0.8rem;">
+	<div
+		style="display: flex; flex-direction: column; align-items: flex-start; margin-bottom: -0.8rem;"
+	>
 		<button
 			onclick={() => {
 				const fileInput = document.getElementById('hidden-file-input');

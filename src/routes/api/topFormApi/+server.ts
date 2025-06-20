@@ -13,11 +13,11 @@ export async function GET() {
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { projectName: 'asc' }
 		});
-    const organizations = await prisma.organizationsTable.findMany({
-      select: { organizationName: true, organizationId: true },
-      where: { deleted: false }, // Only non-deleted projects
-      orderBy: { organizationName: 'asc' }
-    });
+		const organizations = await prisma.organizationsTable.findMany({
+			select: { organizationName: true, organizationId: true },
+			where: { deleted: false }, // Only non-deleted projects
+			orderBy: { organizationName: 'asc' }
+		});
 		// Map to array of strings
 
 		return json({ projects, organizations });
@@ -30,7 +30,7 @@ export async function GET() {
 	}
 }
 
-export async function POST({request}) {
+export async function POST({ request }) {
 	const data = await request.json();
 	return json({ message: 'Project added successfully' });
 }

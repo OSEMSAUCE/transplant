@@ -31,14 +31,13 @@ export default [
 				sessionStorage: true,
 				console: true,
 				process: true
-
 			}
 		},
 
 		rules: {
 			// 🔥 Enforce Svelte 5 Runes
-			'svelte/require-runes': 'error',  // Forces Svelte 5 runes (`@runes`)
-			'svelte/prefer-runes': 'error',   // Suggests Runes over old Svelte 4 syntax
+			'svelte/require-runes': 'error', // Forces Svelte 5 runes (`@runes`)
+			'svelte/prefer-runes': 'error', // Suggests Runes over old Svelte 4 syntax
 			'svelte/no-legacy-reactive-declarations': 'error', // Disallow `$:` reactivity
 			'svelte/no-legacy-reactive-assignments': 'error', // Prevent old `$var = value` syntax
 
@@ -46,7 +45,7 @@ export default [
 			'svelte/valid-compile': 'error',
 			'svelte/no-unused-svelte-ignore': 'error',
 			'svelte/spaced-html-comment': 'error',
-			'curly': 'error',
+			curly: 'error',
 			// 🚀 TypeScript Best Practices
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/no-unused-vars': [

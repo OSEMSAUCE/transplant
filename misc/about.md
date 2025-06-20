@@ -8,4 +8,3 @@ OSEM (Open Source Environmental Movement) is a project dedicated to building ope
 
 - Visit our main repo: [OSEMSAUCE on GitHub](https://github.com/OSEMSAUCE)
 - Contact: info@groundtruth.app
-

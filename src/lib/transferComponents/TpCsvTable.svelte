@@ -270,7 +270,7 @@
 	<thead>
 		<tr>
 			<!-- The GPS column is always first and separate from the iteration -->
-			 		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
 			<th class="gps-column">
 				<div class="column-header">
@@ -285,8 +285,8 @@
 				</div>
 				<div class="header-name"></div>
 			</th>
-		<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
-			
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+
 			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 				{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
@@ -340,7 +340,10 @@
 				</td>
 				<!-- Polygon column cell -->
 				<td style="position: relative; padding: 4px;">
-					<div class="polygon-cell" style="display: flex; justify-content: center; width: 100%; margin: 0;">
+					<div
+						class="polygon-cell"
+						style="display: flex; justify-content: center; width: 100%; margin: 0;"
+					>
 						{#key rowIndex}
 							{@const polygonData = pullFirstPolygonSelected(rowIndex)}
 							{#if polygonData}

@@ -71,7 +71,6 @@
 	const plantingDbFormat = $derived(data?.plantingDbFormat || 'string');
 	const cropDbFormat = $derived(data?.cropDbFormat || 'string');
 
-
 	let pageIs = $state<'transfer' | 'transplant'>('transfer');
 	function handleProcessed(csvImportToPage: ColumnRep[]) {
 		setImportedData(csvImportToPage || []);
@@ -121,7 +120,6 @@
 		});
 	}
 </script>
-
 
 <TopForm
 	{projectName}
@@ -182,8 +180,7 @@
 	</div>
 </div>
 
-	<h3 style="text-align: center; margin-top: -2rem; margin-bottom: 1rem;">CSV Import     </h3>
-
+<h3 style="text-align: center; margin-top: -2rem; margin-bottom: 1rem;">CSV Import</h3>
 
 {#if importedData.columns.length > 0}
 	<div class="table-container">
@@ -206,7 +203,7 @@
 	</div>
 
 	{#if pageIs === 'transplant'}
-	<h3 style="text-align: center; margin-top: 0.5rem; margin-bottom: 1rem;">Database Tables</h3>
+		<h3 style="text-align: center; margin-top: 0.5rem; margin-bottom: 1rem;">Database Tables</h3>
 	{/if}
 
 	{#if pageIs === 'transplant'}
@@ -222,7 +219,9 @@
 {/if}
 
 {#if importedData.columns}
-	<div style="display: flex; align-items: center; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 1.5rem;">
+	<div
+		style="display: flex; align-items: center; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 1.5rem;"
+	>
 		<button
 			aria-label="Copy column model JSON"
 			style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1.2rem;"
@@ -231,7 +230,9 @@
 		>
 			📋
 		</button>
-		<h3 style="text-align: center; margin-top: 0rem; margin-bottom: 1rem;">Current Column Model State</h3>
+		<h3 style="text-align: center; margin-top: 0rem; margin-bottom: 1rem;">
+			Current Column Model State
+		</h3>
 	</div>
 	<pre>
 		{JSON.stringify(

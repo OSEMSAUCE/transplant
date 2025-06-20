@@ -154,7 +154,7 @@ export async function POST({ request }) {
 		// Create planting entries
 		for (const plantingItem of data.plantings) {
 			// First, find the land and crop IDs
-		
+
 			const land = await prisma.landTable.findFirst({
 				where: {
 					landName: plantingItem.landName,
