@@ -7,9 +7,9 @@
 		formatValue
 	} from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
-	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	import { importedData } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
-	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
+	import { dragColumnState } from '$lib/components/modelState.svelte';
 
 	const landColumns = [
 		{ name: 'landName', label: 'Land Name', modelRepColumnIndex: 0, viewOnly: false },

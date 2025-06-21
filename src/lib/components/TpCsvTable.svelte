@@ -8,8 +8,8 @@
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
 	import { detectFormat, isGps, isLatitude, isLongitude, formatValue } from './formatDetection2';
-	import { importedData } from '$lib/transferComponents/modelState.svelte';
-	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
+	import { importedData } from '$lib/components/modelState.svelte';
+	import { dragColumnState } from '$lib/components/modelState.svelte';
 	// Add this constant
 	const max_transplant_rows = 3;
 

@@ -7,7 +7,7 @@
 		formatValue
 	} from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
-	import { importedData } from '$lib/transferComponents/modelState.svelte';
+	import { importedData } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 
 	import DbTableInstance from './DbTableInstance.svelte';
@@ -69,7 +69,7 @@
 		// If we couldn't find a complete pair of valid coordinates, return null
 		return null;
 	}
-	import { dragColumnState } from '$lib/transferComponents/modelState.svelte';
+	import { dragColumnState } from '$lib/components/modelState.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
 	import type { asClassComponent } from 'svelte/legacy';
 

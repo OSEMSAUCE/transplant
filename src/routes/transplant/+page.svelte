@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import TopForm from '$lib/transferComponents/topForm.svelte';
+	import TopForm from '$lib/components/topForm.svelte';
 
 	// let projectName = $state('');
 	// let organizationName = $state('');
@@ -52,13 +52,13 @@
 		});
 	}
 
-	import TpCsvTable from '$lib/transferComponents/TpCsvTable.svelte';
-	import TransferCSVImporter from '$lib/transferComponents/transferCSVImporter.svelte';
+	import TpCsvTable from '$lib/components/TpCsvTable.svelte';
+	import TransferCSVImporter from '$lib/components/transferCSVImporter.svelte';
 	import type { ColumnRep } from '$lib/types/columnModel';
-	import { importedData, setImportedData } from '$lib/transferComponents/modelState.svelte';
-	import ToggleComponent from '$lib/transferComponents/ToggleComponent.svelte';
-	import TpDbTables from '$lib/transferComponents/TpDbTables.svelte';
-	import { submitToDB } from '$lib/transferComponents/dbButton';
+	import { importedData, setImportedData } from '$lib/components/modelState.svelte';
+	import ToggleComponent from '$lib/components/ToggleComponent.svelte';
+	import TpDbTables from '$lib/components/TpDbTables.svelte';
+	import { submitToDB } from '$lib/components/dbButton';
 	let isSubmitting = $state(false);
 	let submitResponse = $state<{ success: boolean; error?: string; result?: any } | null>(null);
 

@@ -1,4 +1,4 @@
-// src/lib/transferComponents/dbButton.ts
+// src/lib/components/dbButton.ts
 import { importedData } from './modelState.svelte';
 
 export async function submitToDB(

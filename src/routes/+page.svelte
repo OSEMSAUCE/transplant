@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AccountMenu from '$lib/transferComponents/AccountMenu.svelte';
+	import AccountMenu from '$lib/components/AccountMenu.svelte';
 </script>
 
 <h2>Welcome to OSEM🤘🌲 Transplant App</h2>

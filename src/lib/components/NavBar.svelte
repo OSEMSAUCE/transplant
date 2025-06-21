@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AccountMenu from '$lib/transferComponents/AccountMenu.svelte';
+	import AccountMenu from '$lib/components/AccountMenu.svelte';
 	import { onMount } from 'svelte';
 	import { supabase } from '../supabaseClient';
 	import type { User } from '@supabase/supabase-js';
