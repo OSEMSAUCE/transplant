@@ -1,5 +1,4 @@
 <script lang="ts">
-	console.log('CASCADE TEST: TpCsvTable.svelte loaded');
 	import {
 		getColumnCompatibility,
 		findLandColumn,
@@ -47,13 +46,7 @@
 		if (landCol) {
 			const draggedCol = importedData.columns[columnIndex];
 			const compat = getColumnCompatibility(landCol.values, draggedCol.values);
-			console.log(
-				`Dragging column ${columnName} - compatibility with ${landCol.headerName}: ${compat}`
-			);
 		}
-
-		console.log(dragColumnState);
-		// Add class to all cells in this column
 		document
 			.querySelectorAll(`[data-column-index="${columnIndex}"]`)
 			.forEach((el) => el.classList.add('dragging'));

@@ -124,9 +124,13 @@ export async function submitToDB(
 			}
 		}
 
+		// In dbButton.ts, around line 126-127
 		// Extract polygon data from columns
 		const polygonColumn = importedData.columns.find(col => col.currentFormat === 'polygon');
-		const polygonLandNameColumn = importedData.columns.find(col => col.mappedTo === 'land.landName');
+		console.log('Debug - Found polygon column:', polygonColumn);
+		const polygonLandNameColumn = importedData.columns.find(col => 
+			col.mappedTo === 'land.landName' || col.headerName === 'name');
+		console.log('Debug - Found polygon land name column:', polygonLandNameColumn);
 		
 		// Build polygons array by matching polygon values with land names
 		const polygons = [];
@@ -143,6 +147,9 @@ export async function submitToDB(
 				}
 			}
 		}
+		
+		// Add this after building the polygons array
+		console.log('Debug - Collected polygons:', polygons);
 		
 		const data = {
 			projectName: projectName || 'TransPlant Import ' + new Date().toISOString().split('T')[0],

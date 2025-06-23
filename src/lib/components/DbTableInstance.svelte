@@ -91,15 +91,11 @@
 					data-header-name={column.name}
 					data-column-index={index}
 					ondragover={(e) => {
-						console.log(
-							`Header dragover for ${title}, column ${column.name}, naturaKey=${naturaKey}`
-						);
 						return dragoverHandler(e);
 					}}
 					ondrop={(() => {
 						// Don't allow drop for view-only columns
 						if (column.viewOnly) {
-							console.log(`Blocking drop on ${column.name}: column is viewOnly`);
 							return null;
 						}
 
@@ -108,14 +104,10 @@
 							column.name !== naturaKey &&
 							!table.some((col) => col.name === naturaKey && col.modelRepColumnIndex !== -1)
 						) {
-							console.log(
-								'Blocking drop: naturaKey not mapped yet and this is not naturaKey column'
-							);
 							return null;
 						}
 
 						// Use the standard drop handler - normalization is checked inside dropHandler
-						console.log('Allowing drop, using standard dropHandler');
 						return dropHandler;
 					})()}
 					class:legal-droptarget={column.name === naturaKey
