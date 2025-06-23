@@ -258,54 +258,32 @@ export function isPolygon(val: string | number | null): boolean {
 	if (typeof val !== 'string') return false;
 	if (val.trim() === '') return false;
 
-	// First try to parse as GeoJSON
+	// First try to parse as GeoJSON (keep this for backward compatibility)
 	try {
 		const parsed = JSON.parse(val);
 		if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
-			return true; // Return the original GeoJSON string
+			return true;
 		}
 	} catch (e) {
 		// Not GeoJSON, continue to other formats
 	}
 
-	// Check if it's WKT format
-	if (val.toUpperCase().startsWith('POLYGON')) {
-		// Remove any trailing quotes or other characters
-		const cleanValue = val.replace(/['"]+$/, '');
-		const geoNumberRegex = /-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]?\d|[1-9]?\d)(?:\.\d{2,}))/g;
-		const numbers = [...cleanValue.matchAll(geoNumberRegex)].map((m) => parseFloat(m[0]));
-		if (numbers.length >= 8 && numbers.length % 2 === 0) {
-			const coords = [];
-			for (let i = 0; i < numbers.length; i += 2) {
-				const lon = numbers[i];
-				const lat = numbers[i + 1];
-				if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
-					coords.push([lon, lat]);
-				}
-			}
-			if (coords.length >= 4) {
-				return true;
-			}
-		}
-		return false;
+	// Simple approach: extract all numbers from the string
+	// and check if we have at least 3 valid lat/lon values
+	const numberRegex = /-?\d+\.?\d*/g;
+	const potentialCoords = val.match(numberRegex);
+	
+	if (potentialCoords) {
+		// Filter to only valid lat/lon values
+		const validCoords = potentialCoords
+			.map(num => parseFloat(num))
+			.filter(num => !isNaN(num) && num >= -180 && num <= 180);
+		
+		// If we have at least 3 valid coordinates, consider it a polygon
+		return validCoords.length >= 3;
 	}
 
-	// Original polygon detection logic
-	if (
-		(val.match(/-?(?:180(?:\.0{2,}|\.0*[1-9]\d*)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d{2,}))/g) || [])
-			.length >= 4
-	) {
-		return true;
-	}
-
-	// Original check for coordinate pairs [number, number]
-	const regex = /\[\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\]/g;
-
-	// Find all matches
-	const matches = val.match(regex);
-
-	// Return true if we have at least 4 coordinate pairs (minimum for a polygon)
-	return Boolean(matches && matches.length >= 4);
+	return false;
 }
 // =============================================
 // SILO 4: DATE VALIDATION
@@ -808,7 +786,7 @@ export function formatValue(
 			if (typeof value !== 'string') return null;
 			if (value.trim() === '') return null;
 
-			// First try to parse as GeoJSON
+			// First try to parse as GeoJSON (keep this for backward compatibility)
 			try {
 				const parsed = JSON.parse(value);
 				if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) {
@@ -818,42 +796,51 @@ export function formatValue(
 				// Not GeoJSON, continue to other formats
 			}
 
-			// Clean the value - remove any trailing quotes and trim
-			const cleanValue = value.replace(/['"]+$/, '').trim();
+			// Simple approach: extract all numbers from the string
+			const numberRegex = /-?\d+\.?\d*/g;
+			const potentialCoords = value.match(numberRegex);
 
-			// Check if it's WKT format (with or without POLYGON prefix)
-			const isWktFormat =
-				cleanValue.toUpperCase().startsWith('POLYGON') ||
-				(cleanValue.startsWith('((') && cleanValue.endsWith('))'));
+			if (potentialCoords) {
+				// Filter to only valid lat/lon values
+				const validNumbers = potentialCoords
+					.map(num => parseFloat(num))
+					.filter(num => !isNaN(num) && num >= -180 && num <= 180);
 
-			if (isWktFormat) {
-				// Extract the coordinates part
-				const coordMatch = cleanValue.match(/\(\((.*)\)\)/);
-				if (coordMatch) {
-					const coordString = coordMatch[1];
-
-					// Split by commas and spaces
-					const coordPairs = coordString.split(/[,\s]+/).filter((pair) => pair.trim());
-
+				// If we have at least 3 valid coordinates, create a polygon
+				if (validNumbers.length >= 3) {
+					// Create coordinate pairs
 					const coords = [];
-					for (let i = 0; i < coordPairs.length; i += 2) {
-						if (i + 1 < coordPairs.length) {
-							const lon = parseFloat(coordPairs[i]);
-							const lat = parseFloat(coordPairs[i + 1]);
-							if (
-								!isNaN(lon) &&
-								!isNaN(lat) &&
-								lon >= -180 &&
-								lon <= 180 &&
-								lat >= -90 &&
-								lat <= 90
-							) {
-								coords.push([lon, lat]);
-							}
+					
+					// Use pairs of numbers to create coordinates
+					// For odd number of coordinates, duplicate the last one
+					for (let i = 0; i < validNumbers.length - 1; i += 2) {
+						const lon = validNumbers[i];
+						const lat = validNumbers[i + 1];
+						
+						// Ensure both are within valid ranges
+						if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
+							coords.push([lon, lat]);
 						}
 					}
 
-					if (coords.length >= 4) {
+					// If we have an odd number of coordinates, use the last one with the first one
+					if (validNumbers.length % 2 !== 0 && validNumbers.length >= 3) {
+						const lastNum = validNumbers[validNumbers.length - 1];
+						const firstNum = validNumbers[0];
+						
+						if (lastNum >= -180 && lastNum <= 180 && firstNum >= -90 && firstNum <= 90) {
+							coords.push([lastNum, firstNum]);
+						}
+					}
+
+					// Ensure we have at least 3 coordinate pairs for a valid polygon
+					if (coords.length >= 3) {
+						// Close the polygon if needed (first and last points should be the same)
+						if (coords[0][0] !== coords[coords.length - 1][0] || 
+							coords[0][1] !== coords[coords.length - 1][1]) {
+							coords.push([coords[0][0], coords[0][1]]);
+						}
+
 						return JSON.stringify({
 							type: 'Polygon',
 							coordinates: [coords]
