@@ -23,6 +23,29 @@ export function setImportedData(data: ColumnRep[]) {
 	}, 0);
 }
 
+// 2025-06-23 WE NEED THIS TO GET POLYGON VALUES FROM THE COLUMN
+// Find polygon column in importedData
+export function findPolygonColumn(): ColumnRep | undefined {
+	return importedData.columns.find(col => col.currentFormat === 'polygon');
+}
+
+// Get polygon data for a specific land name
+export function getPolygonValueForLand(landName: string): string | null {
+	const polygonCol = findPolygonColumn();
+	if (!polygonCol) return null;
+	
+	const landCol = importedData.columns.find(col => col.mappedTo === 'land.landName');
+	if (!landCol) return null;
+	
+	const rowIndex = landCol.values.findIndex(value => value === landName);
+	if (rowIndex === -1) return null;
+	
+	return polygonCol.values[rowIndex] as string || null;
+}
+
+
+
+
 export function formatGreyedStatus(
 	columnData: ColumnRep[],
 	index: number,

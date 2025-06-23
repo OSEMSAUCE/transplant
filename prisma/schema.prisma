@@ -385,7 +385,6 @@ model landTable {
   deleted          Boolean?           @default(false)
   preparation      Preparation?
   csvobjId         String?            @db.Uuid
-  polygon          Json?
   polygonId        BigInt?
   sourceSpecifId   String?
   csvObjTable      csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")

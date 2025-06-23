@@ -124,13 +124,34 @@ export async function submitToDB(
 			}
 		}
 
+		// Extract polygon data from columns
+		const polygonColumn = importedData.columns.find(col => col.currentFormat === 'polygon');
+		const polygonLandNameColumn = importedData.columns.find(col => col.mappedTo === 'land.landName');
+		
+		// Build polygons array by matching polygon values with land names
+		const polygons = [];
+		if (polygonColumn && polygonLandNameColumn) {
+			for (let i = 0; i < polygonLandNameColumn.values.length; i++) {
+				const landName = polygonLandNameColumn.values[i];
+				const polygon = polygonColumn.values[i];
+				
+				if (landName && polygon && !polygonLandNameColumn.isGreyed[i] && !polygonColumn.isGreyed[i]) {
+					polygons.push({
+						landName: String(landName),
+						polygon: String(polygon)
+					});
+				}
+			}
+		}
+		
 		const data = {
 			projectName: projectName || 'TransPlant Import ' + new Date().toISOString().split('T')[0],
 			organizationName: organizationName || '',
 			projectNotes: projectNotes || 'Imported via TransPlant application',
 			land,
 			crops,
-			plantings
+			plantings,
+			polygons
 		};
 		console.log('Submitting data to Server:', data);
 

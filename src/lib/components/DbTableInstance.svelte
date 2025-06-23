@@ -1,13 +1,12 @@
 <script lang="ts">
 	import {
 		isGps,
-		isLatitude,
 		isLongitude,
 		formatAllGpsTypes,
 		formatValue
 	} from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
-	import { importedData } from '$lib/components/modelState.svelte';
+	import { importedData, findPolygonColumn } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
 
@@ -44,6 +43,9 @@
 	// Use the passed tableState if available, otherwise create a new one
 	let table = $state<TableColumn[]>(tableState || createColumnState(tableColumns, []));
 
+	// We're now handling polygons directly in the column structure
+	// No need for special polygon data collection
+
 	function createColumnState(columns: string[], viewOnlyFields: string[] = []): TableColumn[] {
 		const result = columns.map((col) => ({
 			name: col,
@@ -54,6 +56,9 @@
 		}));
 		return result;
 	}
+
+	// We're now handling polygons directly in the column structure
+	// No need for special polygon data collection functions
 </script>
 
 <table
