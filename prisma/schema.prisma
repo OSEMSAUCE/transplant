@@ -520,19 +520,19 @@ model speciesTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model stakeholderTable {
-  stakeholderTableId    String                @id(map: "stakeholdertable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationId        String                @db.Uuid
-  stakeholderTypeId     String                @db.Uuid
-  plantingId            String?               @db.Uuid
-  projectId             String?               @db.Uuid
-  landId                String?               @db.Uuid
-  cropId                String?               @db.Uuid
-  cropTable             cropTable?            @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
-  landTable             landTable?            @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
-  organizationsTable    organizationsTable    @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
-  plantingTable         plantingTable?        @relation(fields: [plantingId], references: [plantingId], onUpdate: NoAction, map: "fk_planting")
-  projectsTable         projectsTable?        @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
-  stakeholderTypesTable stakeholderTypesTable @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_stakeholdertype")
+  stakeholderTableId    String                 @id(map: "stakeholdertable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId        String                 @db.Uuid
+  stakeholderTypeId     String?                @db.Uuid
+  plantingId            String?                @db.Uuid
+  projectId             String?                @db.Uuid
+  landId                String?                @db.Uuid
+  cropId                String?                @db.Uuid
+  cropTable             cropTable?             @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
+  landTable             landTable?             @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
+  organizationsTable    organizationsTable     @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
+  plantingTable         plantingTable?         @relation(fields: [plantingId], references: [plantingId], onUpdate: NoAction, map: "fk_planting")
+  projectsTable         projectsTable?         @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
+  stakeholderTypesTable stakeholderTypesTable? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_stakeholdertype")
 
   @@schema("public")
 }
@@ -589,9 +589,9 @@ model profiles {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model sourceTable {
   sourceId           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  url                String
-  type               sourcetype
-  description        String?
+  sourceUrl          String
+  sourcetype         sourcetype
+  sourcedescription  String?
   createdAt          DateTime?           @default(now()) @db.Timestamptz(6)
   projectId          String?             @db.Uuid
   organizationId     String?             @db.Uuid
