@@ -468,7 +468,7 @@
 				// Format the polygon value using the formatValue function
 				const formattedValue = formatValue(column.currentFormat, rawPolygonValue);
 				return {
-					value: formattedValue || 'Polygon',
+					value: formattedValue || '',
 					format: column.currentFormat
 				};
 			}

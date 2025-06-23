@@ -272,13 +272,13 @@ export function isPolygon(val: string | number | null): boolean {
 	// and check if we have at least 3 valid lat/lon values
 	const numberRegex = /-?\d+\.?\d*/g;
 	const potentialCoords = val.match(numberRegex);
-	
+
 	if (potentialCoords) {
 		// Filter to only valid lat/lon values
 		const validCoords = potentialCoords
-			.map(num => parseFloat(num))
-			.filter(num => !isNaN(num) && num >= -180 && num <= 180);
-		
+			.map((num) => parseFloat(num))
+			.filter((num) => !isNaN(num) && num >= -180 && num <= 180);
+
 		// If we have at least 3 valid coordinates, consider it a polygon
 		return validCoords.length >= 3;
 	}
@@ -803,20 +803,20 @@ export function formatValue(
 			if (potentialCoords) {
 				// Filter to only valid lat/lon values
 				const validNumbers = potentialCoords
-					.map(num => parseFloat(num))
-					.filter(num => !isNaN(num) && num >= -180 && num <= 180);
+					.map((num) => parseFloat(num))
+					.filter((num) => !isNaN(num) && num >= -180 && num <= 180);
 
 				// If we have at least 3 valid coordinates, create a polygon
 				if (validNumbers.length >= 3) {
 					// Create coordinate pairs
 					const coords = [];
-					
+
 					// Use pairs of numbers to create coordinates
 					// For odd number of coordinates, duplicate the last one
 					for (let i = 0; i < validNumbers.length - 1; i += 2) {
 						const lon = validNumbers[i];
 						const lat = validNumbers[i + 1];
-						
+
 						// Ensure both are within valid ranges
 						if (lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90) {
 							coords.push([lon, lat]);
@@ -827,7 +827,7 @@ export function formatValue(
 					if (validNumbers.length % 2 !== 0 && validNumbers.length >= 3) {
 						const lastNum = validNumbers[validNumbers.length - 1];
 						const firstNum = validNumbers[0];
-						
+
 						if (lastNum >= -180 && lastNum <= 180 && firstNum >= -90 && firstNum <= 90) {
 							coords.push([lastNum, firstNum]);
 						}
@@ -836,8 +836,10 @@ export function formatValue(
 					// Ensure we have at least 3 coordinate pairs for a valid polygon
 					if (coords.length >= 3) {
 						// Close the polygon if needed (first and last points should be the same)
-						if (coords[0][0] !== coords[coords.length - 1][0] || 
-							coords[0][1] !== coords[coords.length - 1][1]) {
+						if (
+							coords[0][0] !== coords[coords.length - 1][0] ||
+							coords[0][1] !== coords[coords.length - 1][1]
+						) {
 							coords.push([coords[0][0], coords[0][1]]);
 						}
 
