@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
+import { Prisma } from '@prisma/client';
 
 //
 // this is going to post projectName and projectStatus along with
@@ -90,13 +91,15 @@ export async function POST({ request }) {
 		});
 
 		// Create land entries
+		const landMap = new Map(); // To store landName -> landId mapping
+		
 		for (const landItem of data.land) {
 			// Convert hectares to a string first to ensure it's serializable
 			const hectaresValue = landItem.hectares
 				? parseFloat(String(landItem.hectares).replace(',', '.'))
 				: null;
 
-			await prisma.landTable.upsert({
+			const land = await prisma.landTable.upsert({
 				where: {
 					projectId_landName: {
 						projectId: project.projectId,
@@ -109,18 +112,108 @@ export async function POST({ request }) {
 					gpsLat: landItem.gpsLat || null,
 					gpsLon: landItem.gpsLon || null,
 					projectId: project.projectId,
-					// polygon: landItem.polygonId || null,
 					landNotes: landItem.landNotes || null
 				},
 				update: {
 					landName: landItem.landName,
 					hectares: hectaresValue,
-					// polygon: landItem.polygonId,
 					gpsLat: landItem.gpsLat,
 					gpsLon: landItem.gpsLon,
 					landNotes: landItem.landNotes
 				}
 			});
+			
+			// Store the land ID for later polygon processing
+			landMap.set(landItem.landName, land.landId);
+		}
+		
+		// Process polygon data if available
+		if (data.polygons && Array.isArray(data.polygons) && data.polygons.length > 0) {
+			console.log(`Processing ${data.polygons.length} polygons`);
+			
+			for (const polygonItem of data.polygons) {
+				const landId = landMap.get(polygonItem.landName);
+				
+				if (landId && polygonItem.polygon) {
+					try {
+						// Log the polygon data for debugging
+						console.log(`Processing polygon for land ${polygonItem.landName}:`, polygonItem.polygon.substring(0, 100) + '...');
+						
+						// Create polygon entry using raw SQL since Prisma doesn't directly support PostgreSQL polygon type
+						// PostgreSQL's native polygon type expects a different format than PostGIS geometry
+						// Format should be a string of points like '((x1,y1),(x2,y2),...)'
+						
+						// First, try to parse the WKT format to extract coordinates
+						let polygonPoints = '';
+						try {
+							// Extract coordinates from WKT format (POLYGON((x1 y1, x2 y2, ...)))
+							const wktRegex = /POLYGON\s*\(\(([^)]+)\)\)/i;
+							const match = wktRegex.exec(polygonItem.polygon);
+							
+							if (match && match[1]) {
+								// Convert from "x1 y1, x2 y2" to "((x1,y1),(x2,y2))"
+								const points = match[1].split(',').map(point => {
+									const [x, y] = point.trim().split(/\s+/);
+									return `(${x},${y})`;
+								}).join(',');
+								
+								polygonPoints = `(${points})`;
+							} else {
+								throw new Error('Failed to parse WKT polygon format');
+							}
+						} catch (parseError) {
+							console.error(`Error parsing polygon data: ${parseError}`);
+							throw parseError;
+						}
+						
+						// Variable to store polygon ID outside the try-catch block for later use
+						let createdPolygonId: bigint | undefined;
+						
+						try {
+							// Log the converted polygon format for debugging
+							console.log(`Converted polygon format: ${polygonPoints.substring(0, 100)}${polygonPoints.length > 100 ? '...' : ''}`);
+							
+							// Insert the polygon with the correctly formatted points
+							// Cast landId to UUID type since the column is UUID type in PostgreSQL
+							const polygonResult = await prisma.$queryRaw<{ polygonId: bigint }[]>`
+								INSERT INTO "public"."polygonTable" ("polygon", "landId")
+								VALUES (
+									${polygonPoints}::polygon,
+									${landId}::uuid
+								)
+								RETURNING "polygonId"
+							`;
+						
+							createdPolygonId = polygonResult[0]?.polygonId;
+							
+							console.log(`Successfully created polygon with ID ${createdPolygonId} for land ${polygonItem.landName}`);
+							
+							// Update the land entry with the polygon reference
+							if (createdPolygonId) {
+								await prisma.landTable.update({
+									where: { landId },
+									data: { polygonId: createdPolygonId }
+								});
+								console.log(`Successfully linked polygon to land ${polygonItem.landName}`);
+							}
+						} catch (error) {
+							// Type assertion for error object to access properties safely
+							const insertError = error as Error;
+							console.error(`Error creating polygon for land ${polygonItem.landName}: ${insertError}`);
+							console.error(`Error details: ${insertError.message || 'Unknown error'}`);
+							console.error(`Stack trace: ${insertError.stack || 'No stack trace available'}`);
+							throw insertError;
+						}
+					} catch (error) {
+						const err = error as Error;
+						console.error(`Error creating polygon for land ${polygonItem.landName}:`, err);
+						console.error(`Error details: ${err.message || 'Unknown error'}`);
+						console.error(`Stack trace: ${err.stack || 'No stack trace available'}`);
+					}
+				} else {
+					console.warn(`Could not find land ID for polygon with land name: ${polygonItem.landName}`);
+				}
+			}
 		}
 
 		// Create crop entries

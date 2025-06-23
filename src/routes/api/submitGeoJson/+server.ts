@@ -135,14 +135,12 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
 						);
 					}
 				}
-
 				results.push({
 					projectId: project.projectId,
 					projectName: project.projectName
 				});
 			}
 		}
-
 		// Verify polygon-land relationships
 		const verificationResults = [];
 		for (const polygon of polygonsCreated) {
@@ -150,10 +148,9 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
 				const verifiedPolygon = await prisma.polygonTable.findUnique({
 					where: { polygonId: polygon.polygonId }
 				});
-
 				verificationResults.push({
 					polygonId: polygon.polygonId,
-					hasLandReference: !!verifiedPolygon?.land_id,
+					hasLandReference: !!verifiedPolygon?.landId,
 					landName: polygon.landName
 				});
 			} catch (error) {
@@ -166,26 +163,16 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
 				);
 			}
 		}
-
 		if (verbose) {
-			console.log('GeoJSON Import Summary:');
-			console.log(`- Projects created: ${results.length}`);
-			console.log(`- Lands created: ${landsCreated.length}`);
-			console.log(`- Polygons created: ${polygonsCreated.length}`);
-			console.log(`- Issues encountered: ${issues.length}`);
-
 			if (issues.length > 0) {
-				console.log('Issues:');
 				issues.forEach((issue, i) => console.log(`  ${i + 1}. ${JSON.stringify(issue)}`));
 			}
 		}
-
 		// Build error summary for response
 		const errorSummary = Object.entries(errorMap).map(([key, { count, examples }]) => {
 			const [type, attribute] = key.split(':');
 			return { type, attribute, count, examples };
 		});
-
 		// Write only the condensed error summary for quick review
 		const condensedErrors: Array<{ attribute: string; value: any; reason: string }> = [];
 		for (const err of errorSummary) {

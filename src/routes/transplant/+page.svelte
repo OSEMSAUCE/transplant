@@ -236,19 +236,43 @@
 	</div>
 	<pre>
 		{JSON.stringify(
-			importedData.columns.map((col) => ({
-				headerName: col.headerName,
-				type: col.type,
-				currentFormat: col.currentFormat,
-				isToggled: col.isToggled,
-				isGreyed: col.isGreyed.slice(0, 3),
-				formattedValues: col.formattedValues.slice(0, 3),
-				isMapped: col.isMapped,
-				mappedTo: col.mappedTo,
-				isFormatted: col.isFormatted,
-				selectFormatCoercion: col.selectFormatCoercion, // Updated name
-				wasFormatCoerced: col.wasFormatCoerced // Updated name
-			})),
+			importedData.columns.map((col) => {
+				// Format polygon values to be more readable
+				let formattedValues = col.formattedValues.slice(0, 3);
+				
+				// If this is a polygon column, make the display more readable
+				if (col.currentFormat === 'polygon') {
+					formattedValues = formattedValues.map(value => {
+						if (typeof value === 'string') {
+							try {
+								const polygon = JSON.parse(value);
+								if (polygon.coordinates && polygon.coordinates[0]) {
+									const points = polygon.coordinates[0].length;
+									return `Polygon: ${points} points`;
+								}
+							} catch (e) {
+								// If parsing fails, just return a shortened version
+								return value.substring(0, 30) + '...';
+							}
+						}
+						return value;
+					});
+				}
+				
+				return {
+					headerName: col.headerName,
+					type: col.type,
+					currentFormat: col.currentFormat,
+					isToggled: col.isToggled,
+					isGreyed: col.isGreyed.slice(0, 3),
+					formattedValues,
+					isMapped: col.isMapped,
+					mappedTo: col.mappedTo,
+					isFormatted: col.isFormatted,
+					selectFormatCoercion: col.selectFormatCoercion,
+					wasFormatCoerced: col.wasFormatCoerced
+				};
+			}),
 			null,
 			2
 		)}

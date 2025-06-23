@@ -143,9 +143,6 @@ async function importGeoJson() {
 								if (projectOk) {
 									try {
 										// TEMPORARILY SKIP duplicate check to show actual errors
-										console.log(`Attempting to create land: ${landItem.landName}`);
-
-										// Try to create the land record directly (will show actual errors)
 										landObj = await prisma.land.create({
 											data: {
 												landName: landItem.landName,
@@ -157,19 +154,10 @@ async function importGeoJson() {
 												landNotes: landItem.landNotes
 											}
 										});
-
-										console.log(`Successfully created land: ${landItem.landName}`);
 									} catch (e) {
 										landFail++;
 										landReason = getPrismaErrorDetails(e);
 										landOk = false;
-
-										// Log the actual error to the console
-										console.error(`\n\nERROR CREATING LAND: ${landItem.landName}`);
-										console.error(`ERROR TYPE: ${e.code || 'Unknown'}`);
-										console.error(`ERROR MESSAGE: ${e.message}`);
-										console.error('FULL ERROR:', e);
-										console.error('\n');
 									}
 								} else {
 									landFail++;

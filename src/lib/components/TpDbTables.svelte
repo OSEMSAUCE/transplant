@@ -178,10 +178,7 @@
 		modelRepColumnIndex: number;
 		viewOnly: boolean;
 	}
-
-	console.log('Creating plantingTable with columns:', plantingColumns);
 	let plantingTable = $state<TableColumn[]>(createColumnState(plantingColumns));
-	console.log('Initial plantingTable state:', plantingTable);
 	let landTable = $state<TableColumn[]>(createColumnState(landColumns, ['landName']));
 	let cropTable = $state<TableColumn[]>(createColumnState(cropColumns, ['cropName']));
 
@@ -192,7 +189,6 @@
 			modelRepColumnIndex: -1,
 			viewOnly: viewOnlyFields.includes(col)
 		}));
-		console.log(`createColumnState for [${columns.join(', ')}] created:`, result);
 		return result;
 	}
 
@@ -211,7 +207,6 @@
 		if (element) {
 			const columnName = element.dataset.headerName;
 			const columnIndex = element.dataset.columnIndex;
-			console.log('Dragover on column:', columnName, 'index:', columnIndex);
 		}
 	}
 
@@ -249,9 +244,7 @@
 
 		// Get the dragged column index from dataTransfer
 		const draggedColumnIndex = Number(ev.dataTransfer.getData('text') || '-1');
-		console.log('Drop event - draggedColumnIndex:', draggedColumnIndex);
 		if (draggedColumnIndex < 0) {
-			console.log('Invalid dragged column index, aborting drop');
 			return; // Invalid dragged column
 		}
 
@@ -275,18 +268,11 @@
 		if (dbDropTable === plantingTable) tableName = 'plantingTable';
 		if (dbDropTable === landTable) tableName = 'landTable';
 		if (dbDropTable === cropTable) tableName = 'cropTable';
-
-		console.log(
-			`Drop target: ${tableName}, column: ${targetColumnName}, index: ${targetColumnIndex}`
-		);
-
 		// Don't allow dropping on view-only fields
 		if (dbDropTable[targetColumnIndex].viewOnly) {
-			console.log('Target is view-only, aborting drop');
 			// Cannot map to view-only field
 			return;
 		}
-
 		// Get the dragged column data
 		const draggedCol = importedData.columns[draggedColumnIndex];
 
@@ -299,7 +285,6 @@
 				// For other columns in the Land table, check normalization
 				const landColIndex =
 					landTable.find((col) => col.name === 'landName')?.modelRepColumnIndex ?? -1;
-
 				// If landName isn't mapped yet, don't allow drops to other columns
 				if (landColIndex === -1) {
 					// Blocked drop: landName not mapped yet
@@ -336,7 +321,6 @@
 				// For other columns in the Crop table, check normalization
 				const cropColIndex =
 					cropTable.find((col) => col.name === 'cropName')?.modelRepColumnIndex ?? -1;
-
 				// If cropName isn't mapped yet, don't allow drops to other columns
 				if (cropColIndex === -1) {
 					// Blocked drop: cropName not mapped yet
@@ -381,15 +365,8 @@
 			importedData.columns[dbDropTable[targetColumnIndex].modelRepColumnIndex].isMapped = false;
 			importedData.columns[dbDropTable[targetColumnIndex].modelRepColumnIndex].mappedTo = undefined;
 		}
-		console.log(
-			`Setting ${tableName}[${targetColumnIndex}].modelRepColumnIndex from ${dbDropTable[targetColumnIndex].modelRepColumnIndex} to ${draggedColumnIndex}`
-		);
 		dbDropTable[targetColumnIndex].modelRepColumnIndex = draggedColumnIndex;
 		importedData.columns[draggedColumnIndex].isMapped = true;
-		console.log(
-			`Column mapping updated: ${targetColumnName} in ${tableName} now maps to importedData.columns[${draggedColumnIndex}]`
-		);
-
 		// Add the appropriate table prefix to mappedTo
 		let tablePrefix = '';
 		if (dbDropTable === plantingTable) tablePrefix = 'planting.';
@@ -400,17 +377,10 @@
 
 		// Propagate landName and cropName between tables
 		if (targetColumnName === 'landName' && dbDropTable === plantingTable) {
-			console.log('Mapping landName in plantingTable, draggedColumnIndex:', draggedColumnIndex);
 			// Find landName in landTable and update it
 			const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
-			console.log('landNameIndex in landTable:', landNameIndex);
 			if (landNameIndex !== -1) {
-				console.log('Setting landTable[landNameIndex].modelRepColumnIndex to', draggedColumnIndex);
 				landTable[landNameIndex].modelRepColumnIndex = draggedColumnIndex;
-				console.log(
-					'landTable after update:',
-					landTable.map((col) => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex }))
-				);
 			}
 		} else if (targetColumnName === 'cropName' && dbDropTable === plantingTable) {
 			// Find cropName in cropTable and update it
@@ -431,66 +401,35 @@
 				plantingTable[plantingCropNameIndex].modelRepColumnIndex = draggedColumnIndex;
 			}
 		}
-
-		// Column mapping completed
 	}
 
 	function plantingDropHandler(ev: DragEvent) {
-		console.log('plantingDropHandler called');
-		console.log(
-			'plantingTable before:',
-			plantingTable.map((col) => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex }))
-		);
-
 		// Get the target column name and dragged column index
 		const targetColumnName = (ev.currentTarget as HTMLElement)?.getAttribute('data-header-name');
 		const draggedColumnIndex = dragColumnState.index;
-
-		console.log(
-			`Drop on plantingColumns - target: ${targetColumnName}, dragged index: ${draggedColumnIndex}`
-		);
-
 		// Update both the old plantingTable (for compatibility) and the new DbTableInstance data
 		dropHandler(ev, plantingTable, plantingDbFormat);
-
 		// Find the index of the target column in plantingColumns
 		if (targetColumnName && draggedColumnIndex !== null) {
 			// Find the corresponding column in plantingTable that was just updated
 			const updatedColumn = plantingTable.find((col) => col.name === targetColumnName);
-
 			if (updatedColumn) {
-				console.log(
-					`Column ${targetColumnName} updated in plantingTable with modelRepColumnIndex: ${updatedColumn.modelRepColumnIndex}`
-				);
-
 				// Also update landTable if this is landName
 				if (targetColumnName === 'landName') {
 					const landNameIndex = landTable.findIndex((col) => col.name === 'landName');
 					if (landNameIndex !== -1) {
 						landTable[landNameIndex].modelRepColumnIndex = draggedColumnIndex;
-						console.log(
-							`Updated landTable[${landNameIndex}].modelRepColumnIndex to ${draggedColumnIndex}`
-						);
 					}
 				}
-
 				// Also update cropTable if this is cropName
 				if (targetColumnName === 'cropName') {
 					const cropNameIndex = cropTable.findIndex((col) => col.name === 'cropName');
 					if (cropNameIndex !== -1) {
 						cropTable[cropNameIndex].modelRepColumnIndex = draggedColumnIndex;
-						console.log(
-							`Updated cropTable[${cropNameIndex}].modelRepColumnIndex to ${draggedColumnIndex}`
-						);
 					}
 				}
 			}
 		}
-
-		console.log(
-			'plantingTable after:',
-			plantingTable.map((col) => ({ name: col.name, modelRepColumnIndex: col.modelRepColumnIndex }))
-		);
 	}
 
 	function landDropHandler(ev: DragEvent) {
@@ -502,15 +441,12 @@
 		// Find the landName column
 		const landNameCol = landTable.find((col) => col.name === 'landName');
 		if (!landNameCol || landNameCol.modelRepColumnIndex === -1) return null;
-
 		// Get the imported data column that maps to landName
 		const importedCol = importedData.columns[landNameCol.modelRepColumnIndex];
 		if (!importedCol) return null;
-
 		// Get the land name for this row
 		const landName = importedCol.values[rowIndex];
 		if (!landName) return null;
-
 		// In a real implementation, you would query the database or check the local state
 		// to find the land record with this name and return its ID and polygonId
 		// For now, we'll return a placeholder
@@ -595,8 +531,6 @@
 	{getLandIdForRow}
 	showGpsAndPolygonCols={false}
 />
-
-
 
 <style>
 </style>

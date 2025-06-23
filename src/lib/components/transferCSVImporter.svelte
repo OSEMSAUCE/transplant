@@ -15,13 +15,11 @@
 	let fileName = $state<string>('');
 
 	async function handleFileSelect(event: Event) {
-		console.log('File select event triggered');
 		const input = event.target as HTMLInputElement;
 		file = input.files?.[0] ?? null;
 		fileName = file?.name || '';
 
 		if (!file) {
-			console.log('No file selected');
 			error = 'No file selected';
 			return;
 		}
@@ -31,20 +29,13 @@
 			const event = new CustomEvent('resetToTransferMode');
 			window.dispatchEvent(event);
 		}
-
-		console.log('Selected file:', file.name, file.type, file.size + ' bytes');
-
 		if (file.type !== 'text/csv') {
-			console.log('Invalid file type:', file.type);
 			error = 'Please upload a CSV file';
 			return;
 		}
-
 		try {
-			console.log('Starting CSV parsing');
 			isLoading = true;
 			error = null;
-
 			const results = await new Promise<Papa.ParseResult<any>>((resolve, reject) => {
 				Papa.parse(file!, {
 					header: true,
@@ -55,20 +46,16 @@
 				});
 			});
 
-			console.log('CSV parsing completed');
-
 			function processCSV(results: Papa.ParseResult<any>) {
 				if (results.errors.length > 0) {
 					error = results.errors.map((e) => e.message).join(', ');
 					return;
 				}
-
 				const data = results.data;
 				if (!data || data.length === 0) {
 					error = 'No data found in CSV';
 					return;
 				}
-
 				// Transform data into ColumnRep format
 				const headers = Object.keys(data[0]);
 				const columnData: ColumnRep[] = headers.map((header) => {
@@ -92,16 +79,13 @@
 					const detectedFormat = detectFormat(columnData[i].values, columnData[i].headerName);
 					formatGreyedStatus(columnData, i, detectedFormat);
 				}
-				console.log('Dispatching processed data:', columnData);
 				onprocessed?.(columnData);
 			}
 
 			processCSV(results);
 		} catch (err) {
-			console.error('CSV parsing failed:', err);
 			error = 'Failed to parse CSV file';
 		} finally {
-			console.log('Processing complete');
 			isLoading = false;
 		}
 	}
