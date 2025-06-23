@@ -46,7 +46,7 @@ export async function load() {
 	// A more direct approach to handle Prisma objects
 	function serializeForSvelteKit<T>(data: T): T {
 		// Use JSON.stringify/parse to convert all objects to plain JavaScript objects
-		// This will handle Decimal objects by calling their toString() method
+		// This will handle Decimal objects and BigInt values
 		return JSON.parse(
 			JSON.stringify(data, (key, value) => {
 				// Special handling for Decimal objects
@@ -58,6 +58,10 @@ export async function load() {
 				) {
 					// This is likely a Decimal object
 					return Number(value.toString());
+				}
+				// Handle BigInt values
+				if (typeof value === 'bigint') {
+					return Number(value);
 				}
 				return value;
 			})

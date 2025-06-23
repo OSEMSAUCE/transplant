@@ -128,81 +128,90 @@ export async function POST({ request }) {
 		}
 		
 		// Process polygon data if available
-		if (data.polygons && Array.isArray(data.polygons) && data.polygons.length > 0) {
+		if (data.polygons && data.polygons.length > 0) {
 			console.log(`Processing ${data.polygons.length} polygons`);
-			
 			for (const polygonItem of data.polygons) {
 				const landId = landMap.get(polygonItem.landName);
-				
 				if (landId && polygonItem.polygon) {
+					console.log(`Processing polygon for land ${polygonItem.landName}: ${polygonItem.polygon.substring(0, 100)}${polygonItem.polygon.length > 100 ? '...' : ''}`);
+					
 					try {
-						// Log the polygon data for debugging
-						console.log(`Processing polygon for land ${polygonItem.landName}:`, polygonItem.polygon.substring(0, 100) + '...');
+						// Parse the polygon string to extract coordinate pairs
+						// Try standard WKT format first: POLYGON((x1 y1, x2 y2, ...))
+						let wktRegex = /POLYGON\s*\(\(([^)]+)\)\)/;
+						let match = polygonItem.polygon.match(wktRegex);
 						
-						// Create polygon entry using raw SQL since Prisma doesn't directly support PostgreSQL polygon type
-						// PostgreSQL's native polygon type expects a different format than PostGIS geometry
-						// Format should be a string of points like '((x1,y1),(x2,y2),...)'
-						
-						// First, try to parse the WKT format to extract coordinates
-						let polygonPoints = '';
-						try {
-							// Extract coordinates from WKT format (POLYGON((x1 y1, x2 y2, ...)))
-							const wktRegex = /POLYGON\s*\(\(([^)]+)\)\)/i;
-							const match = wktRegex.exec(polygonItem.polygon);
-							
-							if (match && match[1]) {
-								// Convert from "x1 y1, x2 y2" to "((x1,y1),(x2,y2))"
-								const points = match[1].split(',').map(point => {
-									const [x, y] = point.trim().split(/\s+/);
-									return `(${x},${y})`;
-								}).join(',');
-								
-								polygonPoints = `(${points})`;
-							} else {
-								throw new Error('Failed to parse WKT polygon format');
-							}
-						} catch (parseError) {
-							console.error(`Error parsing polygon data: ${parseError}`);
-							throw parseError;
+						// If standard WKT format doesn't match, try alternative format: ((x1 y1, x2 y2, ...))
+						if (!match || !match[1]) {
+							wktRegex = /\(\(([^)]+)\)\)/;
+							match = polygonItem.polygon.match(wktRegex);
 						}
 						
+						if (!match || !match[1]) {
+							console.error(`Error parsing polygon data: Error: Failed to parse polygon format`);
+							throw new Error('Failed to parse polygon format');
+						}
+						
+						// Extract coordinate pairs and format them for PostgreSQL polygon type
+						const coordinates = match[1].split(',').map((coord: string) => {
+							const [x, y] = coord.trim().split(' ');
+							return `(${x},${y})`;
+						}).join(',');
+						
+						// Format as PostgreSQL polygon string: ((x1,y1),(x2,y2),...)
+						const polygonPoints = `(${coordinates})`;
+						
 						// Variable to store polygon ID outside the try-catch block for later use
-						let createdPolygonId: bigint | undefined;
+						let polygonId: bigint | undefined;
 						
 						try {
 							// Log the converted polygon format for debugging
 							console.log(`Converted polygon format: ${polygonPoints.substring(0, 100)}${polygonPoints.length > 100 ? '...' : ''}`);
 							
-							// Insert the polygon with the correctly formatted points
-							// Cast landId to UUID type since the column is UUID type in PostgreSQL
-							const polygonResult = await prisma.$queryRaw<{ polygonId: bigint }[]>`
-								INSERT INTO "public"."polygonTable" ("polygon", "landId")
-								VALUES (
-									${polygonPoints}::polygon,
-									${landId}::uuid
-								)
-								RETURNING "polygonId"
+							// First check if a polygon already exists for this land
+							const existingPolygon = await prisma.$queryRaw<{ polygonId: bigint }[]>`
+								SELECT "polygonId" FROM "public"."polygonTable" 
+								WHERE "landId" = ${landId}::uuid
 							`;
-						
-							createdPolygonId = polygonResult[0]?.polygonId;
 							
-							console.log(`Successfully created polygon with ID ${createdPolygonId} for land ${polygonItem.landName}`);
+							if (existingPolygon.length > 0) {
+								// Update existing polygon
+								polygonId = existingPolygon[0].polygonId;
+								await prisma.$queryRaw`
+									UPDATE "public"."polygonTable" 
+									SET "polygon" = ${polygonPoints}::polygon 
+									WHERE "polygonId" = ${polygonId}
+								`;
+								console.log(`Successfully updated polygon with ID ${polygonId} for land ${polygonItem.landName}`);
+							} else {
+								// Insert new polygon
+								const polygonResult = await prisma.$queryRaw<{ polygonId: bigint }[]>`
+									INSERT INTO "public"."polygonTable" ("polygon", "landId")
+									VALUES (
+										${polygonPoints}::polygon,
+										${landId}::uuid
+									)
+									RETURNING "polygonId"
+								`;
+								
+								polygonId = polygonResult[0]?.polygonId;
+								console.log(`Successfully created polygon with ID ${polygonId} for land ${polygonItem.landName}`);
+							}
 							
 							// Update the land entry with the polygon reference
-							if (createdPolygonId) {
+							if (polygonId) {
 								await prisma.landTable.update({
 									where: { landId },
-									data: { polygonId: createdPolygonId }
+									data: { polygonId }
 								});
 								console.log(`Successfully linked polygon to land ${polygonItem.landName}`);
 							}
 						} catch (error) {
 							// Type assertion for error object to access properties safely
 							const insertError = error as Error;
-							console.error(`Error creating polygon for land ${polygonItem.landName}: ${insertError}`);
+							console.error(`Error processing polygon for land ${polygonItem.landName}: ${insertError}`);
 							console.error(`Error details: ${insertError.message || 'Unknown error'}`);
 							console.error(`Stack trace: ${insertError.stack || 'No stack trace available'}`);
-							throw insertError;
 						}
 					} catch (error) {
 						const err = error as Error;
