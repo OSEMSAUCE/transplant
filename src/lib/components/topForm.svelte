@@ -18,8 +18,10 @@
 		}) => void;
 	}>();
 
-	let localProjectName = $state(projectName || '');
-	let localOrgName = $state(organizationName || '');
+	let localProjectName = $state(projectName || '2025-06-23');
+	// let localProjectName = $state(projectName || '');   UNCOMMENT THIS DEFAULT INPUT. REMOVE ABOVE. 
+	let localOrgName = $state(organizationName || 'demo company');
+	// let localOrgName = $state(organizationName || '');  UNCOMMENT THIS DEFAULT INPUT. REMOVE ABOVE. 23 Jun 2025 
 	let localProjectNotes = $state(projectNotes || '');
 	let localSource = $state(source || '');
 
