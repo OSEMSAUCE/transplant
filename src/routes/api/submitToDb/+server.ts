@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import prisma from '$lib/server/prisma';
-import { Prisma } from '@prisma/client';
 
 //
 // this is going to post projectName and projectStatus along with
