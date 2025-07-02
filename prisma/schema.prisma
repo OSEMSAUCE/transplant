@@ -346,7 +346,7 @@ model cropTable {
   sourceSpecificSpecies String?
   csvObjTable           csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
   organizationTable     organizationTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
-  projectTable         projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
+  projectTable          projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
   speciesTable          speciesTable?      @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
   plantingTable         plantingTable[]
   sourceTable           sourceTable[]
@@ -389,7 +389,7 @@ model landTable {
   sourceSpecifId   String?
   polygonId        String?            @db.Uuid
   csvObjTable      csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
-  projectTable    projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
+  projectTable     projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
   polygonTable     polygonTable?      @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
   plantingTable    plantingTable[]
   sourceTable      sourceTable[]
@@ -441,7 +441,7 @@ model plantingTable {
   projectId        String?            @db.Uuid
   cropTable        cropTable?         @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_cropId_fkey")
   landTable        landTable?         @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_landId_fkey")
-  projectTable    projectTable?      @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
+  projectTable     projectTable?      @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
   stakeholderTable stakeholderTable[]
 
   @@unique([landId, cropId], map: "unique_land_crop")
@@ -478,9 +478,9 @@ model stakeholderTable {
   cropId                String?               @db.Uuid
   cropTable             cropTable?            @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
   landTable             landTable?            @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
-  organizationTable    organizationTable     @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
+  organizationTable     organizationTable     @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
   plantingTable         plantingTable?        @relation(fields: [plantingId], references: [plantingId], onUpdate: NoAction, map: "fk_planting")
-  projectTable         projectTable?         @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
+  projectTable          projectTable?         @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
   stakeholderTypesTable stakeholderTypeTable? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_stakeholdertype")
 
   @@schema("public")
@@ -510,17 +510,17 @@ model spatial_ref_sys {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model sourceTable {
-  sourceId           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceUrl          String
-  sourceType         sourcetype
-  sourceDescription  String?
-  createdAt          DateTime?          @default(now()) @db.Timestamptz(6)
-  projectId          String?            @db.Uuid
-  organizationId     String?            @db.Uuid
-  landId             String?            @db.Uuid
-  cropId             String?            @db.Uuid
-  cropTable          cropTable?         @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
-  landTable          landTable?         @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
+  sourceId          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceUrl         String
+  sourceType        sourcetype
+  sourceDescription String?
+  createdAt         DateTime?          @default(now()) @db.Timestamptz(6)
+  projectId         String?            @db.Uuid
+  organizationId    String?            @db.Uuid
+  landId            String?            @db.Uuid
+  cropId            String?            @db.Uuid
+  cropTable         cropTable?         @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
+  landTable         landTable?         @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
   organizationTable organizationTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
   projectTable      projectTable?      @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
 
@@ -568,21 +568,6 @@ model organizationTable {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model profileTable {
-  id         BigInt    @id(map: "profiles_pkey") @default(autoincrement())
-  user_id    String    @db.Uuid
-  full_name  String?
-  bio        String?
-  avatar_url String?
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at DateTime? @default(now()) @db.Timestamptz(6)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
-
-  @@index([user_id], map: "idx_profiles_user_id")
-  @@schema("public")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model projectTable {
   projectId         String             @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   projectName       String             @unique(map: "unique_project_name")
@@ -602,6 +587,21 @@ model projectTable {
   stakeholderTable  stakeholderTable[]
 
   @@index([organizationId], map: "idx_projects_organization_id")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profileTable {
+  id         BigInt    @id(map: "profiles_pkey") @default(autoincrement())
+  user_id    String    @db.Uuid
+  full_name  String?
+  bio        String?
+  avatar_url String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
+
+  @@index([user_id], map: "idx_profiles_user_id")
   @@schema("public")
 }
 
