@@ -8,12 +8,12 @@ import { json } from '@sveltejs/kit';
 export async function GET() {
 	try {
 		// Query only projectName from Projects
-		const projects = await prisma.projectsTable.findMany({
+		const projects = await prisma.projectTable.findMany({
 			select: { projectName: true, projectId: true },
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { projectName: 'asc' }
 		});
-		const organizations = await prisma.organizationsTable.findMany({
+		const organizations = await prisma.organizationTable.findMany({
 			select: { organizationName: true, organizationId: true },
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { organizationName: 'asc' }

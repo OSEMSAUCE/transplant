@@ -27,12 +27,12 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
 		// Process each organization
 		for (const org of geoJsonData.organizations) {
 			// Create or find the organization
-			let organization = await prisma.organizationsTable.findFirst({
+			let organization = await prisma.organizationTable.findFirst({
 				where: { organizationName: org.organization_name }
 			});
 
 			if (!organization) {
-				organization = await prisma.organizationsTable.create({
+				organization = await prisma.organizationTable.create({
 					data: {
 						organizationName: org.organization_name,
 						contactName: org.contact_name,
@@ -46,7 +46,7 @@ async function submitGeoJsonToDb(filePath?: string, verbose = true) {
 			// Process each project in the organization
 			for (const proj of org.projects) {
 				// Create a new project
-				const project = await prisma.projectsTable.create({
+				const project = await prisma.projectTable.create({
 					data: {
 						projectName: proj.project_name,
 						projectNotes: proj.project_notes

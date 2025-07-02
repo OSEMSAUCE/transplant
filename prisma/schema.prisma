@@ -321,7 +321,7 @@ model users {
   mfa_factors                 mfa_factors[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
-  profiletable                profiletable[]
+  profileTable                profileTable[]
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -345,8 +345,8 @@ model cropTable {
   csvobjId              String?            @db.Uuid
   sourceSpecificSpecies String?
   csvObjTable           csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Crop_csvobjId_fkey")
-  organizationsTable    organizationTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
-  projectsTable         projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
+  organizationTable     organizationTable? @relation(fields: [organizationId], references: [organizationId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_organizationId_fkey")
+  projectTable         projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
   speciesTable          speciesTable?      @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
   plantingTable         plantingTable[]
   sourceTable           sourceTable[]
@@ -389,7 +389,7 @@ model landTable {
   sourceSpecifId   String?
   polygonId        String?            @db.Uuid
   csvObjTable      csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Land_csvobjId_fkey")
-  projectsTable    projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
+  projectTable    projectTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Land_projectId_fkey")
   polygonTable     polygonTable?      @relation(fields: [polygonId], references: [polygonId], onUpdate: NoAction, map: "Land_polygonId_fkey")
   plantingTable    plantingTable[]
   sourceTable      sourceTable[]
@@ -441,7 +441,7 @@ model plantingTable {
   projectId        String?            @db.Uuid
   cropTable        cropTable?         @relation(fields: [cropId], references: [cropId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_cropId_fkey")
   landTable        landTable?         @relation(fields: [landId], references: [landId], onDelete: NoAction, onUpdate: NoAction, map: "Planting_landId_fkey")
-  projectsTable    projectTable?      @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
+  projectTable    projectTable?      @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "planting_projectid_fkey")
   stakeholderTable stakeholderTable[]
 
   @@unique([landId, cropId], map: "unique_land_crop")
@@ -478,9 +478,9 @@ model stakeholderTable {
   cropId                String?               @db.Uuid
   cropTable             cropTable?            @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
   landTable             landTable?            @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
-  organizationsTable    organizationTable     @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
+  organizationTable    organizationTable     @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade, onUpdate: NoAction, map: "fk_organization")
   plantingTable         plantingTable?        @relation(fields: [plantingId], references: [plantingId], onUpdate: NoAction, map: "fk_planting")
-  projectsTable         projectTable?         @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
+  projectTable         projectTable?         @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
   stakeholderTypesTable stakeholderTypeTable? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onDelete: Cascade, onUpdate: NoAction, map: "fk_stakeholdertype")
 
   @@schema("public")
@@ -521,8 +521,8 @@ model sourceTable {
   cropId             String?            @db.Uuid
   cropTable          cropTable?         @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
   landTable          landTable?         @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
-  organizationsTable organizationTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
-  projectsTable      projectTable?      @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
+  organizationTable organizationTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
+  projectTable      projectTable?      @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
 
   @@schema("public")
 }
@@ -568,7 +568,7 @@ model organizationTable {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model profiletable {
+model profileTable {
   id         BigInt    @id(map: "profiles_pkey") @default(autoincrement())
   user_id    String    @db.Uuid
   full_name  String?

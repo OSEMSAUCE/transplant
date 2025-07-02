@@ -13,12 +13,12 @@ import prisma from '$lib/server/prisma';
 export async function GET() {
 	try {
 		// Query only projectName from Projects
-		const projects = await prisma.projectsTable.findMany({
+		const projects = await prisma.projectTable.findMany({
 			select: { projectName: true, projectId: true },
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { projectName: 'asc' }
 		});
-		const organizations = await prisma.organizationsTable.findMany({
+		const organizations = await prisma.organizationTable.findMany({
 			select: { organizationName: true, organizationId: true },
 			where: { deleted: false }, // Only non-deleted projects
 			orderBy: { organizationName: 'asc' }
@@ -62,7 +62,7 @@ export async function POST({ request }) {
 		let organizationId = null;
 
 		if (data.organizationName) {
-			const organization = await prisma.organizationsTable.upsert({
+			const organization = await prisma.organizationTable.upsert({
 				where: { organizationName: data.organizationName },
 				create: {
 					organizationName: data.organizationName,
@@ -76,7 +76,7 @@ export async function POST({ request }) {
 		}
 
 		// Create or find the project
-		const project = await prisma.projectsTable.upsert({
+		const project = await prisma.projectTable.upsert({
 			where: { projectName: data.projectName },
 			create: {
 				projectName: data.projectName,
@@ -91,7 +91,7 @@ export async function POST({ request }) {
 
 		// Create land entries
 		const landMap = new Map(); // To store landName -> landId mapping
-		
+
 		for (const landItem of data.land) {
 			// Convert hectares to a string first to ensure it's serializable
 			const hectaresValue = landItem.hectares
@@ -121,58 +121,65 @@ export async function POST({ request }) {
 					landNotes: landItem.landNotes
 				}
 			});
-			
+
 			// Store the land ID for later polygon processing
 			landMap.set(landItem.landName, land.landId);
 		}
-		
+
 		// Process polygon data if available
 		if (data.polygons && data.polygons.length > 0) {
 			console.log(`Processing ${data.polygons.length} polygons`);
 			for (const polygonItem of data.polygons) {
 				const landId = landMap.get(polygonItem.landName);
 				if (landId && polygonItem.polygon) {
-					console.log(`Processing polygon for land ${polygonItem.landName}: ${polygonItem.polygon.substring(0, 100)}${polygonItem.polygon.length > 100 ? '...' : ''}`);
-					
+					console.log(
+						`Processing polygon for land ${polygonItem.landName}: ${polygonItem.polygon.substring(0, 100)}${polygonItem.polygon.length > 100 ? '...' : ''}`
+					);
+
 					try {
 						// Parse the polygon string to extract coordinate pairs
 						// Try standard WKT format first: POLYGON((x1 y1, x2 y2, ...))
 						let wktRegex = /POLYGON\s*\(\(([^)]+)\)\)/;
 						let match = polygonItem.polygon.match(wktRegex);
-						
+
 						// If standard WKT format doesn't match, try alternative format: ((x1 y1, x2 y2, ...))
 						if (!match || !match[1]) {
 							wktRegex = /\(\(([^)]+)\)\)/;
 							match = polygonItem.polygon.match(wktRegex);
 						}
-						
+
 						if (!match || !match[1]) {
 							console.error(`Error parsing polygon data: Error: Failed to parse polygon format`);
 							throw new Error('Failed to parse polygon format');
 						}
-						
+
 						// Extract coordinate pairs and format them for PostgreSQL polygon type
-						const coordinates = match[1].split(',').map((coord: string) => {
-							const [x, y] = coord.trim().split(' ');
-							return `(${x},${y})`;
-						}).join(',');
-						
+						const coordinates = match[1]
+							.split(',')
+							.map((coord: string) => {
+								const [x, y] = coord.trim().split(' ');
+								return `(${x},${y})`;
+							})
+							.join(',');
+
 						// Format as PostgreSQL polygon string: ((x1,y1),(x2,y2),...)
 						const polygonPoints = `(${coordinates})`;
-						
+
 						// Variable to store polygon ID outside the try-catch block for later use
 						let polygonId: bigint | undefined;
-						
+
 						try {
 							// Log the converted polygon format for debugging
-							console.log(`Converted polygon format: ${polygonPoints.substring(0, 100)}${polygonPoints.length > 100 ? '...' : ''}`);
-							
+							console.log(
+								`Converted polygon format: ${polygonPoints.substring(0, 100)}${polygonPoints.length > 100 ? '...' : ''}`
+							);
+
 							// First check if a polygon already exists for this land
 							const existingPolygon = await prisma.$queryRaw<{ polygonId: bigint }[]>`
 								SELECT "polygonId" FROM "public"."polygonTable" 
 								WHERE "landId" = ${landId}::uuid
 							`;
-							
+
 							if (existingPolygon.length > 0) {
 								// Update existing polygon
 								polygonId = existingPolygon[0].polygonId;
@@ -181,7 +188,9 @@ export async function POST({ request }) {
 									SET "polygon" = ${polygonPoints}::polygon 
 									WHERE "polygonId" = ${polygonId}
 								`;
-								console.log(`Successfully updated polygon with ID ${polygonId} for land ${polygonItem.landName}`);
+								console.log(
+									`Successfully updated polygon with ID ${polygonId} for land ${polygonItem.landName}`
+								);
 							} else {
 								// Insert new polygon
 								const polygonResult = await prisma.$queryRaw<{ polygonId: bigint }[]>`
@@ -192,11 +201,13 @@ export async function POST({ request }) {
 									)
 									RETURNING "polygonId"
 								`;
-								
+
 								polygonId = polygonResult[0]?.polygonId;
-								console.log(`Successfully created polygon with ID ${polygonId} for land ${polygonItem.landName}`);
+								console.log(
+									`Successfully created polygon with ID ${polygonId} for land ${polygonItem.landName}`
+								);
 							}
-							
+
 							// Update the land entry with the polygon reference
 							if (polygonId) {
 								await prisma.landTable.update({
@@ -208,7 +219,9 @@ export async function POST({ request }) {
 						} catch (error) {
 							// Type assertion for error object to access properties safely
 							const insertError = error as Error;
-							console.error(`Error processing polygon for land ${polygonItem.landName}: ${insertError}`);
+							console.error(
+								`Error processing polygon for land ${polygonItem.landName}: ${insertError}`
+							);
 							console.error(`Error details: ${insertError.message || 'Unknown error'}`);
 							console.error(`Stack trace: ${insertError.stack || 'No stack trace available'}`);
 						}
@@ -219,7 +232,9 @@ export async function POST({ request }) {
 						console.error(`Stack trace: ${err.stack || 'No stack trace available'}`);
 					}
 				} else {
-					console.warn(`Could not find land ID for polygon with land name: ${polygonItem.landName}`);
+					console.warn(
+						`Could not find land ID for polygon with land name: ${polygonItem.landName}`
+					);
 				}
 			}
 		}
