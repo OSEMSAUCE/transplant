@@ -43,7 +43,7 @@
 		"globals": "^15.14.0",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
-		"prisma": "^6.9.0",
+		"prisma": "^6.11.0",
 		"sass-embedded": "^1.85.0",
 		"svelte": "^5.20.4",
 		"svelte-check": "^4.0.0",
