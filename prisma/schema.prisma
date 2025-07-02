@@ -321,7 +321,7 @@ model users {
   mfa_factors                 mfa_factors[]
   one_time_tokens             one_time_tokens[]
   sessions                    sessions[]
-  profiles                    profiles[]
+  profilestable               profilestable[]
 
   @@index([instance_id])
   @@index([is_anonymous])
@@ -349,6 +349,7 @@ model cropTable {
   projectsTable         projectsTable       @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_projectId_fkey")
   speciesTable          speciesTable?       @relation(fields: [speciesId], references: [speciesId], onDelete: NoAction, onUpdate: NoAction, map: "Crop_speciesId_fkey")
   plantingTable         plantingTable[]
+  sourceTable           sourceTable[]
   stakeholderTable      stakeholderTable[]
 
   @@unique([projectId, cropName], map: "unique_crop_name_per_project")
@@ -537,10 +538,10 @@ model stakeholderTable {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model polygonTable {
-  polygon      Unsupported("polygon")
+  polygon      Unsupported("geometry")
   polygonNotes String?
-  landId       String                 @unique @db.Uuid
-  polygonId    String                 @id(map: "polygontable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  landId       String                  @unique @db.Uuid
+  polygonId    String                  @id(map: "polygontable_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   landTable    landTable[]
 
   @@schema("public")
@@ -557,20 +558,6 @@ model spatial_ref_sys {
   @@schema("public")
 }
 
-model profiles {
-  id         BigInt    @id @default(autoincrement())
-  user_id    String    @db.Uuid
-  full_name  String?
-  bio        String?
-  avatar_url String?
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at DateTime? @default(now()) @db.Timestamptz(6)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
-
-  @@index([user_id], map: "idx_profiles_user_id")
-  @@schema("public")
-}
-
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model sourceTable {
   sourceId           String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -581,6 +568,8 @@ model sourceTable {
   projectId          String?             @db.Uuid
   organizationId     String?             @db.Uuid
   landId             String?             @db.Uuid
+  cropId             String?             @db.Uuid
+  cropTable          cropTable?          @relation(fields: [cropId], references: [cropId], onUpdate: NoAction, map: "fk_crop")
   landTable          landTable?          @relation(fields: [landId], references: [landId], onUpdate: NoAction, map: "fk_land")
   organizationsTable organizationsTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
   projectsTable      projectsTable?      @relation(fields: [projectId], references: [projectId], onUpdate: NoAction, map: "fk_project")
@@ -598,6 +587,21 @@ model stakeholderTypeTable {
   organizationsTable  organizationsTable[]
   stakeholderTable    stakeholderTable[]
 
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profilestable {
+  id         BigInt    @id(map: "profiles_pkey") @default(autoincrement())
+  user_id    String    @db.Uuid
+  full_name  String?
+  bio        String?
+  avatar_url String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_user")
+
+  @@index([user_id], map: "idx_profiles_user_id")
   @@schema("public")
 }
 
