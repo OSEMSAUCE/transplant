@@ -8,7 +8,7 @@
 	} from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData } from '$lib/components/modelState.svelte';
-	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
+	
 
 	import DbTableInstance from './DbTableInstance.svelte';
 
