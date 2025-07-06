@@ -83,6 +83,9 @@ export function detectFormat(
 	columnData: Array<string | number | null>,
 	currentColumnHeader: string
 ): ColumnFormat {
+	 // Instead of only columnData[0], check first N non-empty values
+	 const sample = columnData.filter(v => v !== null && v !== '').slice(0, 5);
+
 	// Check for KML format first
 	if (isKml(columnData[0])) {
 		return 'kml';
@@ -253,7 +256,6 @@ function numbersInStringFinder(str: string): string[] {
 // - If true send below. to "case polygon".
 
 // =============================================
-
 export function isPolygon(val: string | number | null): boolean {
 	if (typeof val !== 'string') return false;
 	if (val.trim() === '') return false;
@@ -268,18 +270,19 @@ export function isPolygon(val: string | number | null): boolean {
 		// Not GeoJSON, continue to other formats
 	}
 
-	// Simple approach: extract all numbers from the string
-	// and check if we have at least 3 valid lat/lon values
-	const numberRegex = /-?\d+\.?\d*/g;
+	// Must contain at least one comma (for coordinate separation)
+	if (!val.includes(',')) return false;
+
+	// Regex: find numbers with at least 2 decimal places
+	const numberRegex = /-?\d+\.\d{2,}/g;
 	const potentialCoords = val.match(numberRegex);
 
 	if (potentialCoords) {
-		// Filter to only valid lat/lon values
 		const validCoords = potentialCoords
 			.map((num) => parseFloat(num))
 			.filter((num) => !isNaN(num) && num >= -180 && num <= 180);
 
-		// If we have at least 3 valid coordinates, consider it a polygon
+		// At least 3 valid coordinates with required decimal places and commas
 		return validCoords.length >= 3;
 	}
 
