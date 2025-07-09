@@ -5,9 +5,9 @@
   import { getDuplicatedMask } from './columnNormalizationUtils';
   
   // Convert export let to $props() for Svelte 5 runes mode
-  const { gpsData = null, isMatch = false, header = false, rowIndex = null } = $props<{
-    gpsData?: GpsData | null;
-    isMatch?: boolean;
+  const { gpsData = null, header = false, rowIndex = null } = $props<{
+    // gpsData?: GpsData | null;
+    // isMatch?: boolean;
     header?: boolean;
     rowIndex?: number | null;
   }>();
@@ -106,7 +106,6 @@
   </th>
 {:else}
   <td style="position: relative; padding: 8px;" 
-    class:isGpsMatch={isMatch}
     class:isDuplicated={rowIndex !== null && gpsDuplicatedMask[rowIndex] === true}>
     {#if gpsData}
       <div class="gps-cell">

@@ -224,18 +224,6 @@ $effect(() => {
 		return mapping.size > 0; // At least one mapping
 	}
 
-	// Memoize which string columns match GPS (Svelte 5 runes mode)
-	const gpsMatchColumns = $derived(() => {
-		const gpsCol = (importedData.columns as any[]).find((c: any) => c.currentFormat === 'gps');
-		if (!gpsCol) return {};
-		const result: Record<string, boolean> = {};
-		for (const strCol of importedData.columns as any[]) {
-			if (strCol.currentFormat !== 'string') continue;
-			result[strCol.headerName] = isStringGpsMappingConsistent(strCol, gpsCol);
-		}
-		return result;
-	});
-
 	// Function to check compatibility between CSV and DB table
 	function isCompatible(column: any) {
 		const landCol = importedData.columns.find((col) => col.mappedTo?.includes('landName'));
@@ -358,8 +346,6 @@ $effect(() => {
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
-						class:isGpsMatch={column.currentFormat === 'string' &&
-							gpsMatchColumns()?.[column.headerName]}
 						class:isDuplicated={isDuplicated && column.type === 'string'}
 						data-header-name={column.headerName}
 						data-column-index={index}
