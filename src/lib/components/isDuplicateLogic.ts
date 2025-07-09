@@ -32,8 +32,8 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 	for (let i = 0; i < Math.min(10, columns.length); i++) {
 		const col = columns[i];
 		if (!Array.isArray(col.values)) continue;
-		const mask = getDuplicatedMask(col.values);
-		col.isDuplicate = mask;
+		const mask = getDuplicatedMask(col.values).slice(0, 10);
+		col.isDuplicate = getDuplicatedMask(col.values); // keep full mask for UI, but compare only first 10
 		const sig = mask.join(',');
 		let patternIdx = seenPatterns.indexOf(sig);
 		if (patternIdx === -1 && patterns.length < 2) {
