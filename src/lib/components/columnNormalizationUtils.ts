@@ -1,14 +1,12 @@
 /**
  * Utility to check normalization of a column relative to land column.
  * A column is normalized if for each unique land value, there is at most one unique attribute value.
- *
  * Example of normalized column (can go in Land table):
  * land_id | attribute
  * -------------------
  * land1   | value1
  * land1   | value1
  * land2   | value2
- *
  * Example of non-normalized column (cannot go in Land table):
  * land_id | attribute
  * -------------------
@@ -19,44 +17,29 @@
 
 
 
-// isNormalized
+// create a css class for cells that are duplicated in an attribute column.
 
 /**
- * Returns a CSS class string for conditional cell formatting based on duplication and normalization status.
- * @param isDuplicated - Whether the cell value is duplicated
- * @param isNormalized - Whether the cell/column is normalized
- * @returns A string with the appropriate class name(s) for styling
+ * Returns a boolean array indicating which values in the input array are duplicated (appear more than once).
+ * @param values - Array of cell values (string | number | null)
+ * @returns Boolean array: true if value is duplicated, false otherwise
  */
-export function isNormalized(isDuplicated: boolean, isNormalized: boolean): string {
-	if (isDuplicated && isNormalized) return 'cell-normalized-duplicated';
-	if (isDuplicated) return 'cell-duplicated';
-	if (isNormalized) return 'cell-normalized';
-	return '';
+export function getDuplicatedMask(values: (string | number | null)[]): boolean[] {
+	const valueCount = new Map<string | number, number>();
+	for (const val of values) {
+		if (val === null || val === '') continue;
+		valueCount.set(val, (valueCount.get(val) || 0) + 1);
+	}
+	console.log(values) 
+	return values.map(val => (val === null || val === '') ? false : (valueCount.get(val) ?? 0) > 1);
 }
 
 
 
-/**
- * Find the land column in the imported data
- * @param columns - Array of column data
- * @returns The land column or undefined if not found
- */
-export function findLandColumn(columns: any[]): any {
-	// Try different possible names for the land column
-	return columns.find(
-		(c) =>
-			c.headerName?.toLowerCase().includes('land') &&
-			!c.headerName?.toLowerCase().includes('holder') &&
-			!c.headerName?.toLowerCase().includes('notes')
-	);
-}
-
-/**
- * Checks if a column is normalized by land
- * @param landCol - Array of land values
- * @param attrCol - Array of attribute values to check
- * @returns true if normalized (one value per land), false otherwise
- */
+// Checks if a column is normalized by land
+// @param landCol - Array of land values
+// @param attrCol - Array of attribute values to check
+// @returns true if normalized (one value per land), false otherwise
 export function isColumnNormalizedByLand(
 	landCol: (string | number | null)[],
 	attrCol: (string | number | null)[]
