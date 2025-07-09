@@ -6,7 +6,7 @@
 		formatAllGpsTypes,
 		formatValue
 	} from './formatDetection2';
-	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
+	import { isColumnNormalizedByLand } from './columnNormalizationUtils';
 	import { importedData } from '$lib/components/modelState.svelte';
 	
 

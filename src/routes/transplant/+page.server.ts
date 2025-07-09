@@ -1,19 +1,5 @@
 import prisma from '$lib/server/prisma';
 
-const fakeData = [
-	{
-		column1: 'string',
-		col2: 2,
-		col3: 3
-	}
-];
-
-const fakeFormats = {
-	column1: 'string',
-	col2: 'number',
-	col3: 'number'
-};
-
 // THIS IS WHERE THE QUERIES GO
 // async function main() {
 //     const Land = await prisma.land.findMany()
@@ -180,29 +166,29 @@ const plantingDbFormat = {
 	// ...etc
 };
 
-// // 🌲️🌲️🌲️🌲️🌲️🌲️🌲️🌲️ Selector Types for db table 🌲️🌲️🌲️🌲️
-function dbFormatSelector(table: any) {
-	console.log(table.landName);
-	let columnFormats: Record<string, string> = {};
-	for (const [columnName, column] of Object.entries(table)) {
-		if (column && typeof column === 'object' && 'typeName' in column) {
-			const columnDescription = column as any;
-			let format = 'string';
-			if (columnDescription.typeName === 'number') {
-				format = 'number';
-			} else if (columnDescription.typeName === 'Decimal') {
-				format = 'number';
-			} else if (columnDescription.typeName === 'Uuid') {
-				format = 'string';
-			} else if (columnDescription.typeName === 'DateTime') {
-				format = 'date';
-			} else if (columnDescription.typeName === 'String') {
-				format = 'string';
-			} else if (columnDescription.typeName === 'Boolean') {
-				format = 'string';
-			}
-			columnFormats[columnName] = format;
-		}
-	}
-	return columnFormats;
-}
+// // // 🌲️🌲️🌲️🌲️🌲️🌲️🌲️🌲️ Selector Types for db table 🌲️🌲️🌲️🌲️
+// function dbFormatSelector(table: any) {
+// 	console.log(table.landName);
+// 	let columnFormats: Record<string, string> = {};
+// 	for (const [columnName, column] of Object.entries(table)) {
+// 		if (column && typeof column === 'object' && 'typeName' in column) {
+// 			const columnDescription = column as any;
+// 			let format = 'string';
+// 			if (columnDescription.typeName === 'number') {
+// 				format = 'number';
+// 			} else if (columnDescription.typeName === 'Decimal') {
+// 				format = 'number';
+// 			} else if (columnDescription.typeName === 'Uuid') {
+// 				format = 'string';
+// 			} else if (columnDescription.typeName === 'DateTime') {
+// 				format = 'date';
+// 			} else if (columnDescription.typeName === 'String') {
+// 				format = 'string';
+// 			} else if (columnDescription.typeName === 'Boolean') {
+// 				format = 'string';
+// 			}
+// 			columnFormats[columnName] = format;
+// 		}
+// 	}
+// 	return columnFormats;
+// }

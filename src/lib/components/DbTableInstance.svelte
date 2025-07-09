@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { isGps, isLongitude, formatAllGpsTypes, formatValue } from './formatDetection2';
-	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
-	import { importedData, findPolygonColumn } from '$lib/components/modelState.svelte';
+	import { isColumnNormalizedByLand } from './columnNormalizationUtils';
+	import { importedData } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
 	import GpsColumn from './GpsColumn.svelte';

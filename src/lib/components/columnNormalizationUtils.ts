@@ -1,20 +1,3 @@
-/**
- * Utility to check normalization of a column relative to land column.
- * A column is normalized if for each unique land value, there is at most one unique attribute value.
- * Example of normalized column (can go in Land table):
- * land_id | attribute
- * -------------------
- * land1   | value1
- * land1   | value1
- * land2   | value2
- * Example of non-normalized column (cannot go in Land table):
- * land_id | attribute
- * -------------------
- * land1   | value1
- * land1   | value2 <-- different value for same land
- * land2   | value3
- */
-
 
 
 // create a css class for cells that are duplicated in an attribute column.
@@ -33,6 +16,7 @@ export function getDuplicatedMask(values: (string | number | null)[]): boolean[]
 	console.log(values) 
 	return values.map(val => (val === null || val === '') ? false : (valueCount.get(val) ?? 0) > 1);
 }
+
 
 
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {
+		getDuplicatedMask,
 		getColumnCompatibility,
-		findLandColumn,
 		isColumnNormalizedByLand
 	} from './columnNormalizationUtils';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
@@ -10,6 +10,8 @@
 	import { importedData } from '$lib/components/modelState.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
 	import GpsColumn from './GpsColumn.svelte';
+	
+
 
 	// Add this constant
 	const max_transplant_rows = 3;
@@ -20,18 +22,46 @@
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
-	// Number formatting function
-	function numberFormat(value: number): string {
-		return new Intl.NumberFormat('en-US', {
-			style: 'decimal',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 2
-		}).format(value);
-	}
+	// // Number formatting function
+	// function numberFormat(value: number): string {
+	// 	return new Intl.NumberFormat('en-US', {
+	// 		style: 'decimal',
+	// 		minimumFractionDigits: 0,
+	// 		maximumFractionDigits: 2
+	// 	}).format(value);
+	// }
 
+// are thee dupliated the cels in teh column. We wrota  a thing here called getDuplicatedMask
+  // Svelte 5: use $effect for side effects like logging
+  $effect(() => {
+        for (const [colIdx, col] of importedData.columns.entries()) {
+            if (col.type === 'string' && Array.isArray(col.values)) {
+                const mask = getDuplicatedMask(col.values);
+                const hasDuplicates = mask.some(Boolean);
+                if (hasDuplicates) {
+                    console.log(
+                        `Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
+                        mask
+                            .map((isDup, rowIdx) => (isDup ? rowIdx : null))
+                            .filter(idx => idx !== null)
+                    );
+                } else {
+                    console.log(`Column "${col.headerName || col.name || colIdx}" has no duplicates.`);
+                }
+            }
+        }
+    });
+ 
+	// Correct Svelte 5 runes usage:
+ const duplicatedMasks = $derived(() =>
+    $importedData.columns.map(col =>
+      col.type === 'string' && Array.isArray(col.values)
+        ? getDuplicatedMask(col.values)
+        : []
+    )
+  );
 	// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
 	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
-
 	function dragstartHandler(ev: DragEvent) {
 		if (!ev.dataTransfer) return;
 
@@ -44,11 +74,11 @@
 		dragColumnState.index = columnIndex;
 
 		// Log compatibility info for debugging
-		const landCol = findLandColumn(importedData.columns);
-		if (landCol) {
-			const draggedCol = importedData.columns[columnIndex];
-			const compat = getColumnCompatibility(landCol.values, draggedCol.values);
-		}
+		// const landCol = findLandColumn(importedData.columns);
+		// if (landCol) {
+		// 	const draggedCol = importedData.columns[columnIndex];
+		// 	const compat = getColumnCompatibility(landCol.values, draggedCol.values);
+		// }
 		document
 			.querySelectorAll(`[data-column-index="${columnIndex}"]`)
 			.forEach((el) => el.classList.add('dragging'));
@@ -132,7 +162,6 @@
 	// If we couldn't find a complete pair of valid coordinates, return null
 	return null;
 }
-
 
 
 	function pullFirstPolygonSelected(rowIndex: number) {
@@ -306,6 +335,8 @@
 					<td
 						class:isCropCompatible
 						class:isLandCompatible
+						
+						class:isDuplicated={duplicatedMasks[index]?.[rowIndex]}
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
