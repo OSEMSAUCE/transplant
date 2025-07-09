@@ -7,8 +7,47 @@
 // Types for duplicate patterns
 export type DuplicatePattern = 'none' | 'landDuplicatePattern' | 'cropDuplicatePattern';
 
+import type { ColumnRep } from '$lib/types/columnModel';
+
+
 // Track pattern signatures we've seen
 const patternSignatures: string[] = [];
+
+/**
+ * Populate isDuplicate and pattern masks for an array of columns (first 10 columns only)
+ * @param columns Array of columns (ColumnRep[])
+ * @returns { duplicatedMasks, patternMasks }
+ */
+/**
+ * Find up to two unique brute-force duplicate patterns (boolean arrays) among the first 10 columns.
+ * Returns the patterns and the indices of columns matching each pattern.
+ */
+export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
+	patterns: boolean[][], // up to two unique patterns
+	patternColumnIndices: number[][] // indices of columns for each pattern
+} {
+	const seenPatterns: string[] = [];
+	const patterns: boolean[][] = [];
+	const patternColumnIndices: number[][] = [];
+	for (let i = 0; i < Math.min(10, columns.length); i++) {
+		const col = columns[i];
+		if (!Array.isArray(col.values)) continue;
+		const mask = getDuplicatedMask(col.values);
+		col.isDuplicate = mask;
+		const sig = mask.join(',');
+		let patternIdx = seenPatterns.indexOf(sig);
+		if (patternIdx === -1 && patterns.length < 2) {
+			seenPatterns.push(sig);
+			patterns.push(mask);
+			patternColumnIndices.push([i]);
+		} else if (patternIdx !== -1) {
+			patternColumnIndices[patternIdx].push(i);
+		}
+	}
+	return { patterns, patternColumnIndices };
+}
+
+// (Keep getDuplicatedMask and other helpers below unchanged)
 
 /**
  * Returns a boolean mask indicating which values are duplicated

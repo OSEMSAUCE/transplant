@@ -36,48 +36,38 @@
 	// Each inner array indicates which values in that column are duplicated
 	const duplicatedMasks = $state<boolean[][]>([]);
 	const patternMasks = $state<DuplicatePattern[][]>([]);
+	const bruteForcePatterns = $state<boolean[][]>([]);
+	const bruteForcePatternColumnIndices = $state<number[][]>([]);
 
-	// Update duplicated masks and pattern masks whenever importedData changes
+	import { findBruteForceDuplicatePatterns } from './isDuplicateLogic';
+
 	$effect(() => {
-		const masks: boolean[][] = [];
-		const patterns: DuplicatePattern[][] = [];
-		
-		for (const col of importedData.columns) {
-			if (Array.isArray(col.values)) {
-				// Populate isDuplicate with boolean duplicate mask
-				col.isDuplicate = getDuplicatedMask(col.values);
-			}
-			if (col.type === 'string' && Array.isArray(col.values)) {
-				// col.isDuplicate = getDuplicatedMask(col.values);
-				// Get duplicate pattern masks
-				const patternMask = getDuplicatePatternMask(col.values);
-				patterns.push(patternMask);
-				
-				// Also update the boolean masks for backward compatibility
-				masks.push(patternMask.map(pattern => pattern !== 'none'));
-			} else {
-				// For non-string columns, create arrays of false/none values
-				masks.push(Array(col.values.length).fill(false));
-				patterns.push(Array(col.values.length).fill('none'));
-			}
-		}
-		
-		// Update the state variables with new masks
-		duplicatedMasks.length = 0;
-		masks.forEach(mask => duplicatedMasks.push(mask));
-		 
-		patternMasks.length = 0;
-		patterns.forEach(pattern => patternMasks.push(pattern));
-		
-		// Log pattern counts for debugging
-		let landPatternCount = 0;
-		let cropPatternCount = 0;
-		for (const patternArray of patterns) {
-			landPatternCount += patternArray.filter(p => p === 'landDuplicatePattern').length;
-			cropPatternCount += patternArray.filter(p => p === 'cropDuplicatePattern').length;
-		}
-		console.log(`Found ${landPatternCount} landDuplicatePattern and ${cropPatternCount} cropDuplicatePattern duplicates across all columns`);
-	});
+    // Brute-force pattern finding
+    const { patterns, patternColumnIndices } = findBruteForceDuplicatePatterns(importedData.columns);
+    bruteForcePatterns.length = 0;
+    patterns.forEach((mask: boolean[]) => bruteForcePatterns.push(mask));
+    bruteForcePatternColumnIndices.length = 0;
+    patternColumnIndices.forEach((arr: number[]) => bruteForcePatternColumnIndices.push(arr));
+
+    // Restore coloring logic
+    const dMasks: boolean[][] = [];
+    const pMasks: DuplicatePattern[][] = [];
+    for (let i = 0; i < importedData.columns.length; i++) {
+        const col = importedData.columns[i];
+        if (i < 10 && Array.isArray(col.values)) {
+            dMasks.push(getDuplicatedMask(col.values));
+            pMasks.push(getDuplicatePatternMask(col.values));
+        } else if (Array.isArray(col.values)) {
+            dMasks.push(Array(col.values.length).fill(false));
+            pMasks.push(Array(col.values.length).fill('none'));
+        }
+    }
+    duplicatedMasks.length = 0;
+    dMasks.forEach(mask => duplicatedMasks.push(mask));
+    patternMasks.length = 0;
+    pMasks.forEach(mask => patternMasks.push(mask));
+});
+	// Update duplicated masks and pattern masks whenever importedData changes
 
 	// // Svelte 5: use $effect for side effects like logging
 	// $effect(() => {
