@@ -78,7 +78,14 @@
 		dragColumnState.index = null;
 	}
 
-	function pullFirstGpsSelected(rowIndex: number) {
+	interface GpsData {
+		type: 'full' | 'pair';
+		value?: string;
+		lat?: number;
+		lon?: number;
+	}
+
+function pullFirstGpsSelected(rowIndex: number): GpsData | null {
 		// First try to find a full GPS coordinate pair
 		for (const column of importedData.columns) {
 			if (
@@ -88,7 +95,7 @@
 			) {
 				const gpsValue = column.values[rowIndex];
 				if (isGps(gpsValue)) {
-					return { type: 'full', value: gpsValue };
+					return { type: 'full', value: String(gpsValue) };
 				}
 			}
 		}
@@ -106,13 +113,13 @@
 			// Check for latitude column
 			if (column.currentFormat === 'latitude' && !latValue) {
 				if (isLatitude(value)) {
-					latValue = value;
+					latValue = Number(value);
 				}
 			}
 			// Check for longitude column
 			else if (column.currentFormat === 'longitude' && !lonValue) {
 				if (isLongitude(value)) {
-					lonValue = value;
+					lonValue = Number(value);
 				}
 			}
 		}
