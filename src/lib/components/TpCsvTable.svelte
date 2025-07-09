@@ -267,7 +267,8 @@
 			<!-- The GPS column is always first and separate from the iteration -->
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
-			<GpsColumn />
+			<GpsColumn header />
+
 			<!-- The Polygon column is second and separate from the iteration -->
 			<th class="polygon-column">
 				<div class="column-header">
