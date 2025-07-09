@@ -270,7 +270,9 @@
 					mappedTo: col.mappedTo,
 					isFormatted: col.isFormatted,
 					selectFormatCoercion: col.selectFormatCoercion,
-					wasFormatCoerced: col.wasFormatCoerced
+					wasFormatCoerced: col.wasFormatCoerced,
+					// Show the first three duplicate pattern values for debugging
+					isDuplicate: Array.isArray(col.isDuplicate) ? col.isDuplicate.slice(0, 3) : undefined
 				};
 			}),
 			null,

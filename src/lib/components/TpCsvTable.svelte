@@ -1,17 +1,19 @@
 <script lang="ts">
 	import {
-		getDuplicatedMask,
 		getColumnCompatibility,
 		isColumnNormalizedByLand
 	} from './columnNormalizationUtils';
+	import {
+		getDuplicatedMask,
+		getDuplicatePatternMask,
+		type DuplicatePattern
+	} from './isDuplicateLogic';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import type { ColumnFormat } from '$lib/types/columnModel';
 	import { detectFormat, isGps, isLatitude, isLongitude, formatValue } from './formatDetection2';
 	import { importedData } from '$lib/components/modelState.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
 	import GpsColumn from './GpsColumn.svelte';
-	
-
 
 	// Add this constant
 	const max_transplant_rows = 3;
@@ -30,54 +32,74 @@
 	// 		maximumFractionDigits: 2
 	// 	}).format(value);
 	// }
+	// Compute duplicated masks for each column
+	// This returns an array of boolean arrays, one for each column
+	// Each inner array indicates which values in that column are duplicated
+	const duplicatedMasks = $state<boolean[][]>([]);
+	const patternMasks = $state<DuplicatePattern[][]>([]);
 
-// Compute duplicated masks for each column
-// This returns an array of boolean arrays, one for each column
-// Each inner array indicates which values in that column are duplicated
-const duplicatedMasks = $state<boolean[][]>([]);
-
-// Update duplicated masks whenever importedData changes
-$effect(() => {
-	const masks: boolean[][] = [];
-	for (const col of importedData.columns) {
-		if (col.type === 'string' && Array.isArray(col.values)) {
-			masks.push(getDuplicatedMask(col.values));
-		} else {
-			// For non-string columns, create an array of false values
-			masks.push(Array(col.values.length).fill(false));
+	// Update duplicated masks and pattern masks whenever importedData changes
+	$effect(() => {
+		const masks: boolean[][] = [];
+		const patterns: DuplicatePattern[][] = [];
+		
+		for (const col of importedData.columns) {
+			if (col.type === 'string' && Array.isArray(col.values)) {
+				// Get duplicate pattern masks
+				const patternMask = getDuplicatePatternMask(col.values);
+				patterns.push(patternMask);
+				
+				// Also update the boolean masks for backward compatibility
+				masks.push(patternMask.map(pattern => pattern !== 'none'));
+			} else {
+				// For non-string columns, create arrays of false/none values
+				masks.push(Array(col.values.length).fill(false));
+				patterns.push(Array(col.values.length).fill('none'));
+			}
 		}
-	}
-	// Update the state variable with new masks
-	duplicatedMasks.length = 0;
-	masks.forEach(mask => duplicatedMasks.push(mask));
-});
+		
+		// Update the state variables with new masks
+		duplicatedMasks.length = 0;
+		masks.forEach(mask => duplicatedMasks.push(mask));
+		
+		patternMasks.length = 0;
+		patterns.forEach(pattern => patternMasks.push(pattern));
+		
+		// Log pattern counts for debugging
+		let landPatternCount = 0;
+		let cropPatternCount = 0;
+		for (const patternArray of patterns) {
+			landPatternCount += patternArray.filter(p => p === 'landDuplicatePattern').length;
+			cropPatternCount += patternArray.filter(p => p === 'cropDuplicatePattern').length;
+		}
+		console.log(`Found ${landPatternCount} landDuplicatePattern and ${cropPatternCount} cropDuplicatePattern duplicates across all columns`);
+	});
 
-// // Svelte 5: use $effect for side effects like logging
-// $effect(() => {
-// 	// Only run this effect when duplicatedMasks has been populated
-// 	if (duplicatedMasks.length === 0) return;
-	
-// 	for (const [colIdx, col] of importedData.columns.entries()) {
-// 		if (col.type === 'string' && Array.isArray(col.values)) {
-// 			const mask = duplicatedMasks[colIdx];
-// 			if (mask) {
-// 				const hasDuplicates = mask.some(Boolean);
-// 				if (hasDuplicates) {
-// 					console.log(
-// 						`Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
-// 						mask
-// 							.map((isDup: boolean, rowIdx: number) => (isDup ? rowIdx : null))
-// 							.filter((idx: number | null) => idx !== null)
-// 					);
-// 				} else {
-					
-// 				}
-// 			}
-// 		}
-// 	}
-// });
- 
-	
+	// // Svelte 5: use $effect for side effects like logging
+	// $effect(() => {
+	// 	// Only run this effect when duplicatedMasks has been populated
+	// 	if (duplicatedMasks.length === 0) return;
+
+	// 	for (const [colIdx, col] of importedData.columns.entries()) {
+	// 		if (col.type === 'string' && Array.isArray(col.values)) {
+	// 			const mask = duplicatedMasks[colIdx];
+	// 			if (mask) {
+	// 				const hasDuplicates = mask.some(Boolean);
+	// 				if (hasDuplicates) {
+	// 					console.log(
+	// 						`Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
+	// 						mask
+	// 							.map((isDup: boolean, rowIdx: number) => (isDup ? rowIdx : null))
+	// 							.filter((idx: number | null) => idx !== null)
+	// 					);
+	// 				} else {
+
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// });
+
 	// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
 	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
 	function dragstartHandler(ev: DragEvent) {
@@ -132,55 +154,54 @@ $effect(() => {
 		lat?: number;
 		lon?: number;
 	}
-	
+
 	function pullFirstGpsSelected(rowIndex: number): GpsData | null {
-	// First try to find a full GPS coordinate pair
-	for (const column of importedData.columns) {
-		if (
-			column.currentFormat === 'gps' &&
-			column.values[rowIndex] !== null &&
-			column.values[rowIndex] !== ''
-		) {
-			const gpsValue = column.values[rowIndex];
-			if (isGps(gpsValue)) {
-				return { type: 'full', value: String(gpsValue) };
+		// First try to find a full GPS coordinate pair
+		for (const column of importedData.columns) {
+			if (
+				column.currentFormat === 'gps' &&
+				column.values[rowIndex] !== null &&
+				column.values[rowIndex] !== ''
+			) {
+				const gpsValue = column.values[rowIndex];
+				if (isGps(gpsValue)) {
+					return { type: 'full', value: String(gpsValue) };
+				}
 			}
 		}
-	}
 
-	// Try to find a complete latitude/longitude pair using column names
-	let latValue: string | number | null = null;
-	let lonValue: string | number | null = null;
+		// Try to find a complete latitude/longitude pair using column names
+		let latValue: string | number | null = null;
+		let lonValue: string | number | null = null;
 
-	for (const column of importedData.columns) {
-		const value = column.values[rowIndex];
-		if (value === null || value === '') continue;
+		for (const column of importedData.columns) {
+			const value = column.values[rowIndex];
+			if (value === null || value === '') continue;
 
-		const name = column.headerName?.toLowerCase().replace(/[\s_]+/g, '');
+			const name = column.headerName?.toLowerCase().replace(/[\s_]+/g, '');
 
-		// Check for latitude column
-		if (!latValue && name && name.includes('lat')) {
-			if (isLatitude(value)) {
-				latValue = Number(value);
+			// Check for latitude column
+			if (!latValue && name && name.includes('lat')) {
+				if (isLatitude(value)) {
+					latValue = Number(value);
+				}
+			}
+			// Check for longitude column
+			else if (!lonValue && name && name.includes('lon')) {
+				if (isLongitude(value)) {
+					lonValue = Number(value);
+				}
 			}
 		}
-		// Check for longitude column
-		else if (!lonValue && name && name.includes('lon')) {
-			if (isLongitude(value)) {
-				lonValue = Number(value);
-			}
+
+		// If we found both valid lat and lon values, return them
+		if (latValue !== null && lonValue !== null) {
+			return { type: 'pair', lat: latValue, lon: lonValue };
 		}
+
+		// If we couldn't find a complete pair of valid coordinates, return null
+		return null;
 	}
-
-	// If we found both valid lat and lon values, return them
-	if (latValue !== null && lonValue !== null) {
-		return { type: 'pair', lat: latValue, lon: lonValue };
-	}
-
-	// If we couldn't find a complete pair of valid coordinates, return null
-	return null;
-}
-
 
 	function pullFirstPolygonSelected(rowIndex: number) {
 		// Try to find a polygon column
@@ -261,7 +282,7 @@ $effect(() => {
 	<thead>
 		<tr>
 			<!-- The GPS column is always first and separate from the iteration -->
-			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
 			<GpsColumn header />
 
@@ -272,7 +293,7 @@ $effect(() => {
 				</div>
 				<div class="header-name"></div>
 			</th>
-			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
 			<!-- HEAD isCompatible function between CSVTable and dbTable -->
 			{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
@@ -340,6 +361,8 @@ $effect(() => {
 					{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
 					{@const columnMask = duplicatedMasks[index] || []}
 					{@const isDuplicated = columnMask[rowIndex] || false}
+					{@const patternMask = patternMasks[index] || []}
+					{@const duplicatePattern = patternMask[rowIndex] || 'none'}
 					<td
 						class:isCropCompatible
 						class:isLandCompatible
@@ -347,6 +370,8 @@ $effect(() => {
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
 						class:isDuplicated={isDuplicated && column.type === 'string'}
+						class:landDuplicatePattern={duplicatePattern === 'landDuplicatePattern' && column.type === 'string'}
+						class:cropDuplicatePattern={duplicatePattern === 'cropDuplicatePattern' && column.type === 'string'}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -368,7 +393,7 @@ $effect(() => {
 </table>
 
 <style>
-	/* Styling for duplicated cells */
+	/* Styling for duplicated cells - keeping for backward compatibility */
 	.isDuplicated {
 		background-color: rgba(213, 106, 44, 0.1) !important;
 		position: relative;
@@ -381,11 +406,50 @@ $effect(() => {
 		left: 0;
 		width: 100%;
 		height: 2px;
-		/* background-color: rgba(255, 160, 120, 0.7); */
 	}
 
 	/* Make sure the duplicate highlighting doesn't interfere with other styles */
 	.isDuplicated:hover {
 		background-color: rgba(255, 220, 200, 0.6) !important;
+	}
+	
+	/* Styling for land pattern duplicated cells (blue) */
+	.landDuplicatePattern {
+		background-color: rgba(65, 105, 225, 0.2) !important; /* Royal blue with opacity */
+		position: relative !important;
+	}
+
+	.landDuplicatePattern::after {
+		content: '' !important;
+		position: absolute !important;
+		bottom: 0 !important;
+		left: 0 !important;
+		width: 100% !important;
+		height: 2px !important;
+	}
+
+	/* Make sure the duplicate highlighting doesn't interfere with other styles */
+	.landDuplicatePattern:hover {
+		background-color: rgba(65, 105, 225, 0.3) !important; /* Slightly darker blue on hover */
+	}
+	
+	/* Styling for crop pattern duplicated cells (green) */
+	.cropDuplicatePattern {
+		background-color: rgba(76, 175, 80, 0.2) !important; /* Green with opacity */
+		position: relative !important;
+	}
+
+	.cropDuplicatePattern::after {
+		content: '' !important;
+		position: absolute !important;
+		bottom: 0 !important;
+		left: 0 !important;
+		width: 100% !important;
+		height: 2px !important;
+	}
+
+	/* Make sure the duplicate highlighting doesn't interfere with other styles */
+	.cropDuplicatePattern:hover {
+		background-color: rgba(76, 175, 80, 0.3) !important; /* Slightly darker green on hover */
 	}
 </style>

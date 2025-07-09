@@ -39,6 +39,8 @@ export type ColumnFormat =
 	| 'polygon'
 	| 'kml';
 export interface ColumnRep extends ColumnDef {
+	/** Array indicating if each cell is a duplicate (true) or unique (false) */
+	isDuplicate?: boolean[];
 	/** The column name/header from the imported data */
 	headerName: string;
 	type: ColumnFormat;
@@ -71,6 +73,8 @@ export class BaseColumnModel implements ColumnDef {
 	isMerged?: boolean;
 	mergedFrom?: string[];
 	isGpsSource?: boolean;
+	/** Array indicating if each cell is a duplicate (true) or unique (false) */
+	isDuplicate: boolean[] = [];
 	type: ColumnFormat = 'string';
 	currentFormat: ColumnFormat = 'string';
 	selectFormatCoercion?: selectFormatCoercion;
