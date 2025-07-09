@@ -1,8 +1,5 @@
 <script lang="ts">
-	import {
-		getColumnCompatibility,
-		isColumnNormalizedByLand
-	} from './columnNormalizationUtils';
+	import { getColumnCompatibility, isColumnNormalizedByLand } from './columnNormalizationUtils';
 	import {
 		getDuplicatedMask,
 		getDuplicatePatternMask,
@@ -42,31 +39,33 @@
 	import { findBruteForceDuplicatePatterns } from './isDuplicateLogic';
 
 	$effect(() => {
-    // Brute-force pattern finding
-    const { patterns, patternColumnIndices } = findBruteForceDuplicatePatterns(importedData.columns);
-    bruteForcePatterns.length = 0;
-    patterns.forEach((mask: boolean[]) => bruteForcePatterns.push(mask));
-    bruteForcePatternColumnIndices.length = 0;
-    patternColumnIndices.forEach((arr: number[]) => bruteForcePatternColumnIndices.push(arr));
+		// Brute-force pattern finding
+		const { patterns, patternColumnIndices } = findBruteForceDuplicatePatterns(
+			importedData.columns
+		);
+		bruteForcePatterns.length = 0;
+		patterns.forEach((mask: boolean[]) => bruteForcePatterns.push(mask));
+		bruteForcePatternColumnIndices.length = 0;
+		patternColumnIndices.forEach((arr: number[]) => bruteForcePatternColumnIndices.push(arr));
 
-    // Restore coloring logic
-    const dMasks: boolean[][] = [];
-    const pMasks: DuplicatePattern[][] = [];
-    for (let i = 0; i < importedData.columns.length; i++) {
-        const col = importedData.columns[i];
-        if (i < 10 && Array.isArray(col.values)) {
-            dMasks.push(getDuplicatedMask(col.values));
-            pMasks.push(getDuplicatePatternMask(col.values));
-        } else if (Array.isArray(col.values)) {
-            dMasks.push(Array(col.values.length).fill(false));
-            pMasks.push(Array(col.values.length).fill('none'));
-        }
-    }
-    duplicatedMasks.length = 0;
-    dMasks.forEach(mask => duplicatedMasks.push(mask));
-    patternMasks.length = 0;
-    pMasks.forEach(mask => patternMasks.push(mask));
-});
+		// Restore coloring logic
+		const dMasks: boolean[][] = [];
+		const pMasks: DuplicatePattern[][] = [];
+		for (let i = 0; i < importedData.columns.length; i++) {
+			const col = importedData.columns[i];
+			if (Array.isArray(col.values)) {
+				dMasks.push(getDuplicatedMask(col.values));
+				pMasks.push(getDuplicatePatternMask(col.values));
+			} else {
+				dMasks.push(Array(col.values));
+				pMasks.push(Array(col.values));
+			}
+		}
+		duplicatedMasks.length = 0;
+		dMasks.forEach((mask) => duplicatedMasks.push(mask));
+		patternMasks.length = 0;
+		pMasks.forEach((mask) => patternMasks.push(mask));
+	});
 	// Update duplicated masks and pattern masks whenever importedData changes
 
 	// // Svelte 5: use $effect for side effects like logging
@@ -364,8 +363,10 @@
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
 						class:isDuplicated={isDuplicated && column.type === 'string'}
-						class:landDuplicatePattern={duplicatePattern === 'landDuplicatePattern' && column.type === 'string'}
-						class:cropDuplicatePattern={duplicatePattern === 'cropDuplicatePattern' && column.type === 'string'}
+						class:landDuplicatePattern={duplicatePattern === 'landDuplicatePattern' &&
+							column.type === 'string'}
+						class:cropDuplicatePattern={duplicatePattern === 'cropDuplicatePattern' &&
+							column.type === 'string'}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -406,7 +407,7 @@
 	.isDuplicated:hover {
 		background-color: rgba(255, 220, 200, 0.6) !important;
 	}
-	
+
 	/* Styling for land pattern duplicated cells (blue) */
 	.landDuplicatePattern {
 		background-color: rgba(65, 105, 225, 0.2) !important; /* Royal blue with opacity */
@@ -426,7 +427,7 @@
 	.landDuplicatePattern:hover {
 		background-color: rgba(65, 105, 225, 0.3) !important; /* Slightly darker blue on hover */
 	}
-	
+
 	/* Styling for crop pattern duplicated cells (green) */
 	.cropDuplicatePattern {
 		background-color: rgba(76, 175, 80, 0.2) !important; /* Green with opacity */
