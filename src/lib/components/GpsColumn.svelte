@@ -14,8 +14,8 @@
   }
 </script>
 
-<!-- Header usage -->
-{#if !gpsData}
+<!-- Header usage: only if gpsData is undefined (not passed) -->
+{#if typeof gpsData === 'undefined'}
   <th class="gps-column">
     <div class="column-header">
       <span class="format-label">GPS</span>
@@ -23,7 +23,7 @@
     <div class="header-name"></div>
   </th>
 {:else}
-  <!-- Cell usage -->
+  <!-- Body usage: always render a <td>, even if gpsData is null -->
   <td style="position: relative; padding: 8px;" class:isGpsMatch={isMatch}>
     {#if gpsData}
       <div class="gps-cell">
