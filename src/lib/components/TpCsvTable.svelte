@@ -31,35 +31,53 @@
 	// 	}).format(value);
 	// }
 
-// are thee dupliated the cels in teh column. We wrota  a thing here called getDuplicatedMask
-  // Svelte 5: use $effect for side effects like logging
-  $effect(() => {
-        for (const [colIdx, col] of importedData.columns.entries()) {
-            if (col.type === 'string' && Array.isArray(col.values)) {
-                const mask = getDuplicatedMask(col.values);
-                const hasDuplicates = mask.some(Boolean);
-                if (hasDuplicates) {
-                    console.log(
-                        `Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
-                        mask
-                            .map((isDup, rowIdx) => (isDup ? rowIdx : null))
-                            .filter(idx => idx !== null)
-                    );
-                } else {
-                    console.log(`Column "${col.headerName || col.name || colIdx}" has no duplicates.`);
-                }
-            }
-        }
-    });
+// Compute duplicated masks for each column
+// This returns an array of boolean arrays, one for each column
+// Each inner array indicates which values in that column are duplicated
+const duplicatedMasks = $state<boolean[][]>([]);
+
+// Update duplicated masks whenever importedData changes
+$effect(() => {
+	const masks: boolean[][] = [];
+	for (const col of importedData.columns) {
+		if (col.type === 'string' && Array.isArray(col.values)) {
+			masks.push(getDuplicatedMask(col.values));
+		} else {
+			// For non-string columns, create an array of false values
+			masks.push(Array(col.values.length).fill(false));
+		}
+	}
+	// Update the state variable with new masks
+	duplicatedMasks.length = 0;
+	masks.forEach(mask => duplicatedMasks.push(mask));
+});
+
+// Svelte 5: use $effect for side effects like logging
+$effect(() => {
+	// Only run this effect when duplicatedMasks has been populated
+	if (duplicatedMasks.length === 0) return;
+	
+	for (const [colIdx, col] of importedData.columns.entries()) {
+		if (col.type === 'string' && Array.isArray(col.values)) {
+			const mask = duplicatedMasks[colIdx];
+			if (mask) {
+				const hasDuplicates = mask.some(Boolean);
+				if (hasDuplicates) {
+					console.log(
+						`Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
+						mask
+							.map((isDup: boolean, rowIdx: number) => (isDup ? rowIdx : null))
+							.filter((idx: number | null) => idx !== null)
+					);
+				} else {
+					console.log(`Column "${col.headerName || col.name || colIdx}" has no duplicates.`);
+				}
+			}
+		}
+	}
+});
  
-	// Correct Svelte 5 runes usage:
- const duplicatedMasks = $derived(() =>
-    $importedData.columns.map(col =>
-      col.type === 'string' && Array.isArray(col.values)
-        ? getDuplicatedMask(col.values)
-        : []
-    )
-  );
+	
 	// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
 	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
 	function dragstartHandler(ev: DragEvent) {
@@ -332,16 +350,17 @@
 				<!-- BODY isCompatible function between CSVTable and dbTable -->
 				{#each importedData.columns.filter( (c) => (isTransplant ? c.isToggled : true) ) as column, index}
 					{@const { isLandCompatible, isCropCompatible } = isCompatible(column)}
+					{@const columnMask = duplicatedMasks[index] || []}
+					{@const isDuplicated = columnMask[rowIndex] || false}
 					<td
 						class:isCropCompatible
 						class:isLandCompatible
-						
-						class:isDuplicated={duplicatedMasks[index]?.[rowIndex]}
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
 						class:isGpsMatch={column.currentFormat === 'string' &&
 							gpsMatchColumns()?.[column.headerName]}
+						class:isDuplicated={isDuplicated && column.type === 'string'}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -361,3 +380,26 @@
 		{/each}
 	</tbody>
 </table>
+
+<style>
+	/* Styling for duplicated cells */
+	.isDuplicated {
+		background-color: rgba(255, 220, 200, 0.4) !important;
+		position: relative;
+	}
+
+	.isDuplicated::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background-color: rgba(255, 160, 120, 0.7);
+	}
+
+	/* Make sure the duplicate highlighting doesn't interfere with other styles */
+	.isDuplicated:hover {
+		background-color: rgba(255, 220, 200, 0.6) !important;
+	}
+</style>
