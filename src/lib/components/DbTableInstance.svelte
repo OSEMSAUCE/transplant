@@ -67,11 +67,6 @@
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 			{#if showGpsAndPolygonCols}
 				<GpsColumn header />
-				<!-- <th class="gps-column">
-					<div class="column-header">
-						<span class="format-label">GPS</span>
-					</div>
-				</th> -->
 				<th class="polygon-column">
 					<div class="column-header">
 						<span class="format-label">Polygon</span>
@@ -169,21 +164,10 @@
 			{#each uniqueIndices.slice(0, 3) as uniqueRowIndex, displayIndex}
 				<tr>
 					<td class="extra-column">more data</td>
-					<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 					{#if showGpsAndPolygonCols}
-						{@const gpsResult = pullFirstGpsSelected(uniqueRowIndex)}
+						<GpsColumn rowIndex={uniqueRowIndex} />
 						{@const landId = getLandIdForRow(uniqueRowIndex)}
-
 						{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
-						<GpsColumn gpsData={gpsResult} />
-						<!-- <td class="gps-column">
-							{#if gpsResult && (gpsResult.type === 'full' || gpsResult.type === 'pair')}
-								{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
-								<span class="gps-coordinates">
-									{formattedGps}
-								</span>
-							{/if}
-						</td> -->
 						<td class="polygon-column">
 							<div class="polygon-cell centered-cell-content">
 								{#if landId && landId.polygonId}
@@ -192,9 +176,9 @@
 									<span class="polygon-coordinates">
 										{polygonData.value}
 									</span>
-								{:else if gpsResult}
+								{:else}
 									<span class="polygon-placeholder">
-										<span class="material-symbols-outlined">crop_square</span>
+										<span class="material-symbols-outlined"></span>
 									</span>
 								{/if}
 							</div>

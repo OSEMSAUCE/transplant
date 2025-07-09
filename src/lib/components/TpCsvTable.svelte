@@ -84,54 +84,56 @@
 		lat?: number;
 		lon?: number;
 	}
-
-function pullFirstGpsSelected(rowIndex: number): GpsData | null {
-		// First try to find a full GPS coordinate pair
-		for (const column of importedData.columns) {
-			if (
-				column.currentFormat === 'gps' &&
-				column.values[rowIndex] !== null &&
-				column.values[rowIndex] !== ''
-			) {
-				const gpsValue = column.values[rowIndex];
-				if (isGps(gpsValue)) {
-					return { type: 'full', value: String(gpsValue) };
-				}
+	
+	function pullFirstGpsSelected(rowIndex: number): GpsData | null {
+	// First try to find a full GPS coordinate pair
+	for (const column of importedData.columns) {
+		if (
+			column.currentFormat === 'gps' &&
+			column.values[rowIndex] !== null &&
+			column.values[rowIndex] !== ''
+		) {
+			const gpsValue = column.values[rowIndex];
+			if (isGps(gpsValue)) {
+				return { type: 'full', value: String(gpsValue) };
 			}
 		}
-
-		// Try to find a complete latitude/longitude pair
-		let latValue: string | number | null = null;
-		let lonValue: string | number | null = null;
-
-		// First pass: look for explicit latitude and longitude columns
-		for (const column of importedData.columns) {
-			const value = column.values[rowIndex];
-
-			if (value === null || value === '') continue;
-
-			// Check for latitude column
-			if (column.currentFormat === 'latitude' && !latValue) {
-				if (isLatitude(value)) {
-					latValue = Number(value);
-				}
-			}
-			// Check for longitude column
-			else if (column.currentFormat === 'longitude' && !lonValue) {
-				if (isLongitude(value)) {
-					lonValue = Number(value);
-				}
-			}
-		}
-
-		// If we found both valid lat and lon values, return them
-		if (latValue !== null && lonValue !== null) {
-			return { type: 'pair', lat: latValue, lon: lonValue };
-		}
-
-		// If we couldn't find a complete pair of valid coordinates, return null
-		return null;
 	}
+
+	// Try to find a complete latitude/longitude pair using column names
+	let latValue: string | number | null = null;
+	let lonValue: string | number | null = null;
+
+	for (const column of importedData.columns) {
+		const value = column.values[rowIndex];
+		if (value === null || value === '') continue;
+
+		const name = column.headerName?.toLowerCase().replace(/[\s_]+/g, '');
+
+		// Check for latitude column
+		if (!latValue && name && name.includes('lat')) {
+			if (isLatitude(value)) {
+				latValue = Number(value);
+			}
+		}
+		// Check for longitude column
+		else if (!lonValue && name && name.includes('lon')) {
+			if (isLongitude(value)) {
+				lonValue = Number(value);
+			}
+		}
+	}
+
+	// If we found both valid lat and lon values, return them
+	if (latValue !== null && lonValue !== null) {
+		return { type: 'pair', lat: latValue, lon: lonValue };
+	}
+
+	// If we couldn't find a complete pair of valid coordinates, return null
+	return null;
+}
+
+
 
 	function pullFirstPolygonSelected(rowIndex: number) {
 		// Try to find a polygon column
@@ -218,8 +220,6 @@ function pullFirstGpsSelected(rowIndex: number): GpsData | null {
 
 		return { isLandCompatible, isCropCompatible };
 	}
-
-
 </script>
 
 <table class="data-table" style="table-layout: fixed;">
@@ -293,7 +293,7 @@ function pullFirstGpsSelected(rowIndex: number): GpsData | null {
 								</span>
 							{:else if gpsData}
 								<span class="polygon-placeholder">
-									<span class="material-symbols-outlined">crop_square</span>
+									<span class="material-symbols-outlined"></span>
 								</span>
 							{/if}
 						{/key}
