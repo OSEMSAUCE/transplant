@@ -2,10 +2,15 @@
 
 <script lang="ts">
   import { importedData } from '$lib/components/modelState.svelte';
-  export let gpsData: GpsData | null = null;
-  export let isMatch = false;
-  export let header = false; // Explicitly mark header usage
-  export let rowIndex: number | null = null; // Optional: row index for auto-extraction
+  import { getDuplicatedMask } from './columnNormalizationUtils';
+  
+  // Convert export let to $props() for Svelte 5 runes mode
+  const { gpsData = null, isMatch = false, header = false, rowIndex = null } = $props<{
+    gpsData?: GpsData | null;
+    isMatch?: boolean;
+    header?: boolean;
+    rowIndex?: number | null;
+  }>();
 
   interface GpsData {
     type: 'full' | 'pair';
@@ -57,6 +62,39 @@
 
   // Import isGps utility from your detection module
   import { isGps } from './formatDetection2';
+  
+  // State to store GPS duplicated masks
+  const gpsDuplicatedMask = $state<boolean[]>([]);
+  
+  // Update the duplicated mask whenever importedData changes
+  $effect(() => {
+    // Simple approach - just use getDuplicatedMask directly
+    const gpsValues: (string | number | null)[] = [];
+    
+    // Only process if we have data
+    if (importedData.columns[0]?.values.length > 0) {
+      // Collect GPS values
+      for (let i = 0; i < importedData.columns[0].values.length; i++) {
+        const gpsData = extractGpsData(i);
+        gpsValues[i] = gpsData ? formatGps(gpsData) : null;
+      }
+      
+      // Use the existing utility function
+      const mask = getDuplicatedMask(gpsValues);
+      
+      // Update our state
+      gpsDuplicatedMask.length = 0;
+      for (let i = 0; i < mask.length; i++) {
+        gpsDuplicatedMask[i] = mask[i];
+      }
+      
+      // Just log a count, not the full details
+      const dupCount = mask.filter(Boolean).length;
+      if (dupCount > 0) {
+        console.log(`GPS column has ${dupCount} duplicated values`);
+      }
+    }
+  });
 </script>
 
 {#if header}
@@ -67,17 +105,48 @@
     <div class="header-name"></div>
   </th>
 {:else}
-  <td style="position: relative; padding: 8px;" class:isGpsMatch={isMatch}>
+  <td style="position: relative; padding: 8px;" 
+    class:isGpsMatch={isMatch}
+    class:isDuplicated={rowIndex !== null && gpsDuplicatedMask[rowIndex] === true}>
     {#if gpsData}
       <div class="gps-cell">
         <span class="gps-coordinates">{formatGps(gpsData)}</span>
       </div>
     {:else if rowIndex !== null}
-      {#if extractGpsData(rowIndex)}
+      {@const extractedData = extractGpsData(rowIndex)}
+      {#if extractedData}
         <div class="gps-cell">
-          <span class="gps-coordinates">{formatGps(extractGpsData(rowIndex))}</span>
+          <span class="gps-coordinates">{formatGps(extractedData)}</span>
         </div>
       {/if}
     {/if}
   </td>
 {/if}
+
+<style>
+  /* Styling for duplicated cells - matching the style from TpCsvTable */
+  td.isDuplicated {
+    background-color: rgba(213, 106, 44, 0.1) !important;
+    position: relative !important;
+  }
+
+  td.isDuplicated::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 2px !important;
+    /* background-color: rgba(255, 160, 120, 0.7); */
+  }
+
+  /* Make sure the duplicate highlighting doesn't interfere with other styles */
+  td.isDuplicated:hover {
+    background-color: rgba(255, 220, 200, 0.6) !important;
+  }
+  
+  /* Override any other styles that might be interfering */
+  td.isDuplicated {
+    z-index: 3 !important; /* Higher than the sticky z-index */
+  }
+</style>

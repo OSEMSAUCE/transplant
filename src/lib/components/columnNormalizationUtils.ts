@@ -13,7 +13,6 @@ export function getDuplicatedMask(values: (string | number | null)[]): boolean[]
 		if (val === null || val === '') continue;
 		valueCount.set(val, (valueCount.get(val) || 0) + 1);
 	}
-	console.log(values) 
 	return values.map(val => (val === null || val === '') ? false : (valueCount.get(val) ?? 0) > 1);
 }
 
