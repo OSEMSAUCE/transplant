@@ -4,9 +4,11 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import sveltePlugin from 'eslint-plugin-svelte';
 import svelteParser from 'svelte-eslint-parser';
 import prettier from 'eslint-config-prettier';
+import importPlugin from 'eslint-plugin-import';
 
 export default [
 	js.configs.recommended,
+	importPlugin.configs.recommended,
 	{
 		files: ['**/*.{js,ts,svelte}'],
 		plugins: {
@@ -59,7 +61,14 @@ export default [
 
 			// 🔧 General Best Practices
 			'no-console': 'off', // Keep console logs during development
-			'no-debugger': 'warn'
+			'no-debugger': 'warn',
+
+			// 🚨 Import rules
+			'import/no-unresolved': 'error', // Error on unresolved imports
+			'import/named': 'warn', // Warn on named import errors
+			'import/default': 'warn',
+			'import/namespace': 'warn',
+			'import/no-extraneous-dependencies': 'warn'
 		}
 	},
 	{

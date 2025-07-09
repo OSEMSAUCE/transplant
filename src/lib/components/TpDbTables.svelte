@@ -12,11 +12,6 @@
 
 	import DbTableInstance from './DbTableInstance.svelte';
 
-	type GpsData =
-		| { type: 'full'; value: string }
-		| { type: 'pair'; lat: string; lon: string }
-		| null;
-
 	// Function to pull GPS data for a given row index
 	function pullFirstGpsSelected(rowIndex: number): GpsData {
 		// First try to find a full GPS coordinate pair

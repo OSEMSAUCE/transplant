@@ -9,6 +9,8 @@
 	import { detectFormat, isGps, isLatitude, isLongitude, formatValue } from './formatDetection2';
 	import { importedData } from '$lib/components/modelState.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
+	import GpsColumn from './GpsColumn.svelte';
+
 	// Add this constant
 	const max_transplant_rows = 3;
 
@@ -265,12 +267,7 @@
 			<!-- The GPS column is always first and separate from the iteration -->
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
-			<th class="gps-column">
-				<div class="column-header">
-					<span class="format-label">GPS</span>
-				</div>
-				<div class="header-name"></div>
-			</th>
+			<GpsColumn />
 			<!-- The Polygon column is second and separate from the iteration -->
 			<th class="polygon-column">
 				<div class="column-header">
@@ -318,19 +315,8 @@
 		{#each importedData.columns[0].values.slice(0, isTransplant ? max_transplant_rows : undefined) as _, rowIndex}
 			{@const gpsData = pullFirstGpsSelected(rowIndex)}
 			<tr>
-				<td style="position: relative; padding: 8px;">
-					{#if gpsData}
-						<div class="gps-cell">
-							<span class="gps-coordinates">
-								{#if gpsData.type === 'full'}
-									{gpsData.value}
-								{:else if gpsData.type === 'pair'}
-									{gpsData.lat}, {gpsData.lon}
-								{/if}
-							</span>
-						</div>
-					{/if}
-				</td>
+				<GpsColumn {gpsData} isMatch={true} />
+				<!-- I think you mean the structure up top is supposed to be also in the GPS column file and then I move those parameters I guess in like this. Thank you. -->
 				<!-- Polygon column cell -->
 				<td style="position: relative; padding: 4px;">
 					<div
