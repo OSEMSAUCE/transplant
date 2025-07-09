@@ -384,7 +384,7 @@ $effect(() => {
 <style>
 	/* Styling for duplicated cells */
 	.isDuplicated {
-		background-color: rgba(255, 220, 200, 0.4) !important;
+		background-color: rgba(213, 106, 44, 0.1) !important;
 		position: relative;
 	}
 
@@ -395,7 +395,7 @@ $effect(() => {
 		left: 0;
 		width: 100%;
 		height: 2px;
-		background-color: rgba(255, 160, 120, 0.7);
+		/* background-color: rgba(255, 160, 120, 0.7); */
 	}
 
 	/* Make sure the duplicate highlighting doesn't interfere with other styles */
