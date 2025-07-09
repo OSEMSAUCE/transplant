@@ -9,6 +9,7 @@
 	import { importedData, findPolygonColumn } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
+	import GpsColumn from './GpsColumn.svelte';
 
 	const landColumns = [
 		{ name: 'landName', label: 'Land Name', modelRepColumnIndex: 0, viewOnly: false },
@@ -70,11 +71,13 @@
 			<th class="extra-column">{title}</th>
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 			{#if showGpsAndPolygonCols}
+				<GpsColumn header />
+<!-- 				
 				<th class="gps-column">
 					<div class="column-header">
 						<span class="format-label">GPS</span>
 					</div>
-				</th>
+				</th> -->
 
 				<th class="polygon-column">
 					<div class="column-header">
@@ -179,14 +182,15 @@
 						{@const landId = getLandIdForRow(uniqueRowIndex)}
 
 						{@const polygonData = pullFirstPolygonSelected(uniqueRowIndex)}
-						<td class="gps-column">
+						<GpsColumn gpsData={gpsResult} />
+						<!-- <td class="gps-column">
 							{#if gpsResult && (gpsResult.type === 'full' || gpsResult.type === 'pair')}
 								{@const formattedGps = formatAllGpsTypes(gpsResult.value, 'gps')}
 								<span class="gps-coordinates">
 									{formattedGps}
 								</span>
 							{/if}
-						</td>
+						</td> -->
 						<td class="polygon-column">
 							<div class="polygon-cell centered-cell-content">
 								{#if landId && landId.polygonId}
