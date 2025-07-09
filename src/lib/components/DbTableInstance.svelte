@@ -1,10 +1,5 @@
 <script lang="ts">
-	import {
-		isGps,
-		isLongitude,
-		formatAllGpsTypes,
-		formatValue
-	} from './formatDetection2';
+	import { isGps, isLongitude, formatAllGpsTypes, formatValue } from './formatDetection2';
 	import { isColumnNormalizedByLand, findLandColumn } from './columnNormalizationUtils';
 	import { importedData, findPolygonColumn } from '$lib/components/modelState.svelte';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
@@ -72,13 +67,11 @@
 			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 			{#if showGpsAndPolygonCols}
 				<GpsColumn header />
-<!-- 				
-				<th class="gps-column">
+				<!-- <th class="gps-column">
 					<div class="column-header">
 						<span class="format-label">GPS</span>
 					</div>
 				</th> -->
-
 				<th class="polygon-column">
 					<div class="column-header">
 						<span class="format-label">Polygon</span>
