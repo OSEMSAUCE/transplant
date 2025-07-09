@@ -9,8 +9,7 @@
 		type DuplicatePattern
 	} from './isDuplicateLogic';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
-	import type { ColumnFormat } from '$lib/types/columnModel';
-	import { detectFormat, isGps, isLatitude, isLongitude, formatValue } from './formatDetection2';
+	import { formatValue, isGps, isLatitude, isLongitude } from './formatDetection2';
 	import { importedData } from '$lib/components/modelState.svelte';
 	import { dragColumnState } from '$lib/components/modelState.svelte';
 	import GpsColumn from './GpsColumn.svelte';
@@ -44,7 +43,12 @@
 		const patterns: DuplicatePattern[][] = [];
 		
 		for (const col of importedData.columns) {
+			if (Array.isArray(col.values)) {
+				// Populate isDuplicate with boolean duplicate mask
+				col.isDuplicate = getDuplicatedMask(col.values);
+			}
 			if (col.type === 'string' && Array.isArray(col.values)) {
+				// col.isDuplicate = getDuplicatedMask(col.values);
 				// Get duplicate pattern masks
 				const patternMask = getDuplicatePatternMask(col.values);
 				patterns.push(patternMask);
@@ -61,7 +65,7 @@
 		// Update the state variables with new masks
 		duplicatedMasks.length = 0;
 		masks.forEach(mask => duplicatedMasks.push(mask));
-		
+		 
 		patternMasks.length = 0;
 		patterns.forEach(pattern => patternMasks.push(pattern));
 		
