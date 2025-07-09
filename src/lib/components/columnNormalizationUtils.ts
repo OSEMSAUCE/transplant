@@ -17,6 +17,25 @@
  * land2   | value3
  */
 
+
+
+// isNormalized
+
+/**
+ * Returns a CSS class string for conditional cell formatting based on duplication and normalization status.
+ * @param isDuplicated - Whether the cell value is duplicated
+ * @param isNormalized - Whether the cell/column is normalized
+ * @returns A string with the appropriate class name(s) for styling
+ */
+export function isNormalized(isDuplicated: boolean, isNormalized: boolean): string {
+	if (isDuplicated && isNormalized) return 'cell-normalized-duplicated';
+	if (isDuplicated) return 'cell-duplicated';
+	if (isNormalized) return 'cell-normalized';
+	return '';
+}
+
+
+
 /**
  * Find the land column in the imported data
  * @param columns - Array of column data
