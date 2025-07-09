@@ -271,7 +271,7 @@
 					isFormatted: col.isFormatted,
 					selectFormatCoercion: col.selectFormatCoercion,
 					wasFormatCoerced: col.wasFormatCoerced,
-					// Show the first three duplicate pattern values for debugging
+					duplicatePattern: col.duplicatePattern, // <-- This is what you want!
 					isDuplicate: Array.isArray(col.isDuplicate) ? col.isDuplicate.slice(0, 3) : undefined
 				};
 			}),

@@ -13,6 +13,9 @@ export interface ColumnDef {
 	isMerged?: boolean; // Whether this column is created by merging other columns
 	mergedFrom?: string[]; // If merged, the source columns that were merged
 	isGpsSource?: boolean; // Whether this column is a source for the universal GPS column
+	duplicatePattern?: DuplicatePattern;
+
+
 
 	// Format coercion tracking
 
@@ -29,6 +32,8 @@ export interface ColumnDef {
 	};
 }
 
+export type DuplicatePattern = 'landDuplicatePattern' | 'cropDuplicatePattern' | 'randomDuplicatePattern';
+
 export type ColumnFormat =
 	| 'string'
 	| 'number'
@@ -39,6 +44,9 @@ export type ColumnFormat =
 	| 'polygon'
 	| 'kml';
 export interface ColumnRep extends ColumnDef {
+	/** The overall duplicate pattern type for this column (for coloring/grouping) */
+	duplicatePattern?: DuplicatePattern;
+
 	/** Array indicating if each cell is a duplicate (true) or unique (false) */
 	isDuplicate?: boolean[];
 	/** The column name/header from the imported data */
@@ -64,6 +72,8 @@ export interface ColumnRep extends ColumnDef {
  * [INTENTION: Will replace existing column handling in TransformManager.svelte]
  */
 export class BaseColumnModel implements ColumnDef {
+	/** The overall duplicate pattern type for this column (for coloring/grouping) */
+	duplicatePattern?: DuplicatePattern;
 	headerName: string;
 	isToggled: boolean;
 	isGreyed: Array<boolean>;

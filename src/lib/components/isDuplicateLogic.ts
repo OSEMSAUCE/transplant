@@ -53,6 +53,13 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 			patternColumnIndices[patternIdx].push(i);
 		}
 		col.isDuplicate = getDuplicatedMask(col.values); // keep full mask for UI
+		if (patternIdx === 0) {
+			col.duplicatePattern = 'landDuplicatePattern';
+		} else if (patternIdx === 1) {
+			col.duplicatePattern = 'cropDuplicatePattern';
+		} else {
+			col.duplicatePattern = 'randomDuplicatePattern';
+		}
 	}
 
 	return { patterns, patternColumnIndices };
