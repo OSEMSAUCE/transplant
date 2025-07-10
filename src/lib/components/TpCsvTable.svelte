@@ -20,14 +20,6 @@
 	// Derive if we're in transplant mode
 	let isTransplant = $derived(pageIs === 'transplant');
 
-	// // Number formatting function
-	// function numberFormat(value: number): string {
-	// 	return new Intl.NumberFormat('en-US', {
-	// 		style: 'decimal',
-	// 		minimumFractionDigits: 0,
-	// 		maximumFractionDigits: 2
-	// 	}).format(value);
-	// }
 	// Compute duplicated masks for each column
 	// This returns an array of boolean arrays, one for each column
 	// Each inner array indicates which values in that column are duplicated
@@ -63,31 +55,6 @@
 		patternMasks = pMasks;
 	});
 	// Update duplicated masks and pattern masks whenever importedData changes
-
-	// // Svelte 5: use $effect for side effects like logging
-	// $effect(() => {
-	// 	// Only run this effect when duplicatedMasks has been populated
-	// 	if (duplicatedMasks.length === 0) return;
-
-	// 	for (const [colIdx, col] of importedData.columns.entries()) {
-	// 		if (col.type === 'string' && Array.isArray(col.values)) {
-	// 			const mask = duplicatedMasks[colIdx];
-	// 			if (mask) {
-	// 				const hasDuplicates = mask.some(Boolean);
-	// 				if (hasDuplicates) {
-	// 					console.log(
-	// 						`Column "${col.headerName || col.name || colIdx}" has duplicated values in these rows:`,
-	// 						mask
-	// 							.map((isDup: boolean, rowIdx: number) => (isDup ? rowIdx : null))
-	// 							.filter((idx: number | null) => idx !== null)
-	// 					);
-	// 				} else {
-
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// });
 
 	// 🌲️🌲️🌳️🌳️🌴️ drag drop thing 🌲️🌲️🌳️🌳️🌴️
 	// later we need to make the whole column draggable, not just the header 16 Apr 2025  7:56 AM
