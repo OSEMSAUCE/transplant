@@ -266,7 +266,6 @@
 					!column.headerName.toLowerCase().includes('ownership') &&
 					isColumnNormalizedByLand(cropCol.values, column.values)
 				: false;
-
 		return { isLandCompatible, isCropCompatible };
 	}
 </script>
@@ -362,11 +361,9 @@
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
-						class:isDuplicated={isDuplicated && column.type === 'string'}
-						class:landDuplicatePattern={duplicatePattern === 'landDuplicatePattern' &&
-							column.type === 'string'}
-						class:cropDuplicatePattern={duplicatePattern === 'cropDuplicatePattern' &&
-							column.type === 'string'}
+						class:landDuplicatePattern={column.duplicatePattern === 'landDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
+						class:cropDuplicatePattern={column.duplicatePattern === 'cropDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
+						class:randomDuplicatePattern={column.duplicatePattern === 'randomDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -388,63 +385,43 @@
 </table>
 
 <style>
-	/* Styling for duplicated cells - keeping for backward compatibility */
-	.isDuplicated {
-		background-color: rgba(213, 106, 44, 0.1) !important;
-		position: relative;
-	}
-
-	.isDuplicated::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		height: 2px;
-	}
-
-	/* Make sure the duplicate highlighting doesn't interfere with other styles */
-	.isDuplicated:hover {
-		background-color: rgba(255, 220, 200, 0.6) !important;
-	}
+	/* Styling for duplicate patterns */
 
 	/* Styling for land pattern duplicated cells (blue) */
 	.landDuplicatePattern {
-		background-color: rgba(65, 105, 225, 0.2) !important; /* Royal blue with opacity */
+		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
 		position: relative !important;
 	}
-
-	.landDuplicatePattern::after {
-		content: '' !important;
-		position: absolute !important;
-		bottom: 0 !important;
-		left: 0 !important;
-		width: 100% !important;
-		height: 2px !important;
-	}
-
-	/* Make sure the duplicate highlighting doesn't interfere with other styles */
 	.landDuplicatePattern:hover {
-		background-color: rgba(65, 105, 225, 0.3) !important; /* Slightly darker blue on hover */
+		background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
+		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
+		position: relative !important;
 	}
+	
+		.landDuplicatePattern:hover {
+			background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
+		}
 
 	/* Styling for crop pattern duplicated cells (green) */
 	.cropDuplicatePattern {
-		background-color: rgba(76, 175, 80, 0.2) !important; /* Green with opacity */
+		background-color: rgba(76, 175, 80, 0.18) !important; /* Green with opacity */
 		position: relative !important;
 	}
+	.cropDuplicatePattern:hover {
+		background-color: rgba(76, 175, 80, 0.32) !important; /* Darker green on hover */
+	}
 
-	.cropDuplicatePattern::after {
-		content: '' !important;
-		position: absolute !important;
-		bottom: 0 !important;
-		left: 0 !important;
-		width: 100% !important;
-		height: 2px !important;
+	/* Styling for random pattern duplicated cells (orange) */
+	.randomDuplicatePattern {
+		background-color: rgba(255, 152, 0, 0.18) !important; /* Orange with opacity */
+		position: relative !important;
+	}
+	.randomDuplicatePattern:hover {
+		background-color: rgba(255, 152, 0, 0.32) !important; /* Darker orange on hover */
 	}
 
 	/* Make sure the duplicate highlighting doesn't interfere with other styles */
-	.cropDuplicatePattern:hover {
-		background-color: rgba(76, 175, 80, 0.3) !important; /* Slightly darker green on hover */
+	.randomDuplicatePattern:hover {
+		background-color: rgba(175, 140, 76, 0.3) !important; /* Slightly darker green on hover */
 	}
 </style>
