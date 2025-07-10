@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getColumnCompatibility, isColumnNormalizedByLand } from './columnNormalizationUtils';
+	import { isColumnNormalizedByLand } from './columnNormalizationUtils';
 	import {
 		getDuplicatedMask,
 		getDuplicatePattern,
