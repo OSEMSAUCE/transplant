@@ -5,7 +5,11 @@
  */
 
 // Types for duplicate patterns
-export type DuplicatePattern = 'none' | 'landDuplicatePattern' | 'cropDuplicatePattern' | 'randomDuplicatePattern';
+export type DuplicatePattern =
+	| 'none'
+	| 'landDuplicatePattern'
+	| 'cropDuplicatePattern'
+	| 'randomDuplicatePattern';
 
 import type { ColumnRep } from '$lib/types/columnModel';
 
@@ -56,9 +60,9 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 		if (patternIdx === 0) {
 			col.duplicatePattern = 'landDuplicatePattern'; // blue
 		} else if (patternIdx === 1) {
-			col.duplicatePattern = 'cropDuplicatePattern'; // green
+			col.duplicatePattern = 'randomDuplicatePattern'; // green
 		} else {
-			col.duplicatePattern = 'randomDuplicatePattern'; // orange
+			col.duplicatePattern = 'cropDuplicatePattern'; // orange
 		}
 	}
 
@@ -123,9 +127,11 @@ export function getDuplicatePatternMask(values: (string | number | null)[]): Dup
 		// We've seen this pattern before
 		// First pattern = landDuplicatePattern, second pattern = cropDuplicatePattern
 		const patternType =
-			patternSignatures.length === 1 ? 'landDuplicatePattern'
-			: patternSignatures.length === 2 ? 'cropDuplicatePattern'
-			: 'randomDuplicatePattern';
+			patternSignatures.length === 1
+				? 'landDuplicatePattern'
+				: patternSignatures.length === 2
+					? 'cropDuplicatePattern'
+					: 'randomDuplicatePattern';
 		return duplicateMask.map((isDup) => (isDup ? patternType : 'none'));
 	}
 
