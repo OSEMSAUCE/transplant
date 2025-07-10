@@ -49,6 +49,7 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 	// Second pass: assign every column to a pattern (if matched)
 	for (let i = 0; i < columns.length; i++) {
 		const col = columns[i];
+		// console.log(col);
 		if (!Array.isArray(col.values)) continue;
 		const mask = getDuplicatedMask(col.values).slice(0, 10);
 		const sig = mask.join(',');
@@ -65,7 +66,6 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 			col.duplicatePattern = 'randomDuplicatePattern'; // orange
 		}
 	}
-
 	return { patterns, patternColumnIndices };
 }
 
@@ -82,7 +82,7 @@ export function getDuplicatedMask(values: (string | number | null)[]): boolean[]
 		if (val === null || val === '') continue;
 		valueCount.set(val, (valueCount.get(val) || 0) + 1);
 	}
-
+	
 	// Create the duplicate mask
 	return values.map((val) => (val !== null && val !== '' ? (valueCount.get(val) ?? 0) > 1 : false));
 }
@@ -109,7 +109,7 @@ function createSignature(duplicateMask: boolean[], maxRows: number = 20): string
  * @param values - Array of cell values (string | number | null)
  * @returns Array of DuplicatePattern values
  */
-export function getDuplicatePatternMask(values: (string | number | null)[]): DuplicatePattern[] {
+export function getDuplicatePattern(values: (string | number | null)[]): DuplicatePattern[] {
 	// First get the boolean duplicate mask
 	const duplicateMask = getDuplicatedMask(values);
 

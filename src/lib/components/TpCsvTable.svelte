@@ -2,7 +2,7 @@
 	import { getColumnCompatibility, isColumnNormalizedByLand } from './columnNormalizationUtils';
 	import {
 		getDuplicatedMask,
-		getDuplicatePatternMask,
+		getDuplicatePattern,
 		type DuplicatePattern
 	} from './isDuplicateLogic';
 	import FormatSelectorComponent from './FormatSelectorComponent.svelte';
@@ -31,10 +31,10 @@
 	// Compute duplicated masks for each column
 	// This returns an array of boolean arrays, one for each column
 	// Each inner array indicates which values in that column are duplicated
-	const duplicatedMasks = $state<boolean[][]>([]);
-	const patternMasks = $state<DuplicatePattern[][]>([]);
-	const bruteForcePatterns = $state<boolean[][]>([]);
-	const bruteForcePatternColumnIndices = $state<number[][]>([]);
+	let duplicatedMasks = $state<boolean[][]>([]);
+	let patternMasks = $state<DuplicatePattern[][]>([]);
+	let bruteForcePatterns = $state<boolean[][]>([]);
+	let bruteForcePatternColumnIndices = $state<number[][]>([]);
 
 	import { findBruteForceDuplicatePatterns } from './isDuplicateLogic';
 
@@ -43,10 +43,8 @@
 		const { patterns, patternColumnIndices } = findBruteForceDuplicatePatterns(
 			importedData.columns
 		);
-		bruteForcePatterns.length = 0;
-		patterns.forEach((mask: boolean[]) => bruteForcePatterns.push(mask));
-		bruteForcePatternColumnIndices.length = 0;
-		patternColumnIndices.forEach((arr: number[]) => bruteForcePatternColumnIndices.push(arr));
+		bruteForcePatterns = patterns;
+		bruteForcePatternColumnIndices = patternColumnIndices;
 
 		// Restore coloring logic
 		const dMasks: boolean[][] = [];
@@ -55,16 +53,14 @@
 			const col = importedData.columns[i];
 			if (Array.isArray(col.values)) {
 				dMasks.push(getDuplicatedMask(col.values));
-				pMasks.push(getDuplicatePatternMask(col.values));
+				pMasks.push(getDuplicatePattern(col.values));
 			} else {
 				dMasks.push(Array(col.values));
 				pMasks.push(Array(col.values));
 			}
 		}
-		duplicatedMasks.length = 0;
-		dMasks.forEach((mask) => duplicatedMasks.push(mask));
-		patternMasks.length = 0;
-		pMasks.forEach((mask) => patternMasks.push(mask));
+		duplicatedMasks = dMasks;
+		patternMasks = pMasks;
 	});
 	// Update duplicated masks and pattern masks whenever importedData changes
 
@@ -274,7 +270,7 @@
 	<thead>
 		<tr>
 			<!-- The GPS column is always first and separate from the iteration -->
-			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
+			<!-- 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ GPS📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️ 📌️  -->
 
 			<GpsColumn header />
 
@@ -326,7 +322,7 @@
 			{@const gpsData = pullFirstGpsSelected(rowIndex)}
 			<tr>
 				<GpsColumn {gpsData} isMatch={true} />
-				
+
 				<!-- Polygon column cell -->
 				<td style="position: relative; padding: 4px;">
 					<div
@@ -396,6 +392,7 @@
 	/* Styling for land pattern duplicated cells (blue) */
 	.landDuplicatePattern {
 		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
+
 		position: relative !important;
 	}
 	.landDuplicatePattern:hover {
