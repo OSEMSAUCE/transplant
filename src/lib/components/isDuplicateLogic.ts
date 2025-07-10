@@ -60,9 +60,9 @@ export function findBruteForceDuplicatePatterns(columns: ColumnRep[]): {
 		if (patternIdx === 0) {
 			col.duplicatePattern = 'landDuplicatePattern'; // blue
 		} else if (patternIdx === 1) {
-			col.duplicatePattern = 'randomDuplicatePattern'; // green
+			col.duplicatePattern = 'cropDuplicatePattern'; // green
 		} else {
-			col.duplicatePattern = 'cropDuplicatePattern'; // orange
+			col.duplicatePattern = 'randomDuplicatePattern'; // orange
 		}
 	}
 

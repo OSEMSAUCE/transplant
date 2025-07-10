@@ -326,7 +326,7 @@
 			{@const gpsData = pullFirstGpsSelected(rowIndex)}
 			<tr>
 				<GpsColumn {gpsData} isMatch={true} />
-				<!-- I think you mean the structure up top is supposed to be also in the GPS column file and then I move those parameters I guess in like this. Thank you. -->
+				
 				<!-- Polygon column cell -->
 				<td style="position: relative; padding: 4px;">
 					<div
@@ -361,9 +361,15 @@
 						class:greyed-out={isTransplant
 							? column.isMapped
 							: !(column.isToggled && !column.isGreyed[rowIndex])}
-						class:landDuplicatePattern={column.duplicatePattern === 'landDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
-						class:cropDuplicatePattern={column.duplicatePattern === 'cropDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
-						class:randomDuplicatePattern={column.duplicatePattern === 'randomDuplicatePattern' && column.type === 'string' && duplicatedMasks[index]?.[rowIndex]}
+						class:landDuplicatePattern={column.duplicatePattern === 'landDuplicatePattern' &&
+							column.type === 'string' &&
+							duplicatedMasks[index]?.[rowIndex]}
+						class:cropDuplicatePattern={column.duplicatePattern === 'cropDuplicatePattern' &&
+							column.type === 'string' &&
+							duplicatedMasks[index]?.[rowIndex]}
+						class:randomDuplicatePattern={column.duplicatePattern === 'randomDuplicatePattern' &&
+							column.type === 'string' &&
+							duplicatedMasks[index]?.[rowIndex]}
 						data-header-name={column.headerName}
 						data-column-index={index}
 						draggable={!column.isMapped}
@@ -397,10 +403,10 @@
 		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
 		position: relative !important;
 	}
-	
-		.landDuplicatePattern:hover {
-			background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
-		}
+
+	.landDuplicatePattern:hover {
+		background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
+	}
 
 	/* Styling for crop pattern duplicated cells (green) */
 	.cropDuplicatePattern {

@@ -275,6 +275,7 @@ th.polygon-column {
 /* Keep body cells with default styling */
 td.polygon-column {
 	position: relative;
+	
 }
 
 /* Apply gray background only to header cells */
@@ -297,6 +298,7 @@ th.gps-column {
 /* Keep body cells with default styling */
 td.gps-column {
 	position: relative;
+	
 }
 .table-header {
 	position: sticky;
@@ -652,7 +654,6 @@ input[placeholder='Project Notes']::placeholder {
 Outline/Indication: Shows when a target is compatible (legal drop target)
 Active/Drag-Over: Shows when a target is being hovered (drag-over)
 */
-
 
 th.legal-droptarget {
 	border: 0.05rem solid #4caf50;
