@@ -530,11 +530,10 @@ model sourceTable {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model stakeholderTypeTable {
   stakeholderTypeName String
-  createdAt           DateTime?           @default(now()) @db.Timestamptz(6)
-  lastEditedAt        DateTime?           @default(now()) @db.Timestamptz(6)
-  deleted             Boolean?            @default(false)
-  stakeholderTypeId   String              @id(map: "StakeholderTypes_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationTable   organizationTable[]
+  createdAt           DateTime?          @default(now()) @db.Timestamptz(6)
+  lastEditedAt        DateTime?          @default(now()) @db.Timestamptz(6)
+  deleted             Boolean?           @default(false)
+  stakeholderTypeId   String             @id(map: "StakeholderTypes_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   stakeholderTable    stakeholderTable[]
 
   @@schema("public")
@@ -543,48 +542,45 @@ model stakeholderTypeTable {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model organizationTable {
-  organizationId       String                @id(map: "Organizations_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  organizationName     String                @unique(map: "unique_organization_name")
-  contactName          String?
-  contactEmail         String?
-  contactPhone         String?
-  address              String?
-  website              String?
-  organizationNotes    String?
-  createdAt            DateTime?             @default(now()) @db.Timestamptz(6)
-  lastEditedAt         DateTime?             @default(now()) @db.Timestamptz(6)
-  editedBy             String?               @db.Uuid
-  deleted              Boolean?              @default(false)
-  gpsLat               Float?
-  gpsLon               Float?
-  stakeholderTypeId    String?               @db.Uuid
-  cropTable            cropTable[]
-  stakeholderTypeTable stakeholderTypeTable? @relation(fields: [stakeholderTypeId], references: [stakeholderTypeId], onUpdate: NoAction, map: "fk_organizations_stakeholdertypeid")
-  projectTable         projectTable[]
-  sourceTable          sourceTable[]
-  stakeholderTable     stakeholderTable[]
+  organizationId    String             @id(map: "Organizations_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationName  String             @unique(map: "unique_organization_name")
+  contactName       String?
+  contactEmail      String?
+  contactPhone      String?
+  address           String?
+  website           String?
+  organizationNotes String?
+  createdAt         DateTime?          @default(now()) @db.Timestamptz(6)
+  lastEditedAt      DateTime?          @default(now()) @db.Timestamptz(6)
+  editedBy          String?            @db.Uuid
+  deleted           Boolean?           @default(false)
+  gpsLat            Float?
+  gpsLon            Float?
+  stakeholderTypeId String?            @db.Uuid
+  cropTable         cropTable[]
+  sourceTable       sourceTable[]
+  stakeholderTable  stakeholderTable[]
 
   @@schema("public")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model projectTable {
-  projectId         String             @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  projectName       String             @unique(map: "unique_project_name")
-  projectNotes      String?
-  createdAt         DateTime?          @default(now()) @db.Timestamptz(6)
-  lastEditedAt      DateTime?          @default(now()) @db.Timestamptz(6)
-  editedBy          String?            @db.Uuid
-  deleted           Boolean?           @default(false)
-  csvobjId          String?            @db.Uuid
-  organizationId    String?            @db.Uuid
-  cropTable         cropTable[]
-  landTable         landTable[]
-  plantingTable     plantingTable[]
-  csvObjTable       csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Projects_csvobjId_fkey")
-  organizationTable organizationTable? @relation(fields: [organizationId], references: [organizationId], onUpdate: NoAction, map: "fk_organization")
-  sourceTable       sourceTable[]
-  stakeholderTable  stakeholderTable[]
+  projectId        String             @id(map: "Projects_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectName      String             @unique(map: "unique_project_name")
+  projectNotes     String?
+  createdAt        DateTime?          @default(now()) @db.Timestamptz(6)
+  lastEditedAt     DateTime?          @default(now()) @db.Timestamptz(6)
+  editedBy         String?            @db.Uuid
+  deleted          Boolean?           @default(false)
+  csvobjId         String?            @db.Uuid
+  organizationId   String?            @db.Uuid
+  cropTable        cropTable[]
+  landTable        landTable[]
+  plantingTable    plantingTable[]
+  csvObjTable      csvObjTable?       @relation(fields: [csvobjId], references: [csvobjId], onUpdate: NoAction, map: "Projects_csvobjId_fkey")
+  sourceTable      sourceTable[]
+  stakeholderTable stakeholderTable[]
 
   @@index([organizationId], map: "idx_projects_organization_id")
   @@schema("public")
