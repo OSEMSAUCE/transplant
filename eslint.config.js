@@ -37,6 +37,14 @@ export default [
 		},
 
 		rules: {
+			// 🚫 Forbid Svelte 4 event syntax (on:) in Svelte 5
+			"no-restricted-syntax": [
+				"error",
+				{
+					selector: "[name=/^on:/]",
+					message: "Svelte 5 does not use 'on:' event syntax. Use standard HTML event attributes (e.g., 'onclick')."
+				}
+			],
 			// 🔥 Enforce Svelte 5 Runes
 			'svelte/require-runes': 'error', // Forces Svelte 5 runes (`@runes`)
 			'svelte/prefer-runes': 'error', // Suggests Runes over old Svelte 4 syntax
