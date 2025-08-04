@@ -60,6 +60,6 @@
 		"@supabase/supabase-js": "^2.50.0",
 		"@sveltejs/adapter-vercel": "^5.7.2",
 		"papaparse": "^5.5.2",
-		"svelte-french-toast": "^1.2.0"
+		"zod": "^3.25.76"
 	}
 }
