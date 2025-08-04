@@ -12,5 +12,14 @@ export default defineConfig({
 				}
 			}
 		}
+	},
+	optimizeDeps: {
+		include: ['svelte-french-toast']
+	},
+	logLevel: 'error', // Suppress warnings in console
+	server: {
+		fs: {
+			allow: ['..'] // Allow access to parent directories if needed
+		}
 	}
 });
