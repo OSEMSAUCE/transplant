@@ -161,20 +161,6 @@
 	<p>Loading...</p>
 {/if}
 
-{#if validationWarnings.length > 0}
-	<div class="validation-summary">
-		<h4>Data Validation Summary:</h4>
-		<ul>
-			{#each validationWarnings.slice(0, 5) as warning}
-				<li class="warning">{warning}</li>
-			{/each}
-			{#if validationWarnings.length > 5}
-				<li class="info">...and {validationWarnings.length - 5} more warnings</li>
-			{/if}
-		</ul>
-	</div>
-{/if}
-
 <style>
 	.validation-summary {
 		margin-top: 1rem;

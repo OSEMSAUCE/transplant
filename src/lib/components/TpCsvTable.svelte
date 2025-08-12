@@ -359,15 +359,8 @@
 	/* Styling for land pattern duplicated cells (blue) */
 	.landDuplicatePattern {
 		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
-
 		position: relative !important;
 	}
-	.landDuplicatePattern:hover {
-		background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
-		background-color: rgba(33, 150, 243, 0.18) !important; /* Blue with opacity */
-		position: relative !important;
-	}
-
 	.landDuplicatePattern:hover {
 		background-color: rgba(33, 150, 243, 0.32) !important; /* Darker blue on hover */
 	}
@@ -390,8 +383,115 @@
 		background-color: rgba(255, 152, 0, 0.32) !important; /* Darker orange on hover */
 	}
 
-	/* Make sure the duplicate highlighting doesn't interfere with other styles */
-	.randomDuplicatePattern:hover {
-		background-color: rgba(175, 140, 76, 0.3) !important; /* Slightly darker green on hover */
+	/* Data type formatting colors - use consistent colors for format types */
+	.format-string select, .string-column {
+		background-color: rgba(156, 39, 176, 0.4) !important; /* Purple for strings */
+		border: 2px solid transparent;
+		transition: all 0.2s ease-in-out;
+	}
+
+	.format-number select, .number-column {
+		background-color: rgba(63, 81, 181, 0.4) !important; /* Blue for numbers */
+		border: 2px solid transparent;
+		transition: all 0.2s ease-in-out;
+	}
+
+	.format-date select, .date-column {
+		background-color: rgba(233, 30, 99, 0.4) !important; /* Pink for dates */
+		border: 2px solid transparent;
+		transition: all 0.2s ease-in-out;
+	}
+
+	.format-gps select, .gps-column {
+		background-color: rgba(0, 150, 136, 0.4) !important; /* Teal for GPS */
+		border: 2px solid transparent;
+		transition: all 0.2s ease-in-out;
+	}
+
+	/* Enhanced drag feedback */
+	[draggable=true] {
+		cursor: grab;
+		position: relative;
+		overflow: visible;
+	}
+
+	[draggable=true]:hover::after {
+		content: "⟷";
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 14px;
+		color: rgba(0, 0, 0, 0.5);
+	}
+
+	/* Dragging state */
+	.dragging {
+		opacity: 0.7;
+		border: 2px dashed #666 !important;
+	}
+
+	/* Compatible drop targets - highlight during drag */
+	.compatible-drop-target {
+		animation: pulse 1.5s infinite;
+		border: 2px dashed #4caf50 !important;
+	}
+
+	@keyframes pulse {
+		0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
+		70% { box-shadow: 0 0 0 5px rgba(76, 175, 80, 0); }
+		100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+	}
+
+	/* Improved drag preview */
+	.drag-preview {
+		position: absolute;
+		pointer-events: none;
+		z-index: 9999;
+		background: white;
+		border: 1px solid #ccc;
+		box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+		padding: 5px;
+		border-radius: 4px;
+		max-width: 200px;
+	}
+
+	.preview-header {
+		font-weight: bold;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 3px;
+		margin-bottom: 3px;
+	}
+
+	.preview-row {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding: 2px 0;
+	}
+
+	/* Format compatibility indicators */
+	.isLandCompatible, .isCropCompatible {
+		position: relative;
+	}
+
+	.isLandCompatible::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 4px;
+		height: 100%;
+		background-color: rgba(33, 150, 243, 0.8); /* Blue indicator */
+	}
+
+	.isCropCompatible::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 4px;
+		height: 100%;
+		background-color: rgba(76, 175, 80, 0.8); /* Green indicator */
 	}
 </style>
