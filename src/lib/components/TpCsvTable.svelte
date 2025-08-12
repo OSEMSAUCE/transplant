@@ -431,11 +431,7 @@
 		border: 2px dashed #666 !important;
 	}
 
-	/* Compatible drop targets - highlight during drag */
-	.compatible-drop-target {
-		animation: pulse 1.5s infinite;
-		border: 2px dashed #4caf50 !important;
-	}
+
 
 	@keyframes pulse {
 		0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5); }
@@ -472,7 +468,10 @@
 
 	/* Format compatibility indicators */
 	.isLandCompatible, .isCropCompatible {
+		cursor: copy;
 		position: relative;
+		animation: pulse 1.5s infinite;
+		border: 2px dashed #4caf50 !important;
 	}
 
 	.isLandCompatible::before {
