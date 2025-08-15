@@ -14,7 +14,7 @@ export default defineConfig({
 		}
 	},
 	optimizeDeps: {
-		include: ['svelte-french-toast']
+		include: ['@zerodevx/svelte-toast']
 	},
 	logLevel: 'error', // Suppress warnings in console
 	server: {

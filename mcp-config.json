@@ -1,0 +1,13 @@
+{
+	"mcpServers": {
+		"vercel": {
+			"command": "npx",
+			"args": ["vercel", "mcp"],
+			"env": {
+				"VERCEL_TOKEN": "YOUR_VERCEL_TOKEN_HERE",
+				"VERCEL_PROJECT_ID": "prj_YOEoHuar7s73WLxEJvJCOSvCHlI3",
+				"VERCEL_ORG_ID": "team_0um6vuDR3mBiJQZ3RGI3upaO"
+			}
+		}
+	}
+}

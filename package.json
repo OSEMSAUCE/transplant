@@ -7,7 +7,7 @@
 		"db:pull:dev": "dotenv -e .env.dev -- prisma db pull",
 		"db:pull:prod": "dotenv -e .env.production -- prisma db pull",
 		"db:generate:prod": "dotenv -e .env.production -- prisma generate",
-		"db:sync:prod": "clear && dotenv -e .env.production -- prisma db pull && prisma generate",
+		"db:sync:prod": "clear && dotenv -e .env.production prisma db pull && prisma generate",
 		"db:generate:dev": "prisma generate",
 		"dev:prod": "clear && dotenv -e .env.production vite dev --watch",
 		"dev:prod_db": "dotenv -e .env.production vite dev",
@@ -23,7 +23,8 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"db:reset:dev": "dotenv -e .env.dev prisma migrate reset",
-		"deploy": "gh-pages -d build"
+		"deploy": "gh-pages -d build",
+		"postinstall": "prisma generate"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -50,6 +51,7 @@
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.20.0",
+		"vercel": "^45.0.9",
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
@@ -59,8 +61,8 @@
 		"@supabase/ssr": "^0.6.1",
 		"@supabase/supabase-js": "^2.50.0",
 		"@sveltejs/adapter-vercel": "^5.7.2",
+		"@zerodevx/svelte-toast": "^0.9.6",
 		"papaparse": "^5.5.2",
-		"svelte-french-toast": "^1.2.0",
 		"zod": "^3.25.76"
 	}
 }

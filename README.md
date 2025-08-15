@@ -15,18 +15,20 @@ Transplant is an open-source platform for aggregating and verifying reforestatio
 ---
 
 ## Tech Stack
+
 - **Frontend:** [Svelte 5](https://svelte.dev/) & [SvelteKit](https://kit.svelte.dev/) (TypeScript-first)
 - **Styling:** [Pico CSS](https://picocss.com/) (with custom overrides)
 - **Backend/Database:** [Supabase](https://supabase.com/) (PostgreSQL)
 - **ORM:** [Prisma](https://www.prisma.io/)
 - **Build Tool:** [Vite](https://vitejs.dev/)
 - **Deployment:** [Vercel](https://vercel.com/) ([adapter-vercel](https://kit.svelte.dev/docs/adapter-vercel))
-- **Utilities:** PapaParse, Svelte-French-Toast
+  d- **Utilities:** PapaParse, @zerodevx/svelte-toast
 - **Linting/Formatting:** ESLint, Prettier, svelte-check
 
 ---
 
 ## Features
+
 - Upload, clean, and map CSV reforestation data to a central database
 - Handles tree crop, land, planting numbers, dates, and stakeholder data
 - Supports GPS pins and polygons for accurate geospatial mapping
@@ -38,6 +40,7 @@ Transplant is an open-source platform for aggregating and verifying reforestatio
 - Robust developer tooling and linting
 
 ## Installation
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/OSEMSAUCE/transplant.git
@@ -53,6 +56,7 @@ Transplant is an open-source platform for aggregating and verifying reforestatio
 ---
 
 ## Usage
+
 - **Start the development server:**
   ```bash
   npm run dev
@@ -64,17 +68,20 @@ Transplant is an open-source platform for aggregating and verifying reforestatio
 
 - **Database Sync:**
   To sync the ORM with your database:
+
   ```bash
   npm run db:sync:prod
   ```
 
 - **Production Build:**
+
   ```bash
   npm run build
   npm run preview
   ```
 
 - **Lint & Format:**
+
   ```bash
   npm run lint
   npm run format
@@ -87,6 +94,7 @@ Transplant is an open-source platform for aggregating and verifying reforestatio
     2. Search for `""` and replace with `"` (remove extra quotes)
 
 ## Project Structure
+
 ```
 transplant/
 ├── src/                # SvelteKit source files (routes, lib/components, etc.)
@@ -105,9 +113,11 @@ transplant/
 ---
 
 ## Environment Variables
+
 You will need to configure environment variables for local development and deployment. See `.env.dev` and `.env.production` for examples.
 
 **Common variables:**
+
 - `SUPABASE_URL` — Your Supabase project URL
 - `SUPABASE_ANON_KEY` — Supabase public anon key
 - `DATABASE_URL` — Postgres connection string (used by Prisma)
@@ -116,7 +126,9 @@ You will need to configure environment variables for local development and deplo
 ---
 
 ## Deployment
+
 This project is designed for [Vercel](https://vercel.com/) deployment using `@sveltejs/adapter-vercel`.
+
 - Push to your main branch and Vercel will auto-deploy.
 - Ensure all required environment variables are set in your Vercel dashboard.
 - For local production builds, use:
@@ -128,13 +140,16 @@ This project is designed for [Vercel](https://vercel.com/) deployment using `@sv
 ---
 
 ## Contributing
+
 We welcome contributions of all kinds! To get started:
+
 1. Check the [GitHub Issues](https://github.com/OSEMSAUCE/transplant/issues) board for open tasks and feature requests.
 2. Fork the repository and create a new branch for your feature or bugfix.
 3. Submit a pull request with a clear description of your changes.
 4. For questions, ideas, or support, email us at info@osemsauce.com.
 
 ## Contributors
+
 Thank you to everyone who has contributed to Transplant! If you’d like to join the project, please reach out or open a pull request.
 
 - [Chris Harris](mailto:info@osemsauce.com) — Project Lead

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
-	import toast from 'svelte-french-toast';
+	import { toast } from '@zerodevx/svelte-toast';
 	let email = '';
 	let password = '';
 	let error = '';
@@ -14,19 +14,22 @@
 		}
 		error = '';
 		loading = true;
-		toast.loading('Signing up...');
+		toast.push('Signing up...', { classes: ['loading'] });
 		const { error: signUpError } = await supabase.auth.signUp({
 			email,
 			password
 		});
-		toast.dismiss();
+		toast.pop();
 		loading = false;
 		if (signUpError) {
-			toast.error(signUpError.message);
+			toast.push(signUpError.message, { classes: ['error'] });
 			error = signUpError.message;
 			return;
 		}
-		toast.success('Check your email for a confirmation link!', { duration: 3000 });
+		toast.push('Check your email for a confirmation link!', {
+			classes: ['success'],
+			duration: 3000
+		});
 		email = '';
 		password = '';
 	}

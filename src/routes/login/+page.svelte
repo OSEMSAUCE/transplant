@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
 	import { goto } from '$app/navigation';
-	import toast from 'svelte-french-toast';
+	import { toast } from '@zerodevx/svelte-toast';
 	let email = '';
 	let password = '';
 	let error = '';
@@ -15,19 +15,19 @@
 		}
 		error = '';
 		loading = true;
-		toast.loading('Signing in...');
+		toast.push('Signing in...', { classes: ['loading'] });
 		const { error: signInError } = await supabase.auth.signInWithPassword({
 			email,
 			password
 		});
-		toast.dismiss();
+		toast.pop();
 		loading = false;
 		if (signInError) {
-			toast.error(signInError.message);
+			toast.push(signInError.message, { classes: ['error'] });
 			error = signInError.message;
 			return;
 		}
-		toast.success('Signed in successfully');
+		toast.push('Signed in successfully', { classes: ['success'] });
 		// Redirect to signed-in homepage
 		goto('/');
 	}
