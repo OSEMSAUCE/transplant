@@ -36,7 +36,7 @@
 		"@types/papaparse": "^5.3.15",
 		"concurrently": "^9.1.2",
 		"dotenv-cli": "^8.0.0",
-		"esbuild": "^0.25.0",
+		"esbuild": "^0.25.5",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-import": "^2.32.0",
