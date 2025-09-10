@@ -36,7 +36,7 @@
 		"@types/papaparse": "^5.3.15",
 		"concurrently": "^9.1.2",
 		"dotenv-cli": "^8.0.0",
-		"esbuild": "^0.25.0",
+		"esbuild": "^0.25.5",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-import": "^2.32.0",
@@ -52,7 +52,7 @@
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.20.0",
 		"vercel": "^45.0.9",
-		"vite": "^6.0.0"
+		"vite": "^6.3.6"
 	},
 	"dependencies": {
 		"@picocss/pico": "^2.0.6",
